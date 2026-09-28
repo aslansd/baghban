@@ -94,12 +94,13 @@ the two copies of the included module are told apart.
 | `RECURSIVE_INCLUDE` | error | Do workflows include each other in a cycle? |
 | `INVALID_INCLUDE` | error | Is an included file not a readable workflow? |
 | `DISABLED_WRITER` | warning | Is a writer (or a group holding one) disabled, so nothing is recorded? |
+| `UNNAMED_SUBJECT` | warning | Does a `SubscribeSubject` have no name, so it silently produces nothing? (An unnamed `MulticastSubject` passes values through: info.) |
 | `APPENDS_ACROSS_RUNS` | info | Does every run append to the same file, and repeat the CSV header mid-file? |
 | `UNUSED_SUBJECT` | info | Is a subject declared but never subscribed to? |
 
-`SILENT_OVERWRITE` drops to a warning when the file name is externalized:
-then it is only safe if the launcher sets a new name each run, which baghban
-cannot see.
+`SILENT_OVERWRITE` drops to info when the file name is externalized:
+launchers commonly set a new name each session (the survey found this
+throughout IBL's rigs), and baghban cannot see the launcher.
 
 ### How it decides
 
@@ -145,6 +146,18 @@ enough to be sure, baghban says what it did not check instead of guessing:
 
 These appear as `not checked:` lines under the report.
 
+### Modules
+
+Not every `.bonsai` file is meant to run on its own. baghban recognises
+Bonsai's two conventions for modules: files under an `Extensions` folder,
+which the editor offers as reusable toolbox elements, and files embedded in
+a package project (`<EmbeddedResource Include="**\*.bonsai" />`). A module
+may subscribe to subjects its includer declares; baghban reports those as
+the module's interface instead of as errors, and resolves an Extensions
+module's includes from the project folder, as the editor does. Package
+projects in the same repository are also used to follow embedded includes
+(`Path="My.Package:Module.bonsai"`) without any flags.
+
 ---
 
 ## Checked against something that does not depend on it
@@ -168,6 +181,18 @@ On the file-writer findings, where Bonsai has no test fixtures, each finding
 is tested in both directions on paired workflows: it must fire where the fault
 exists and stay quiet on the nearest workflow without it (see `TESTING.md`).
 
+### On published rigs
+
+`survey/` runs baghban over 32 public repositories (Bonsai's own, the Allen
+Institute's foraging tasks, SWC's Aeon, IBL's rig, NeuroGears' vestibular VR
+and others): 453 entry workflows, 61,915 nodes. Every error was read by
+hand. **None of the 27 was a false alarm**: 12 point at real faults (4
+distinct problems, including missing include files in two published rigs),
+13 are documentation snippets that are never meant to build alone, and 2 are
+correct but likely harmless. Reading the first run's results is also where
+the module conventions above, two bugs and one wrong claim came from; see
+`survey/SURVEY.md`.
+
 ---
 
 ## Commands
@@ -184,7 +209,8 @@ baghban fingerprint WORKFLOW         content hash, stable across re-saves (--fie
 
 `check` accepts folders. A file that another checked file includes is checked
 through its includer, where the subjects and file names it relies on are
-defined, rather than on its own. Every command takes `--resource-root
+defined, rather than on its own. `--exclude GLOB` skips files, e.g.
+`--exclude 'docs/*'` for documentation snippets. Every command takes `--resource-root
 ASSEMBLY=DIR` to follow embedded-resource includes (`Path="MyPackage:Module.bonsai"`)
 into a package's source folder.
 
@@ -293,15 +319,16 @@ Shows, checks, fixes, diffs and fingerprints the example rig, and writes
 
 Research prototype, honestly labelled.
 
-- The findings are grounded in the Bonsai source and agree with Bonsai's own
-  test suite, but have not yet been run across a broad set of real rigs. How
-  often they fire on published workflows, and how often wrongly, is the next
-  thing to measure (see `ROADMAP.md`).
-- No finding has yet been confirmed by running a workflow. `Bonsai.Player`
-  runs on macOS under .NET 8, so the writer findings can be confirmed on a Mac
-  by running the fixtures and watching the files; that is on the roadmap.
-- Embedded-resource includes from installed NuGet packages are not followed
-  yet unless you point `--resource-root` at the package source.
+- On 453 published workflows, no error was a false alarm (`survey/SURVEY.md`).
+  Warnings were sampled, not read in full, and nothing measures what baghban
+  misses.
+- No finding has yet been confirmed by running a workflow. `confirm/` does
+  that with the released Bonsai packages on .NET 8, on macOS included; its
+  logic is tested, but it has not yet been run against real Bonsai.
+- Includes into packages from other repositories (BonVision,
+  AllenNeuralDynamics.Core, Bonsai.Harp, ...) are reported as not checked,
+  unless you point `--resource-root` at the package source. This is the
+  largest gap in coverage (`ROADMAP.md`, item 3).
 - Timing problems (unbounded `Zip` queues, timestamps taken after heavy
   processing) need stream rates the XML rarely states, and are not checked.
 
@@ -309,7 +336,9 @@ Research prototype, honestly labelled.
 
 ```
 pip install -e ".[dev]"
-pytest -q
+pytest -q                         # 132 tests, no network, no .NET
+python confirm/confirm.py         # needs .NET 8: confirm findings with real Bonsai
+python survey/run_survey.py DIR   # clone and check the published repositories
 ```
 
 ## Licence

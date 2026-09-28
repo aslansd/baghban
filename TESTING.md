@@ -5,7 +5,7 @@ pip install -e ".[dev]"
 pytest -q
 ```
 
-Expected: `113 passed`, in well under a second. No network, no .NET, no
+Expected: `132 passed`, in well under a second. No network, no .NET, no
 Bonsai installation.
 
 ## What the suite checks
@@ -39,6 +39,17 @@ Severities and exit codes are pinned too: an externalized file name turns
 `SILENT_OVERWRITE` into a warning, info findings never fail `check`, and
 `--strict` fails on warnings.
 
+**`test_project.py`: module conventions**, added after the survey: Extensions
+and package modules report their undeclared subjects as their interface,
+test projects stay top-level, embedded includes into same-repository packages
+resolve without flags, `.bonsai` folders are ignored, and include cycles are
+still checked.
+
+**`test_confirm_harness.py`** tests `confirm/confirm.py` without .NET:
+baghban's prediction for every case, and the harness's judgement of
+simulated outcomes in both directions, so a "NO" on a real machine means
+Bonsai disagreed rather than a harness bug.
+
 **`test_model.py`** covers the reader: namespace and type resolution,
 `Combinator`/`Source`/`Disable` unwrapping, flattened property keys, scopes,
 include expansion and overrides, byte-order marks, and malformed files.
@@ -59,7 +70,9 @@ example rigs.
 3. If Bonsai's own tests say something about the case, add it to
    `test_ground_truth.py`.
 
-## Not tested yet
+## Beyond the unit tests
 
-Nothing here runs a workflow. `ROADMAP.md` describes confirming the writer
-findings with `Bonsai.Player` on macOS.
+- `python confirm/confirm.py` runs the cases with the real Bonsai runtime
+  (needs .NET 8). Not yet run; see `confirm/README.md`.
+- `python survey/run_survey.py DIR` re-runs the survey of published
+  repositories; `survey/SURVEY.md` records the last run and its hand review.
