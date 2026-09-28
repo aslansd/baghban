@@ -48,7 +48,7 @@ def test_overwrite_applies_to_filesink_writers_too():
 def test_overwrite_inside_selectmany_is_per_trial():
     report = baghban.check(baghban.loads(document(single(csv_writer(overwrite=True), in_loop=True))))
     assert report.codes() == ["SILENT_OVERWRITE"]
-    assert "every element" in report.findings[0].message
+    assert "more than one" in report.findings[0].message  # cannot know the element count
 
 
 def test_overwrite_inside_group_is_not_a_loop():
@@ -65,11 +65,12 @@ def test_filename_from_data_is_not_judged():
     assert any("assigned from data" in s for s in report.skipped)
 
 
-def test_externalized_filename_is_downgraded_to_warning():
+def test_externalized_filename_is_downgraded_to_info():
     xml = workflow(expr(timer()), expr(externalized("FileName")),
                    expr(csv_writer(overwrite=True)), edges=[(0, 2), (1, 2, "Source2")])
     report = baghban.check(baghban.loads(document(xml)))
-    assert [(f.code, f.severity) for f in report.findings] == [("SILENT_OVERWRITE", "warning")]
+    assert [(f.code, f.severity) for f in report.findings] == [("SILENT_OVERWRITE", "info")]
+    assert report.exit_code(strict=True) == 0
 
 
 def test_named_pipe_is_not_a_file():
@@ -322,3 +323,23 @@ def test_exit_code():
     bad = baghban.check(baghban.loads(document(single(csv_writer(overwrite=True)))))
     good = baghban.check(baghban.loads(document(single(csv_writer(suffix="Timestamp")))))
     assert bad.exit_code() == 1 and good.exit_code() == 0
+
+
+# ------------------------------------------------------------ UNNAMED_SUBJECT
+# Found by reading real rigs: Bonsai builds unnamed subject nodes without error
+# (SubscribeSubject.cs returns an empty expression, MulticastSubject.cs its input).
+
+def test_unnamed_subscribe_is_a_silent_warning_not_a_build_error():
+    report = baghban.check(baghban.loads(document(workflow(expr(("SubscribeSubject", ""))))))
+    assert [(f.code, f.severity) for f in report.findings] == [("UNNAMED_SUBJECT", "warning")]
+    assert report.exit_code() == 0
+
+
+def test_unnamed_multicast_is_info():
+    xml = workflow(expr(timer()), expr(("MulticastSubject", "")), edges=[(0, 1)])
+    report = baghban.check(baghban.loads(document(xml)))
+    assert [(f.code, f.severity) for f in report.findings] == [("UNNAMED_SUBJECT", "info")]
+
+
+def test_named_subscribe_is_not_unnamed():
+    assert "UNNAMED_SUBJECT" not in codes(workflow(expr(publish("A")), expr(subscribe("A"))))

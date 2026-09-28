@@ -140,8 +140,13 @@ def test_cli_strict_fails_on_warnings(capsys, tmp_path):
     path.write_text(document(workflow(expr(timer()), expr(externalized("FileName")),
                                       expr(csv_writer(overwrite=True)),
                                       edges=[(0, 2), (1, 2, "Source2")])))
-    assert main(["check", str(path)]) == 0            # warning only
-    assert main(["check", str(path), "--strict"]) == 1
+    assert main(["check", str(path)]) == 0            # info only
+    assert main(["check", str(path), "--strict"]) == 0  # info never fails
+    capsys.readouterr()
+    warn = tmp_path / "warn.bonsai"
+    warn.write_text(document(workflow(expr(("SubscribeSubject", "")))))
+    assert main(["check", str(warn)]) == 0
+    assert main(["check", str(warn), "--strict"]) == 1
     capsys.readouterr()
 
 
@@ -155,4 +160,13 @@ def test_cli_diff_and_render(capsys, tmp_path):
                 ["fingerprint", str(V1)], ["fingerprint", str(V1), "--fields"],
                 ["render", str(V1), "-f", "mermaid"], ["render", str(V1), "-f", "dot"]):
         assert main(cmd) == 0
+    capsys.readouterr()
+
+
+def test_cli_exclude(capsys, tmp_path):
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs" / "snippet.bonsai").write_text(document(workflow(expr(subscribe("X")))))
+    (tmp_path / "rig.bonsai").write_text(document(workflow(expr(timer()))))
+    assert main(["check", str(tmp_path)]) == 1
+    assert main(["check", str(tmp_path), "--exclude", "docs/*"]) == 0
     capsys.readouterr()
