@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Runs a Bonsai workflow headless, like Bonsai.Player, but with the
+       Bonsai.System operators (CsvWriter, file sinks) available: the Player
+       references only Bonsai.Core. Uses the released NuGet packages, i.e. the
+       code rigs actually run. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Bonsai.System" Version="2.9.*" />
+  </ItemGroup>
+</Project>
