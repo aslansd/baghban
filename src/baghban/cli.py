@@ -35,17 +35,22 @@ def _resource_roots(values) -> dict:
     return roots
 
 
-def _collect(paths) -> list:
+def _collect(paths, exclude=()) -> list:
+    import fnmatch
     files = []
     for p in map(Path, paths):
         if p.is_dir():
             for f in sorted(p.rglob("*.bonsai")):
+                if not f.is_file():
+                    continue  # a ".bonsai" environment folder, not a workflow
                 if any(part.startswith(".") for part in f.relative_to(p).parts[:-1]):
                     continue  # skip .bonsai environment folders and hidden dirs
                 files.append(f)
         else:
             files.append(p)
-    return files
+    return [f for f in files
+            if not any(fnmatch.fnmatch(f.as_posix(), pat) or fnmatch.fnmatch(f.as_posix(), f"*/{pat}")
+                       for pat in exclude)]
 
 
 def _load(path, args):
@@ -55,8 +60,22 @@ def _load(path, args):
         raise SystemExit(f"baghban: {exc}")
 
 
+def select_roots(docs) -> list:
+    """Workflows to check as entry points: those no other file includes, plus
+    enough of the rest that every file is reached (members of an include cycle
+    include each other, so none of them would otherwise be checked)."""
+    included = {p for d in docs for p in d.included_files}
+    roots = [d for d in docs if d.path.resolve() not in included]
+    covered = {d.path.resolve() for d in roots} | {p for d in roots for p in d.included_files}
+    for d in docs:
+        if d.path.resolve() not in covered:
+            roots.append(d)
+            covered |= {d.path.resolve(), *d.included_files}
+    return roots
+
+
 def cmd_check(args) -> int:
-    files = _collect(args.paths)
+    files = _collect(args.paths, args.exclude or ())
     if not files:
         print("baghban: no .bonsai files found", file=sys.stderr)
         return 2
@@ -69,8 +88,7 @@ def cmd_check(args) -> int:
 
     # A file that another checked file includes is checked through its includer,
     # where the subjects and parameters it relies on are defined.
-    included = {p for d in docs for p in d.included_files}
-    roots = [d for d in docs if d.path.resolve() not in included]
+    roots = select_roots(docs)
     via_includer = len(docs) - len(roots)
 
     reports = [check(d) for d in roots]
@@ -162,6 +180,9 @@ def build_parser() -> argparse.ArgumentParser:
     c.add_argument("--json", action="store_true")
     c.add_argument("--strict", action="store_true", help="exit 1 on warnings too")
     c.add_argument("--no-info", action="store_true", help="hide info-level findings")
+    c.add_argument("--exclude", action="append", metavar="GLOB",
+                   help="skip matching files, e.g. 'docs/*' for documentation snippets "
+                        "(repeatable)")
     c.set_defaults(func=cmd_check)
 
     s = with_roots(sub.add_parser("show", help="print the workflow as a tree"))

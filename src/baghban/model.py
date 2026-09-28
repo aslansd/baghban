@@ -310,6 +310,11 @@ class Document:
     workflow: Workflow
     base_dir: Path
     included_files: list = field(default_factory=list)
+    kind: str = "workflow"  # workflow | extension | package (see project.py)
+
+    @property
+    def is_module(self) -> bool:
+        return self.kind != "workflow"
 
     def walk(self) -> Iterator[Node]:
         return self.workflow.walk()
@@ -567,26 +572,55 @@ def _find_resource(root: Path, resource: str) -> Optional[Path]:
 
 # --------------------------------------------------------------------------- API
 
-def load(path, resource_roots: Optional[dict] = None, base_dir=None) -> Document:
+def load(path, resource_roots: Optional[dict] = None, base_dir=None,
+         discover: bool = True) -> Document:
     """Load a ``.bonsai`` file and resolve its includes.
 
     ``resource_roots`` maps an assembly name to the folder holding its source,
     so embedded-resource includes (``Path="MyPackage:Module.bonsai"``) can be
     followed, e.g. ``{"Bonsai.Core.Tests": "bonsai/Bonsai.Core.Tests"}``.
+    With ``discover`` (the default), package projects in the surrounding git
+    repository that embed workflows are found and added automatically.
+
+    Files under an ``Extensions`` folder or inside such a package project are
+    loaded as modules (``Document.kind``); an Extensions module resolves its
+    includes from the project folder, as the editor does.
     """
+    from .project import classify, discover_projects, repository_root
     path = Path(path)
-    base = Path(base_dir) if base_dir is not None else path.resolve().parent
-    loader = _Loader(base, resource_roots)
+    projects = discover_projects(path) if discover else []
+    # every embedding project can resolve includes; only non-test projects make
+    # their files modules (test projects embed fixtures that run top-level)
+    roots = {}
+    for name, folder, _is_test in projects:
+        roots.setdefault(name, folder)
+    packages = {name: folder for name, folder, is_test in projects if not is_test}
+    roots.update({k: Path(v) for k, v in (resource_roots or {}).items()})
+    kind, project = classify(path, packages)
+    if kind == "extension":
+        try:  # only trust an Extensions folder inside the repository
+            project.resolve().relative_to(repository_root(path))
+        except ValueError:
+            kind, project = "workflow", None
+    if base_dir is not None:
+        base = Path(base_dir)
+    elif kind == "extension":
+        base = project
+    else:
+        base = path.resolve().parent
+    loader = _Loader(base, roots)
     root, namespaces = loader.read(str(path))
     body = _child(root, "Workflow")
     if body is None:
         raise WorkflowLoadError(f"{path}: <WorkflowBuilder> has no <Workflow>")
     wf = loader.parse_workflow(body, namespaces, path, None, (path.resolve(),), False)
     return Document(path=path, version=root.get("Version"), namespaces=namespaces,
-                    workflow=wf, base_dir=base, included_files=loader.included_files)
+                    workflow=wf, base_dir=base, included_files=loader.included_files,
+                    kind=kind)
 
 
-def loads(text: str, resource_roots: Optional[dict] = None, base_dir=".") -> Document:
+def loads(text: str, resource_roots: Optional[dict] = None, base_dir=".",
+          kind: str = "workflow") -> Document:
     """Load a workflow from a string (includes resolve against ``base_dir``)."""
     import io
     base = Path(base_dir)
@@ -597,4 +631,5 @@ def loads(text: str, resource_roots: Optional[dict] = None, base_dir=".") -> Doc
         raise WorkflowLoadError("<WorkflowBuilder> has no <Workflow>")
     wf = loader.parse_workflow(body, namespaces, None, None, (), False)
     return Document(path=None, version=root.get("Version"), namespaces=namespaces,
-                    workflow=wf, base_dir=base, included_files=loader.included_files)
+                    workflow=wf, base_dir=base, included_files=loader.included_files,
+                    kind=kind)

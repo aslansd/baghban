@@ -40,6 +40,7 @@ FINDINGS = {
     "RECURSIVE_INCLUDE": ("error", "workflows include each other in a cycle"),
     "INVALID_INCLUDE": ("error", "an included file is not a readable workflow"),
     "DISABLED_WRITER": ("warning", "a writer is disabled, so nothing is recorded to its file"),
+    "UNNAMED_SUBJECT": ("warning", "a SubscribeSubject without a Name silently produces nothing"),
     "APPENDS_ACROSS_RUNS": ("info", "every run appends to the same file"),
     "UNUSED_SUBJECT": ("info", "a subject is declared but nothing subscribes to it"),
 }
@@ -67,6 +68,8 @@ class Report:
     findings: list = field(default_factory=list)
     skipped: list = field(default_factory=list)
     n_nodes: int = 0
+    kind: str = "workflow"
+    interface: list = field(default_factory=list)
 
     def by_severity(self, severity: str) -> list:
         return [f for f in self.findings if f.severity == severity]
@@ -104,6 +107,9 @@ class Report:
             lines.append("")
         counts = [f"{len(self.by_severity(s))} {s}{'s' if len(self.by_severity(s)) != 1 else ''}"
                   for s in SEVERITIES]
+        if self.kind != "workflow":
+            lines.append(f"Checked as {_MODULE_KIND.get(self.kind, 'a module')}: a workflow "
+                         "meant to be included, not run on its own.")
         if not self.findings:
             lines.append(f"No findings in {self.n_nodes} nodes.")
         else:
@@ -113,7 +119,8 @@ class Report:
         return "\n".join(lines)
 
     def to_dict(self) -> dict:
-        return {"path": self.path, "nodes": self.n_nodes,
+        return {"path": self.path, "kind": self.kind, "nodes": self.n_nodes,
+                "interface": list(self.interface),
                 "findings": [f.to_dict() for f in self.findings],
                 "skipped": list(self.skipped)}
 
@@ -212,13 +219,29 @@ def check_subjects(doc: Document, report: Report) -> None:
 
     used: set = set()
     skipped_names: set = set()
+    interface: list = []
     for node in doc.walk():
         if not node.is_subject_use or not _enabled(node):
             continue
         scope = node.parent.scope()
+        if "Name" in node.externalized() and not node.name:
+            report.skipped.append(f"{node.location()}: subject name is externalized, set by "
+                                  "whoever includes or launches this workflow")
+            continue
         if not node.name:
-            report.findings.append(_finding(
-                "DANGLING_SUBJECT", node, f"{node.type.name} has no subject Name."))
+            # Bonsai builds these without error: an unnamed SubscribeSubject becomes an
+            # empty sequence, an unnamed MulticastSubject passes values through.
+            if node.type.name == "SubscribeSubject":
+                report.findings.append(_finding(
+                    "UNNAMED_SUBJECT", node,
+                    "This SubscribeSubject has no subject Name, so it produces no values: "
+                    "everything downstream of it stays silent, without an error.",
+                    hint="Pick the subject to subscribe to, or delete the node."))
+            else:
+                report.findings.append(_finding(
+                    "UNNAMED_SUBJECT", node,
+                    "This MulticastSubject has no subject Name, so it passes values through "
+                    "without sending them to any subject.", severity="info"))
             continue
         target = None
         blind = False
@@ -239,6 +262,11 @@ def check_subjects(doc: Document, report: Report) -> None:
                                       "declared in an include that could not be read")
         else:
             hidden = [d for names in declared.values() for d in names.get(node.name, [])]
+            if not hidden and (doc.is_module or "Name" in node.externalized()):
+                # a module's undeclared subjects are what it expects from its includer
+                if node.name not in interface:
+                    interface.append(node.name)
+                continue
             if hidden:
                 why = (f" A subject with this name is declared at {hidden[0].location()}, but "
                        "that is inside a nested workflow, whose declarations are not visible "
@@ -252,8 +280,14 @@ def check_subjects(doc: Document, report: Report) -> None:
                 f"No subject named '{node.name}' is declared in this scope or any enclosing "
                 f"one, so Bonsai will fail to build the workflow.{why}", hint=hint))
 
+    if interface:
+        report.interface = interface
+        report.skipped.append(
+            f"{_MODULE_KIND.get(doc.kind, 'module')}: expects the including workflow to declare "
+            f"subject(s) {', '.join(repr(n) for n in interface)}")
+
     for sid, names in declared.items():
-        if sid in opaque_within:
+        if sid in opaque_within or doc.is_module:  # a module's subjects are its outputs
             continue
         for name, nodes in names.items():
             if len(nodes) > 1:
@@ -263,6 +297,9 @@ def check_subjects(doc: Document, report: Report) -> None:
                     report.findings.append(_finding(
                         "UNUSED_SUBJECT", decl,
                         f"Subject '{name}' is declared but nothing subscribes to it."))
+
+
+_MODULE_KIND = {"extension": "Extensions module", "package": "package module"}
 
 
 def _near_miss(name: str, declared: dict) -> str:
@@ -322,15 +359,18 @@ def check_writers(doc: Document, report: Report) -> None:
             elif overwrite and loop is not None:
                 report.findings.append(_finding(
                     "SILENT_OVERWRITE", node,
-                    f"Overwrite=True with Suffix=None inside {_loop_name(loop)}: the writer is "
-                    f"opened again for every element (e.g. every trial), and each time it "
-                    f"replaces '{fname}'. Only the last element's data survives the session.",
+                    f"Overwrite=True with Suffix=None: each run replaces '{fname}' from the "
+                    f"previous session. It sits inside {_loop_name(loop)}, which opens it again "
+                    "for every element it receives: if that is more than one (e.g. one per "
+                    "trial), each element also replaces the previous one within the session.",
                     hint="Use Suffix=Timestamp or FileCount to keep one file per element, or "
                          "move the writer after the SelectMany to collect all elements in one "
                          "file."))
             elif overwrite:
-                severity = "warning" if externalized else "error"
-                extra = (f" {prop} is externalized, so this is only safe if the launcher sets a "
+                # Launchers commonly set externalized file names per session (seen across
+                # IBL's rigs), which baghban cannot see: report, but do not alarm.
+                severity = "info" if externalized else "error"
+                extra = (f" {prop} is externalized, so this is safe if the launcher sets a "
                          "new value on every run." if externalized else "")
                 report.findings.append(_finding(
                     "SILENT_OVERWRITE", node,
@@ -376,7 +416,7 @@ CHECKS = (check_includes, check_subjects, check_writers)
 def check(doc: Document) -> Report:
     """Run every check on a loaded document."""
     report = Report(path=str(doc.path) if doc.path else None,
-                    n_nodes=sum(1 for _ in doc.walk()))
+                    n_nodes=sum(1 for _ in doc.walk()), kind=doc.kind)
     for fn in CHECKS:
         fn(doc, report)
     order = {s: i for i, s in enumerate(SEVERITIES)}
