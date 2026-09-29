@@ -3,7 +3,8 @@
 Roadmap item 2. The question: on workflows people actually publish, how often
 do the findings fire, and how often are they right?
 
-**Run:** September 2026, baghban 0.2.0, `python survey/run_survey.py WORKDIR`.
+**Run:** September 2026, baghban 0.2.0; numbers updated with 0.2.1, after
+the first `confirm/` run corrected `UNNAMED_SUBJECT`. `python survey/run_survey.py WORKDIR`.
 32 repositories listed in `repos.txt`; 17 contain workflows. 630 `.bonsai`
 files; 453 entry workflows checked (the rest through the workflows that
 include them); 61,915 nodes. Every error was then read by hand, together with
@@ -53,10 +54,14 @@ Reading the errors also exposed two bugs and one wrong claim in baghban
 - `.bonsai` *folders* (Bonsai environments) were collected as workflow files;
 - two workflows including each other were both skipped as "checked through
   their includer", so neither was checked;
-- **the wrong claim:** baghban said an unnamed `SubscribeSubject` makes
-  Bonsai fail to build. It does not: `SubscribeSubject.cs` returns an empty
-  expression and `MulticastSubject.cs` passes its input through. This is now
-  `UNNAMED_SUBJECT`, a warning (the node silently produces nothing).
+- **a wrong claim:** baghban said an unnamed `SubscribeSubject` makes Bonsai
+  fail to build. Reading `SubscribeSubject.cs` suggested it does not (it
+  returns an empty expression), so 0.2.0 made it a warning. Running it on
+  real Bonsai (`confirm/`) showed the full story: the empty expression is not
+  passed on, so a node connected after it gets no input and Bonsai refuses to
+  build it. `UNNAMED_SUBJECT` is now an error when nodes follow it, info when
+  none do. Reading the source alone got this half right; running it settled
+  it.
 
 Result: 202 → 13 `DANGLING_SUBJECT` errors.
 
@@ -67,12 +72,12 @@ Result: 202 → 13 `DANGLING_SUBJECT` errors.
 | 13 | error | `DANGLING_SUBJECT` | 3 |
 | 11 | error | `MISSING_INCLUDE` | 3 |
 | 3 | error | `SILENT_OVERWRITE` | 2 |
+| 2 | error | `UNNAMED_SUBJECT` (nodes connected after it) | 2 |
 | 57 | warning | `DISABLED_WRITER` | 3 |
-| 3 | warning | `UNNAMED_SUBJECT` | 2 |
 | 154 | info | `UNUSED_SUBJECT` | 8 |
 | 44 | info | `SILENT_OVERWRITE` (externalized file name) | 1 |
 | 5 | info | `APPENDS_ACROSS_RUNS` | 1 |
-| 2 | info | `UNNAMED_SUBJECT` | 1 |
+| 3 | info | `UNNAMED_SUBJECT` (nothing after it, or multicast) | 1 |
 
 No crashes. One file was unreadable: `3sec_Restaurant(Dim)_…_old.bonsai` in
 restaurant-row-berkeley is not well-formed XML, so Bonsai cannot open it
@@ -91,10 +96,12 @@ likely harmless**, or **false alarm**.
 | 2 | Bonsai.AllenNeuralDynamics docs: two examples include `AllenNeuralDynamics.AindManipulator:AindManipulator.bonsai`; the package only contains `AindManipulatorGui.bonsai`, apparently a rename the examples did not follow | **true fault** (in documentation) |
 | 1 | neurogears/vestibular-vr `GNGTemplate.bonsai`: `CsvWriter 'responses.csv'`, `Overwrite=True`, `Suffix=None` | **true fault**: each run replaces the last run's responses, and a template is copied into new tasks |
 | 13 | `docs/workflows` in bonsai-rx/docs (5), Bonsai.AllenNeuralDynamics (5) and bonsai-rx/machinelearning (3): diagram snippets that subscribe to subjects declared nowhere | **true, by design**: snippets for rendering documentation figures, never built alone. `--exclude 'docs/*'` skips them |
+| 1 | restaurant-row-berkeley `5s-wait_80pct-rewarded_EXPERIMENTAL.bonsai`: an unnamed `SubscribeSubject` inside `Timestamp & Save Events` feeds a `PropertyMapping`, which needs exactly one input | **true fault**: the workflow cannot build (confirmed behaviour, `confirm/`) |
+| 1 | bonsai-rx/docs `language-subject-subscribe.bonsai`: unnamed `SubscribeSubject` feeding a `VideoWriter` | **true, by design**: a documentation snippet |
 | 2 | iblrig `ReceptiveFieldMappingStim.bonsai` (two task copies): `MatrixWriter 'NoiseLocations.bin'`, `Overwrite=True`, `Suffix=None` | **true, likely harmless**: the file is replaced every session, but IBL's launcher collects the stimulus data through a different, externalized file name and nothing in the repository reads `NoiseLocations.bin` |
 
-**No false alarms among the 27 errors.** 12 point at real faults (4
-distinct problems, repeated across files), 13 are true of documentation
+**No false alarms among the 29 errors.** 13 point at real faults (5
+distinct problems, repeated across files), 14 are true of documentation
 snippets by design, and 2 are true but likely harmless.
 
 ## Warnings and infos, sampled
