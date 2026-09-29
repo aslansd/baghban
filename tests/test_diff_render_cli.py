@@ -3,7 +3,8 @@ from pathlib import Path
 
 import baghban
 from baghban.cli import main
-from xmlkit import csv_writer, document, expr, publish, subscribe, timer, workflow
+from xmlkit import (camera, csv_writer, disable, document, expr, publish, subscribe, timer,
+                    video_writer, workflow)
 
 EXAMPLES = Path(__file__).parents[1] / "examples"
 V1 = EXAMPLES / "rig_v1" / "foraging.bonsai"
@@ -144,8 +145,9 @@ def test_cli_strict_fails_on_warnings(capsys, tmp_path):
     assert main(["check", str(path), "--strict"]) == 0  # info never fails
     capsys.readouterr()
     warn = tmp_path / "warn.bonsai"
-    warn.write_text(document(workflow(expr(("SubscribeSubject", "")))))
-    assert main(["check", str(warn)]) == 0
+    warn.write_text(document(workflow(expr(camera()), disable(video_writer(suffix="Timestamp")),
+                                      edges=[(0, 1)])))
+    assert main(["check", str(warn)]) == 0             # DISABLED_WRITER: warning
     assert main(["check", str(warn), "--strict"]) == 1
     capsys.readouterr()
 
@@ -156,6 +158,13 @@ def test_cli_diff_and_render(capsys, tmp_path):
     out = tmp_path / "rig.html"
     assert main(["render", str(V1), "-o", str(out)]) == 0
     assert out.read_text().startswith("<!doctype html>")
+    # default: next to the workflow, so two rigs' foraging.bonsai do not collide
+    import shutil
+    rig = tmp_path / "rig_a"
+    shutil.copytree(V1.parent, rig)
+    assert main(["render", str(rig / "foraging.bonsai")]) == 0
+    assert (rig / "foraging.html").exists()
+    assert str((rig / "foraging.html").resolve()) in capsys.readouterr().out
     for cmd in (["show", str(V1)], ["deps", str(V1)], ["params", str(V1)],
                 ["fingerprint", str(V1)], ["fingerprint", str(V1), "--fields"],
                 ["render", str(V1), "-f", "mermaid"], ["render", str(V1), "-f", "dot"]):

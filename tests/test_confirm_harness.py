@@ -32,6 +32,8 @@ def judge(name, runs):
 
 def test_overwrite_judgement():
     assert judge("overwrite_across_runs", [Run(0, "", {"data.csv": T1}), Run(0, "", {"data.csv": T2})])
+    # the first Mac run: writers had not flushed, both files empty -- must not pass
+    assert not judge("overwrite_across_runs", [Run(0, "", {"data.csv": ""}), Run(0, "", {"data.csv": ""})])
     # if Bonsai had kept both, the finding would not be confirmed
     assert not judge("overwrite_across_runs",
                      [Run(0, "", {"data.csv": T1}), Run(0, "", {"data.csv": T1, "data2.csv": T2})])
@@ -58,6 +60,9 @@ def test_other_judgements():
     assert judge("distinct_outputs", [Run(0, "", {"a.csv": T1, "b.csv": T1})])
     assert judge("disabled_writer", [Run(0, "", {})])
     assert judge("appends_across_runs", [Run(0, "", {"data.csv": T1}), Run(0, "", {"data.csv": T1 + T2})])
-    assert judge("unnamed_subscribe", [Run(0, "", {"out.csv": ""})])
+    err = "WorkflowBuildException: Unsupported number of arguments. This node requires at least 1 input connection(s)."
+    assert judge("unnamed_subscribe", [Run(1, err, {})])
+    assert judge("unnamed_subscribe_alone", [Run(0, "", {"out.csv": T1})])
+    assert not judge("unnamed_subscribe_alone", [Run(0, "", {"out.csv": ""})])
     assert judge("overwrite_with_timestamp_suffix",
                  [Run(0, "", {"a.csv": T1}), Run(0, "", {"a.csv": T1, "b.csv": T2})])

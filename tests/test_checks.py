@@ -326,13 +326,30 @@ def test_exit_code():
 
 
 # ------------------------------------------------------------ UNNAMED_SUBJECT
-# Found by reading real rigs: Bonsai builds unnamed subject nodes without error
-# (SubscribeSubject.cs returns an empty expression, MulticastSubject.cs its input).
+# Bonsai builds an unnamed SubscribeSubject to an empty expression and does not
+# pass empty expressions on, so the nodes after it get no input. Confirmed on
+# Bonsai 2.9 (confirm/, first Mac run): a CsvWriter after it fails to build.
 
-def test_unnamed_subscribe_is_a_silent_warning_not_a_build_error():
+def test_unnamed_subscribe_feeding_a_node_is_a_build_error():
+    xml = workflow(expr(("SubscribeSubject", "")), expr(csv_writer("x.csv", suffix="Timestamp")),
+                   edges=[(0, 1)])
+    report = baghban.check(baghban.loads(document(xml)))
+    assert [(f.code, f.severity) for f in report.findings] == [("UNNAMED_SUBJECT", "error")]
+    assert "CsvWriter" in report.findings[0].message
+    assert report.exit_code() == 1
+
+
+def test_unnamed_subscribe_alone_is_info():
     report = baghban.check(baghban.loads(document(workflow(expr(("SubscribeSubject", ""))))))
-    assert [(f.code, f.severity) for f in report.findings] == [("UNNAMED_SUBJECT", "warning")]
+    assert [(f.code, f.severity) for f in report.findings] == [("UNNAMED_SUBJECT", "info")]
     assert report.exit_code() == 0
+
+
+def test_unnamed_subscribe_with_only_a_disabled_successor_is_info():
+    xml = workflow(expr(("SubscribeSubject", "")), disable(csv_writer("x.csv", suffix="Timestamp")),
+                   edges=[(0, 1)])
+    report = baghban.check(baghban.loads(document(xml)))
+    assert ("UNNAMED_SUBJECT", "info") in [(f.code, f.severity) for f in report.findings]
 
 
 def test_unnamed_multicast_is_info():
