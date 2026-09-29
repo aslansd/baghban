@@ -1,6 +1,6 @@
 """Roadmap item 1: confirm baghban's findings by running the workflows.
 
-For each case this script writes a small workflow, asks baghban what it
+For each case (13) this script writes a small workflow, asks baghban what it
 predicts, runs the workflow with the real Bonsai runtime (runner/, released
 NuGet packages, .NET 8), then inspects exit codes and the files on disk. A
 finding is *confirmed* when what happened matches what baghban said; each
@@ -126,10 +126,18 @@ def csvs(run: Run) -> dict:
     return {k: v for k, v in run.files.items() if k.endswith(".csv")}
 
 
+def rows(run: Run) -> list:
+    return [lines(t) for t in csvs(run).values()]
+
+
 def replaced_across_runs(rs):
     a, b = csvs(rs[0]), csvs(rs[1])
-    ok = rs[1].code == 0 and len(b) == 1 and a != b and lines(next(iter(b.values()))) == 3
-    return ok, f"run 2 exit {rs[1].code}; {len(b)} file(s) after 2 runs; content replaced: {a != b}"
+    # both runs must really have written their 3 rows: two empty files are "equal"
+    # too, which the first run on a Mac showed (writers had not flushed)
+    ok = (rs[1].code == 0 and len(b) == 1 and rows(rs[0]) == [3] and rows(rs[1]) == [3]
+          and a != b)
+    return ok, (f"run 2 exit {rs[1].code}; {len(b)} file(s) after 2 runs; rows per run "
+                f"{rows(rs[0])} then {rows(rs[1])}; content replaced: {a != b}")
 
 
 def kept_both_runs(rs):
@@ -189,10 +197,14 @@ def build_fails(rs):
     return ok, f"exit {rs[0].code} ({rs[0].error[:70]})"
 
 
-def runs_silently_empty(rs):
-    f = csvs(rs[0])
-    n = sum(lines(t) for t in f.values())
-    return rs[0].code == 0 and n == 0, f"exit {rs[0].code}; rows written: {n}"
+def runs_normally(rs):
+    return rs[0].code == 0 and rows(rs[0]) == [3], f"exit {rs[0].code}; rows written: {rows(rs[0])}"
+
+
+def unnamed_alone() -> str:
+    """An unnamed SubscribeSubject with nothing after it, next to a normal chain."""
+    return doc(SOURCE + csv("out.csv") + '<Expression xsi:type="SubscribeSubject" />',
+               CHAIN + [(2, 3)])
 
 
 CASES = [
@@ -213,8 +225,10 @@ CASES = [
     Case("appends_across_runs", linear(csv("data.csv", append=True)), ["APPENDS_ACROSS_RUNS"], 2,
          accumulated),
     Case("dangling_subject", subscriber("Nope"), ["DANGLING_SUBJECT"], 1, build_fails),
-    Case("unnamed_subscribe", subscriber(None), ["UNNAMED_SUBJECT"], 1, runs_silently_empty,
-         note="builds and runs, but produces nothing"),
+    Case("unnamed_subscribe", subscriber(None), ["UNNAMED_SUBJECT"], 1, build_fails,
+         note="the node after it gets no input: Bonsai refuses to build (first Mac run)"),
+    Case("unnamed_subscribe_alone", unnamed_alone(), ["UNNAMED_SUBJECT"], 1, runs_normally,
+         note="nothing after it: builds, and the rest of the workflow runs"),
 ]
 
 
