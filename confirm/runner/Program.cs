@@ -27,6 +27,12 @@ class Program
             }
             // LastOrDefaultAsync: a workflow that completes without values is not an error
             await builder.Workflow.BuildObservable().LastOrDefaultAsync();
+            // Bonsai's file writers (CsvWriter, FileSink) write and close their files on a
+            // background EventLoopScheduler (Bonsai.System/IO/WriterDisposable.cs). When the
+            // workflow completes, closing is only *scheduled*; exiting now would kill that
+            // thread before it flushes, leaving empty files. The editor never exits here, so
+            // give the writers time to finish, as a running Bonsai would.
+            await Task.Delay(TimeSpan.FromSeconds(2));
             return 0;
         }
         catch (Exception ex)

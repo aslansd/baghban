@@ -8,6 +8,8 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>disable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
+    <!-- also run when only a newer .NET (9, 10, ...) is installed -->
+    <RollForward>Major</RollForward>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Bonsai.System" Version="2.9.*" />
