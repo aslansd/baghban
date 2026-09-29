@@ -94,7 +94,7 @@ the two copies of the included module are told apart.
 | `RECURSIVE_INCLUDE` | error | Do workflows include each other in a cycle? |
 | `INVALID_INCLUDE` | error | Is an included file not a readable workflow? |
 | `DISABLED_WRITER` | warning | Is a writer (or a group holding one) disabled, so nothing is recorded? |
-| `UNNAMED_SUBJECT` | warning | Does a `SubscribeSubject` have no name, so it silently produces nothing? (An unnamed `MulticastSubject` passes values through: info.) |
+| `UNNAMED_SUBJECT` | error | Does a `SubscribeSubject` without a name feed other nodes? It builds to nothing, so they get no input and Bonsai refuses to build them. (With nothing after it, or for an unnamed `MulticastSubject`: info.) |
 | `APPENDS_ACROSS_RUNS` | info | Does every run append to the same file, and repeat the CSV header mid-file? |
 | `UNUSED_SUBJECT` | info | Is a subject declared but never subscribed to? |
 
@@ -186,10 +186,10 @@ exists and stay quiet on the nearest workflow without it (see `TESTING.md`).
 `survey/` runs baghban over 32 public repositories (Bonsai's own, the Allen
 Institute's foraging tasks, SWC's Aeon, IBL's rig, NeuroGears' vestibular VR
 and others): 453 entry workflows, 61,915 nodes. Every error was read by
-hand. **None of the 27 was a false alarm**: 12 point at real faults (4
-distinct problems, including missing include files in two published rigs),
-13 are documentation snippets that are never meant to build alone, and 2 are
-correct but likely harmless. Reading the first run's results is also where
+hand. **None of the 29 was a false alarm**: 13 point at real faults (5
+distinct problems, including missing include files in two published rigs
+and a rig workflow that cannot build), 14 are documentation snippets that
+are never meant to build alone, and 2 are correct but likely harmless. Reading the first run's results is also where
 the module conventions above, two bugs and one wrong claim came from; see
 `survey/SURVEY.md`.
 
@@ -217,10 +217,11 @@ into a package's source folder.
 ### See a workflow without the editor
 
 ```
-baghban render rig/foraging.bonsai && open foraging.html
+baghban render rig/foraging.bonsai && open rig/foraging.html
 ```
 
-writes one HTML page with the graph (nested workflows as boxes, disabled nodes
+writes one HTML page next to the workflow (or wherever `-o` says, and prints
+the full path) with the graph (nested workflows as boxes, disabled nodes
 dashed, nodes with findings outlined in red or orange), the findings table and
 a text outline. It loads the Mermaid script from a CDN, so it needs a network
 connection to draw. `-f mermaid` output also renders directly in GitHub
@@ -322,9 +323,10 @@ Research prototype, honestly labelled.
 - On 453 published workflows, no error was a false alarm (`survey/SURVEY.md`).
   Warnings were sampled, not read in full, and nothing measures what baghban
   misses.
-- No finding has yet been confirmed by running a workflow. `confirm/` does
-  that with the released Bonsai packages on .NET 8, on macOS included; its
-  logic is tested, but it has not yet been run against real Bonsai.
+- `confirm/` runs the findings on the real Bonsai runtime (.NET 8, macOS
+  included). The first run on a Mac confirmed 8 of 12 cases; the other four
+  exposed a flaw in the kit and a wrong claim about unnamed subjects, both
+  fixed (`confirm/README.md`). The fixed kit has not been re-run yet.
 - Includes into packages from other repositories (BonVision,
   AllenNeuralDynamics.Core, Bonsai.Harp, ...) are reported as not checked,
   unless you point `--resource-root` at the package source. This is the
@@ -336,8 +338,9 @@ Research prototype, honestly labelled.
 
 ```
 pip install -e ".[dev]"
-pytest -q                         # 132 tests, no network, no .NET
+pytest -q                         # 134 tests, no network, no .NET
 python confirm/confirm.py         # needs .NET 8: confirm findings with real Bonsai
+                                  #   (install and troubleshooting: confirm/README.md)
 python survey/run_survey.py DIR   # clone and check the published repositories
 ```
 

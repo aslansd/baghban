@@ -1,13 +1,14 @@
 # Roadmap
 
-Status as of 0.2.0. Evidence for the ordering is in `survey/SURVEY.md`.
+Status as of 0.2.1. Evidence for the ordering is in `survey/SURVEY.md`.
 
-1. **Confirm the findings by running them.** *Kit ready, not yet run.*
-   `confirm/confirm.py` runs 12 cases (every writer finding with its quiet
-   twin, plus a dangling and an unnamed subject) with the released Bonsai
-   packages on .NET 8 and compares what happens with what baghban said. It
-   uses a small runner instead of `Bonsai.Player`, which only references
-   `Bonsai.Core`. Next: run it on macOS and record the results here.
+1. **Confirm the findings by running them.** *First run done; re-run
+   pending.* On a Mac (Intel, .NET 8.0.425, Bonsai 2.9 packages) 8 of 12
+   cases were confirmed. The 4 others exposed a kit flaw (the runner exited
+   before Bonsai's background writers flushed) and a wrong claim (an unnamed
+   `SubscribeSubject` breaks the build of the nodes after it); both fixed,
+   with a 13th case added. Next: re-run and record 13/13 or the next
+   surprise in `confirm/README.md`.
 2. **Measure on real rigs.** *Done for errors.* 32 repositories, 453 entry
    workflows: no false alarms among 27 errors after the module conventions
    were added. Open: read the 57 `DISABLED_WRITER` warnings in full; add

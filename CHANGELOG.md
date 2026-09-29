@@ -1,6 +1,28 @@
 # Changelog
 
-## 0.2.0 (unreleased)
+## 0.2.1 (unreleased)
+
+Fixes from the first `confirm/` run on real Bonsai (macOS, Intel, .NET 8.0.425,
+Bonsai 2.9 packages), which confirmed 8 of 12 cases.
+
+- **Fixed a wrong claim:** an unnamed `SubscribeSubject` with nodes after it
+  makes Bonsai refuse to build those nodes (it builds to an empty expression,
+  which Bonsai does not pass on). `UNNAMED_SUBJECT` is now an error in that
+  case and info otherwise; the survey gains one true fault (a Berkeley rig
+  workflow that cannot build).
+- **Fixed the kit:** the runner exited before Bonsai's background file
+  writers flushed, leaving empty files; it now waits two seconds. The
+  overwrite judgement requires real rows in both runs. New case
+  `unnamed_subscribe_alone`; 13 cases.
+- Runner runs on newer .NET too (`RollForward=Major`).
+- `render` writes the HTML next to the workflow by default and prints the
+  full path (two rigs' `foraging.bonsai` no longer overwrite each other's page).
+- `confirm/README.md`: installing .NET on a Mac (and why not Homebrew on
+  Intel), the virtual-environment PATH pitfall, running and reading the kit,
+  results of every run, troubleshooting.
+- 134 tests.
+
+## 0.2.0 (2026-09-28)
 
 From running baghban over 32 published repositories (`survey/`) and reading
 every error by hand.
@@ -18,7 +40,8 @@ every error by hand.
   the highest folder with a `.sln`.
 - **Fixed:** an unnamed `SubscribeSubject` was reported as a build error; Bonsai
   builds it as an empty sequence (and an unnamed `MulticastSubject` as a
-  pass-through). New finding `UNNAMED_SUBJECT`: warning, or info for multicast.
+  pass-through). New finding `UNNAMED_SUBJECT` (corrected again in 0.2.1,
+  after running it on real Bonsai).
 - **Fixed:** `.bonsai` environment *folders* were collected as workflow files.
 - **Fixed:** workflows that include each other were all skipped in folder mode.
 - `SILENT_OVERWRITE` with an externalized file name is now info (launchers
@@ -28,9 +51,8 @@ every error by hand.
 - `confirm/`: harness that runs the findings' cases with the real Bonsai
   runtime on .NET 8 (roadmap item 1). Not yet run on real Bonsai.
 - `survey/`: reproducible survey script, repository list and write-up.
-- 132 tests.
 
-## 0.1.0 (unreleased)
+## 0.1.0 (2026-09-28)
 
 First version.
 
