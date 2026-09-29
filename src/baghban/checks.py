@@ -40,7 +40,7 @@ FINDINGS = {
     "RECURSIVE_INCLUDE": ("error", "workflows include each other in a cycle"),
     "INVALID_INCLUDE": ("error", "an included file is not a readable workflow"),
     "DISABLED_WRITER": ("warning", "a writer is disabled, so nothing is recorded to its file"),
-    "UNNAMED_SUBJECT": ("warning", "a SubscribeSubject without a Name silently produces nothing"),
+    "UNNAMED_SUBJECT": ("error", "a SubscribeSubject without a Name gives the nodes after it no input"),
     "APPENDS_ACROSS_RUNS": ("info", "every run appends to the same file"),
     "UNUSED_SUBJECT": ("info", "a subject is declared but nothing subscribes to it"),
 }
@@ -232,11 +232,25 @@ def check_subjects(doc: Document, report: Report) -> None:
             # Bonsai builds these without error: an unnamed SubscribeSubject becomes an
             # empty sequence, an unnamed MulticastSubject passes values through.
             if node.type.name == "SubscribeSubject":
-                report.findings.append(_finding(
-                    "UNNAMED_SUBJECT", node,
-                    "This SubscribeSubject has no subject Name, so it produces no values: "
-                    "everything downstream of it stays silent, without an error.",
-                    hint="Pick the subject to subscribe to, or delete the node."))
+                # It builds to an empty expression, and Bonsai does not pass empty
+                # expressions on (ExpressionBuilderGraphExtensions.cs): the nodes after it
+                # get no input. Confirmed on Bonsai 2.9: a CsvWriter after it fails with
+                # "requires at least 1 input connection(s)".
+                after = [s for s in node.successors() if not s.disabled]
+                if after:
+                    report.findings.append(_finding(
+                        "UNNAMED_SUBJECT", node,
+                        "This SubscribeSubject has no subject Name, so it builds to nothing "
+                        "and the nodes connected after it ("
+                        + ", ".join(s.label() for s in after[:3])
+                        + ") receive no input from it. Bonsai fails to build a node that "
+                        "needs that input, which is most nodes.",
+                        hint="Pick the subject to subscribe to, or delete the node."))
+                else:
+                    report.findings.append(_finding(
+                        "UNNAMED_SUBJECT", node,
+                        "This SubscribeSubject has no subject Name and nothing connected "
+                        "after it, so it does nothing.", severity="info"))
             else:
                 report.findings.append(_finding(
                     "UNNAMED_SUBJECT", node,

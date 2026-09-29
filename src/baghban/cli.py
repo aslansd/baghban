@@ -126,10 +126,11 @@ def cmd_render(args) -> int:
         text = mermaid(doc, check(doc).findings)
     out = args.output
     if out is None and fmt == "html":
-        out = Path(args.workflow).with_suffix(".html").name
+        # next to the workflow: two rigs' foraging.bonsai no longer overwrite each other
+        out = Path(args.workflow).with_suffix(".html")
     if out:
         Path(out).write_text(text, encoding="utf-8")
-        print(f"wrote {out}")
+        print(f"wrote {Path(out).resolve()}")
     else:
         print(text)
     return 0
@@ -192,7 +193,7 @@ def build_parser() -> argparse.ArgumentParser:
     r = with_roots(sub.add_parser("render", help="draw the workflow"))
     r.add_argument("workflow")
     r.add_argument("-f", "--format", choices=("html", "mermaid", "dot"), default="html")
-    r.add_argument("-o", "--output", help="output file (html defaults to WORKFLOW.html)")
+    r.add_argument("-o", "--output", help="output file (html defaults to the workflow's name with .html, next to it)")
     r.set_defaults(func=cmd_render)
 
     d = with_roots(sub.add_parser("diff", help="semantic diff of two workflows"))
