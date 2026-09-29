@@ -1,0 +1,252 @@
+[
+  {
+    "case": "overwrite_across_runs",
+    "baghban": [
+      "SILENT_OVERWRITE"
+    ],
+    "confirmed": true,
+    "observed": "run 2 exit 0; 1 file(s) after 2 runs; rows per run [3] then [3]; content replaced: True",
+    "note": "",
+    "runs": [
+      {
+        "exit": 0,
+        "error": "",
+        "files": [
+          "data.csv"
+        ]
+      },
+      {
+        "exit": 0,
+        "error": "",
+        "files": [
+          "data.csv"
+        ]
+      }
+    ]
+  },
+  {
+    "case": "overwrite_with_timestamp_suffix",
+    "baghban": [],
+    "confirmed": true,
+    "observed": "run 2 exit 0; 2 file(s) after 2 runs",
+    "note": "",
+    "runs": [
+      {
+        "exit": 0,
+        "error": "",
+        "files": [
+          "data2026-09-29T09_09_45.csv"
+        ]
+      },
+      {
+        "exit": 0,
+        "error": "",
+        "files": [
+          "data2026-09-29T09_09_45.csv",
+          "data2026-09-29T09_09_48.csv"
+        ]
+      }
+    ]
+  },
+  {
+    "case": "no_overwrite_second_run_stops",
+    "baghban": [],
+    "confirmed": true,
+    "observed": "run 2 exit 1 (IOException: The file 'data.csv' already exists.); data kept: True",
+    "note": "loud failure, no data lost: why baghban stays quiet here",
+    "runs": [
+      {
+        "exit": 0,
+        "error": "",
+        "files": [
+          "data.csv"
+        ]
+      },
+      {
+        "exit": 1,
+        "error": "IOException: The file 'data.csv' already exists.",
+        "files": [
+          "data.csv"
+        ]
+      }
+    ]
+  },
+  {
+    "case": "overwrite_per_element",
+    "baghban": [
+      "SILENT_OVERWRITE"
+    ],
+    "confirmed": true,
+    "observed": "exit 0; lines in file: 1 of 3 elements",
+    "note": "",
+    "runs": [
+      {
+        "exit": 0,
+        "error": "",
+        "files": [
+          "trial.csv"
+        ]
+      }
+    ]
+  },
+  {
+    "case": "writer_after_loop",
+    "baghban": [],
+    "confirmed": true,
+    "observed": "exit 0; lines in file: 3 of 3 elements",
+    "note": "",
+    "runs": [
+      {
+        "exit": 0,
+        "error": "",
+        "files": [
+          "trials.csv"
+        ]
+      }
+    ]
+  },
+  {
+    "case": "fails_on_repeat",
+    "baghban": [
+      "FAILS_ON_REPEAT"
+    ],
+    "confirmed": true,
+    "observed": "exit 1 (IOException: The file 'trial.csv' already exists.)",
+    "note": "",
+    "runs": [
+      {
+        "exit": 1,
+        "error": "IOException: The file 'trial.csv' already exists.",
+        "files": [
+          "trial.csv"
+        ]
+      }
+    ]
+  },
+  {
+    "case": "duplicate_output",
+    "baghban": [
+      "DUPLICATE_OUTPUT"
+    ],
+    "confirmed": true,
+    "observed": "exit 1 (IOException: The file 'same.csv' already exists.); 1 file(s), 0 of 6 rows",
+    "note": "",
+    "runs": [
+      {
+        "exit": 1,
+        "error": "IOException: The file 'same.csv' already exists.",
+        "files": [
+          "same.csv"
+        ]
+      }
+    ]
+  },
+  {
+    "case": "distinct_outputs",
+    "baghban": [],
+    "confirmed": true,
+    "observed": "exit 0; 2 file(s) with [3, 3] rows",
+    "note": "",
+    "runs": [
+      {
+        "exit": 0,
+        "error": "",
+        "files": [
+          "a.csv",
+          "b.csv"
+        ]
+      }
+    ]
+  },
+  {
+    "case": "disabled_writer",
+    "baghban": [
+      "DISABLED_WRITER"
+    ],
+    "confirmed": true,
+    "observed": "exit 0; files: none",
+    "note": "",
+    "runs": [
+      {
+        "exit": 0,
+        "error": "",
+        "files": []
+      }
+    ]
+  },
+  {
+    "case": "appends_across_runs",
+    "baghban": [
+      "APPENDS_ACROSS_RUNS"
+    ],
+    "confirmed": true,
+    "observed": "after 2 runs: 1 file, 6 rows (3 per run)",
+    "note": "",
+    "runs": [
+      {
+        "exit": 0,
+        "error": "",
+        "files": [
+          "data.csv"
+        ]
+      },
+      {
+        "exit": 0,
+        "error": "",
+        "files": [
+          "data.csv"
+        ]
+      }
+    ]
+  },
+  {
+    "case": "dangling_subject",
+    "baghban": [
+      "DANGLING_SUBJECT"
+    ],
+    "confirmed": true,
+    "observed": "exit 1 (ArgumentException: The specified variable 'Nope' was not found in the )",
+    "note": "",
+    "runs": [
+      {
+        "exit": 1,
+        "error": "ArgumentException: The specified variable 'Nope' was not found in the current build context. (Parameter 'name')",
+        "files": []
+      }
+    ]
+  },
+  {
+    "case": "unnamed_subscribe",
+    "baghban": [
+      "UNNAMED_SUBJECT"
+    ],
+    "confirmed": true,
+    "observed": "exit 1 (WorkflowBuildException: Unsupported number of arguments. This node req)",
+    "note": "the node after it gets no input: Bonsai refuses to build (first Mac run)",
+    "runs": [
+      {
+        "exit": 1,
+        "error": "WorkflowBuildException: Unsupported number of arguments. This node requires at least 1 input connection(s).",
+        "files": []
+      }
+    ]
+  },
+  {
+    "case": "unnamed_subscribe_alone",
+    "baghban": [
+      "UNNAMED_SUBJECT"
+    ],
+    "confirmed": true,
+    "observed": "exit 0; rows written: [3]",
+    "note": "nothing after it: builds, and the rest of the workflow runs",
+    "runs": [
+      {
+        "exit": 0,
+        "error": "",
+        "files": [
+          "out.csv"
+        ]
+      }
+    ]
+  }
+]
