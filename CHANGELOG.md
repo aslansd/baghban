@@ -1,6 +1,18 @@
 # Changelog
 
-## 0.2.1 (unreleased)
+## Unreleased (documentation only)
+
+- `confirm/README.md`: second run on real Bonsai recorded: 13/13 cases
+  confirmed (4 Oct 2026, macOS, Bonsai.Core/System 2.9.1, .NET 8.0.425),
+  with every case's outcome and Bonsai's messages, the exact package
+  versions of both runs, and what the result does and does not establish.
+- README, ROADMAP, TESTING: roadmap item 1 marked done on macOS; Windows run
+  added as the open part.
+- `survey/survey-results.json` regenerated with baghban 0.2.1 (it was the
+  0.2.0 output, while SURVEY.md already quoted 0.2.1 numbers); same 32
+  repository commits, same counts as SURVEY.md.
+
+## 0.2.1 (2026-09-29)
 
 Fixes from the first `confirm/` run on real Bonsai (macOS, Intel, .NET 8.0.425,
 Bonsai 2.9 packages), which confirmed 8 of 12 cases.

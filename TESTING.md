@@ -73,7 +73,9 @@ example rigs.
 ## Beyond the unit tests
 
 - `python confirm/confirm.py` runs 13 cases with the real Bonsai runtime
-  (needs .NET 8). `confirm/README.md` explains installing .NET on a Mac,
-  running the kit, reading its output, and records every run's results.
+  (needs .NET 8). Last run: 13/13 confirmed (4 Oct 2026, macOS, Bonsai 2.9.1
+  packages). `confirm/README.md` explains installing .NET on a Mac, running
+  the kit, reading its output, and records every run's results.
 - `python survey/run_survey.py DIR` re-runs the survey of published
-  repositories; `survey/SURVEY.md` records the last run and its hand review.
+  repositories; `survey/SURVEY.md` records the last run and its hand review,
+  and `survey/survey-results.json` holds that run's full output.

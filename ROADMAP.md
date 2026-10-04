@@ -2,13 +2,13 @@
 
 Status as of 0.2.1. Evidence for the ordering is in `survey/SURVEY.md`.
 
-1. **Confirm the findings by running them.** *First run done; re-run
-   pending.* On a Mac (Intel, .NET 8.0.425, Bonsai 2.9 packages) 8 of 12
-   cases were confirmed. The 4 others exposed a kit flaw (the runner exited
-   before Bonsai's background writers flushed) and a wrong claim (an unnamed
-   `SubscribeSubject` breaks the build of the nodes after it); both fixed,
-   with a 13th case added. Next: re-run and record 13/13 or the next
-   surprise in `confirm/README.md`.
+1. **Confirm the findings by running them.** *Done on macOS.* Second run
+   (4 Oct 2026, baghban 0.2.1, Bonsai 2.9.1 packages, .NET 8, Intel Mac):
+   13/13 cases confirmed, after the first run (8/12) exposed a kit flaw and
+   a wrong claim about unnamed subjects, both fixed. Open: run the same kit
+   on Windows, where rigs actually run (file locking differs, which matters
+   most for `DUPLICATE_OUTPUT`), and add a case whenever a finding is added
+   or its message changes.
 2. **Measure on real rigs.** *Done for errors.* 32 repositories, 453 entry
    workflows: no false alarms among 27 errors after the module conventions
    were added. Open: read the 57 `DISABLED_WRITER` warnings in full; add

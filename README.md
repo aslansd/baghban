@@ -180,6 +180,8 @@ must agree with Bonsai on every one:
 On the file-writer findings, where Bonsai has no test fixtures, each finding
 is tested in both directions on paired workflows: it must fire where the fault
 exists and stay quiet on the nearest workflow without it (see `TESTING.md`).
+And every finding has been run on the real Bonsai runtime: 13 of 13 cases
+behaved as predicted (`confirm/`).
 
 ### On published rigs
 
@@ -323,10 +325,12 @@ Research prototype, honestly labelled.
 - On 453 published workflows, no error was a false alarm (`survey/SURVEY.md`).
   Warnings were sampled, not read in full, and nothing measures what baghban
   misses.
-- `confirm/` runs the findings on the real Bonsai runtime (.NET 8, macOS
-  included). The first run on a Mac confirmed 8 of 12 cases; the other four
-  exposed a flaw in the kit and a wrong claim about unnamed subjects, both
-  fixed (`confirm/README.md`). The fixed kit has not been re-run yet.
+- **Confirmed on the real Bonsai runtime:** `confirm/` runs 13 cases (every
+  finding baghban reports about writers and subjects, with a quiet control
+  for each) on Bonsai 2.9.1 packages under .NET 8. On macOS all 13 behaved
+  as baghban predicts. The first run (8/12) exposed a flaw in the kit and a
+  wrong claim about unnamed subjects, both fixed in 0.2.1
+  (`confirm/README.md`). Not yet run on Windows, where rigs run.
 - Includes into packages from other repositories (BonVision,
   AllenNeuralDynamics.Core, Bonsai.Harp, ...) are reported as not checked,
   unless you point `--resource-root` at the package source. This is the
