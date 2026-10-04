@@ -1,5 +1,5 @@
 {
- "baghban": "0.2.0",
+ "baghban": "0.2.1",
  "commits": {
   "bonsai-rx/docs": "3d06647c30f5657d5572f555cc6a858f57395ff6",
   "bonsai-rx/harp": "f582c4ff9a35919116f7c81cbbc119f4bd7d12f6",
@@ -558,8 +558,8 @@
    "findings": [
     {
      "code": "UNNAMED_SUBJECT",
-     "severity": "warning",
-     "message": "This SubscribeSubject has no subject Name, so it produces no values: everything downstream of it stays silent, without an error.",
+     "severity": "error",
+     "message": "This SubscribeSubject has no subject Name, so it builds to nothing and the nodes connected after it (VideoWriter) receive no input from it. Bonsai fails to build a node that needs that input, which is most nodes.",
      "location": "SubscribeSubject #0",
      "file": "/tmp/survey/bonsai-rx_docs/workflows/language-subject-subscribe.bonsai",
      "node": [
@@ -578,14 +578,14 @@
    "findings": [
     {
      "code": "UNNAMED_SUBJECT",
-     "severity": "warning",
-     "message": "This SubscribeSubject has no subject Name, so it produces no values: everything downstream of it stays silent, without an error.",
+     "severity": "info",
+     "message": "This SubscribeSubject has no subject Name and nothing connected after it, so it does nothing.",
      "location": "SubscribeSubject #5",
      "file": "/tmp/survey/bonsai-rx_docs/workflows/language-subject-types.bonsai",
      "node": [
       5
      ],
-     "hint": "Pick the subject to subscribe to, or delete the node."
+     "hint": ""
     },
     {
      "code": "UNNAMED_SUBJECT",
@@ -4473,8 +4473,8 @@
    "findings": [
     {
      "code": "UNNAMED_SUBJECT",
-     "severity": "warning",
-     "message": "This SubscribeSubject has no subject Name, so it produces no values: everything downstream of it stays silent, without an error.",
+     "severity": "error",
+     "message": "This SubscribeSubject has no subject Name, so it builds to nothing and the nodes connected after it (PropertyMapping) receive no input from it. Bonsai fails to build a node that needs that input, which is most nodes.",
      "location": "NestedWorkflow 'Timestamp & Save Events' #299 > SubscribeSubject #7",
      "file": "/tmp/survey/jtdbod_restaurant-row-berkeley/5s-wait_80pct-rewarded_EXPERIMENTAL.bonsai",
      "node": [

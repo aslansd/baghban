@@ -3,8 +3,10 @@
 Roadmap item 2. The question: on workflows people actually publish, how often
 do the findings fire, and how often are they right?
 
-**Run:** September 2026, baghban 0.2.0; numbers updated with 0.2.1, after
-the first `confirm/` run corrected `UNNAMED_SUBJECT`. `python survey/run_survey.py WORKDIR`.
+**Runs:** September 2026 with baghban 0.2.0; re-run on 4 Oct 2026 with
+baghban 0.2.1, after the first `confirm/` run corrected `UNNAMED_SUBJECT`.
+The numbers below are from the 0.2.1 run, on the same 32 repository commits;
+its full output is `survey-results.json` in this folder. `python survey/run_survey.py WORKDIR`.
 32 repositories listed in `repos.txt`; 17 contain workflows. 630 `.bonsai`
 files; 453 entry workflows checked (the rest through the workflows that
 include them); 61,915 nodes. Every error was then read by hand, together with
@@ -61,7 +63,8 @@ Reading the errors also exposed two bugs and one wrong claim in baghban
   passed on, so a node connected after it gets no input and Bonsai refuses to
   build it. `UNNAMED_SUBJECT` is now an error when nodes follow it, info when
   none do. Reading the source alone got this half right; running it settled
-  it.
+  it, and the second `confirm/` run confirmed both behaviours (an error with
+  a node after it, a normal run without).
 
 Result: 202 → 13 `DANGLING_SUBJECT` errors.
 
@@ -96,7 +99,7 @@ likely harmless**, or **false alarm**.
 | 2 | Bonsai.AllenNeuralDynamics docs: two examples include `AllenNeuralDynamics.AindManipulator:AindManipulator.bonsai`; the package only contains `AindManipulatorGui.bonsai`, apparently a rename the examples did not follow | **true fault** (in documentation) |
 | 1 | neurogears/vestibular-vr `GNGTemplate.bonsai`: `CsvWriter 'responses.csv'`, `Overwrite=True`, `Suffix=None` | **true fault**: each run replaces the last run's responses, and a template is copied into new tasks |
 | 13 | `docs/workflows` in bonsai-rx/docs (5), Bonsai.AllenNeuralDynamics (5) and bonsai-rx/machinelearning (3): diagram snippets that subscribe to subjects declared nowhere | **true, by design**: snippets for rendering documentation figures, never built alone. `--exclude 'docs/*'` skips them |
-| 1 | restaurant-row-berkeley `5s-wait_80pct-rewarded_EXPERIMENTAL.bonsai`: an unnamed `SubscribeSubject` inside `Timestamp & Save Events` feeds a `PropertyMapping`, which needs exactly one input | **true fault**: the workflow cannot build (confirmed behaviour, `confirm/`) |
+| 1 | restaurant-row-berkeley `5s-wait_80pct-rewarded_EXPERIMENTAL.bonsai`: an unnamed `SubscribeSubject` inside `Timestamp & Save Events` feeds a `PropertyMapping`, which needs exactly one input | **true fault**: the workflow cannot build. The mechanism was confirmed on real Bonsai (`confirm/`, case `unnamed_subscribe`, with a `CsvWriter` after it); this exact workflow was not run |
 | 1 | bonsai-rx/docs `language-subject-subscribe.bonsai`: unnamed `SubscribeSubject` feeding a `VideoWriter` | **true, by design**: a documentation snippet |
 | 2 | iblrig `ReceptiveFieldMappingStim.bonsai` (two task copies): `MatrixWriter 'NoiseLocations.bin'`, `Overwrite=True`, `Suffix=None` | **true, likely harmless**: the file is replaced every session, but IBL's launcher collects the stimulus data through a different, externalized file name and nothing in the repository reads `NoiseLocations.bin` |
 
@@ -142,5 +145,5 @@ Resolving these (roadmap item 3) is the largest remaining gain in coverage.
 - Precision is estimated on errors only. Warnings were sampled, not read in
   full.
 - Recall is not measured: nothing here says which faults baghban misses.
-  The confirmation harness (`confirm/`) addresses correctness of what it
-  reports, not what it misses.
+  The confirmation kit (`confirm/`, 13/13 on real Bonsai) addresses whether
+  what baghban reports actually happens, not what it misses.
