@@ -8,8 +8,8 @@ when what Bonsai did matches what baghban said, `NO` when it does not.
 
 A `NO` is not a failure of the kit. It means baghban's model of Bonsai (or
 the kit itself) is wrong somewhere, which is exactly what the kit is for: the
-first run on a Mac produced four, and each one led to a fix (see
-[Results](#results)).
+first run on a Mac produced four, each one led to a fix, and the second run
+confirmed all 13 cases (see [Results](#results)).
 
 ## 1. Install .NET 8
 
@@ -170,9 +170,14 @@ seconds before exiting (next section).
 
 ## Results
 
-### First run: macOS 26, Intel, .NET 8.0.425, Bonsai 2.9 packages (29 Sep 2026)
+### First run: 29 Sep 2026, baghban 0.2.0, 8/12 confirmed
 
-**8/12 confirmed.** The eight confirmations include every error baghban
+Setup for both runs: macOS 26 (Tahoe) on an Intel MacBook Pro, .NET SDK
+8.0.425 installed with `dotnet-install.sh`, runner targeting `net8.0`, NuGet
+packages Bonsai.Core 2.9.1, Bonsai.System 2.9.1 and System.Reactive 6.0.1
+(the versions `2.9.*` resolved to, recorded in `runner/obj/project.assets.json`).
+
+The eight confirmations include every error baghban
 reports for writers inside loops, duplicate outputs and dangling subjects,
 with Bonsai's own messages (`IOException: The file 'trial.csv' already
 exists.`, `ArgumentException: The specified variable 'Nope' was not found in
@@ -200,10 +205,49 @@ The four `NO`s, and what they taught:
   a Berkeley rig workflow has an unnamed subscriber feeding a
   `PropertyMapping`, so it cannot build (`survey/SURVEY.md`).
 
-### Second run
+### Second run: 4 Oct 2026, baghban 0.2.1, 13/13 confirmed
 
-Pending: re-run with the fixed runner and record the result here. Expected:
-13/13.
+Same machine and packages, with the fixed runner (waits for Bonsai's writers
+to close their files) and the corrected `UNNAMED_SUBJECT`. Every finding
+baghban reports in these cases happened as predicted on the real Bonsai
+runtime, and every quiet control ran without loss. The full record is
+`confirm/results.json`.
+
+| Case | baghban | Confirmed | What Bonsai did |
+| --- | --- | --- | --- |
+| `overwrite_across_runs` | `SILENT_OVERWRITE` | yes | run 2 exit 0; 1 file(s) after 2 runs; rows per run [3] then [3]; content replaced: True |
+| `overwrite_with_timestamp_suffix` | quiet | yes | run 2 exit 0; 2 file(s) after 2 runs |
+| `no_overwrite_second_run_stops` | quiet | yes | run 2 exit 1 (IOException: The file 'data.csv' already exists.); data kept: True |
+| `overwrite_per_element` | `SILENT_OVERWRITE` | yes | exit 0; lines in file: 1 of 3 elements |
+| `writer_after_loop` | quiet | yes | exit 0; lines in file: 3 of 3 elements |
+| `fails_on_repeat` | `FAILS_ON_REPEAT` | yes | exit 1 (IOException: The file 'trial.csv' already exists.) |
+| `duplicate_output` | `DUPLICATE_OUTPUT` | yes | exit 1 (IOException: The file 'same.csv' already exists.); 1 file(s), 0 of 6 rows |
+| `distinct_outputs` | quiet | yes | exit 0; 2 file(s) with [3, 3] rows |
+| `disabled_writer` | `DISABLED_WRITER` | yes | exit 0; files: none |
+| `appends_across_runs` | `APPENDS_ACROSS_RUNS` | yes | after 2 runs: 1 file, 6 rows (3 per run) |
+| `dangling_subject` | `DANGLING_SUBJECT` | yes | exit 1: build refused, subject not found (message below) |
+| `unnamed_subscribe` | `UNNAMED_SUBJECT` | yes | exit 1: build refused, the node after it has no input (message below) |
+| `unnamed_subscribe_alone` | `UNNAMED_SUBJECT` | yes | exit 0; rows written: [3] |
+
+Bonsai's own messages, in full:
+
+- `fails_on_repeat`: `IOException: The file 'trial.csv' already exists.` on the second element, ending the session.
+- `duplicate_output`: `IOException: The file 'same.csv' already exists.` The second writer refused the file the first had created; no rows survived.
+- `dangling_subject`: `ArgumentException: The specified variable 'Nope' was not found in the current build context. (Parameter 'name')`
+- `unnamed_subscribe`: `WorkflowBuildException: Unsupported number of arguments. This node requires at least 1 input connection(s).`
+
+What this run establishes, and what it does not:
+
+- **Established:** for each finding, on Bonsai 2.9.1 packages, the behaviour
+  baghban's message describes actually happens: files are replaced, sessions
+  end on the second trial, builds fail with the stated cause, disabled
+  writers write nothing, and each quiet control behaves normally.
+- **Not established:** that every workflow baghban flags behaves like these
+  minimal cases (the survey's hand review covers that question for published
+  rigs), behaviour on Windows, where rigs actually run (the code paths are
+  the same .NET libraries, but file locking differs between operating
+  systems, which matters most for `DUPLICATE_OUTPUT`), and other Bonsai
+  versions.
 
 ## If a case says NO
 
