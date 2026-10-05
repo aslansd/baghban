@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "baghban"
-version = "0.2.1"
+version = "0.2.2"
 description = "Check, draw and compare Bonsai workflows on any machine, before the rig runs."
 readme = "README.md"
 requires-python = ">=3.10"
