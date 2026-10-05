@@ -1,6 +1,14 @@
 # Changelog
 
-## Unreleased (documentation only)
+## 0.2.2 (2026-10-05)
+
+- SURVEY.md, README: before reporting the survey's faults upstream, each was
+  checked against its repository's history. The 8 BonVision findings in
+  bonsai-rx/docs are reclassified from "true fault" to "true, by design":
+  the tutorial has readers create the missing extension. The Allen module
+  was deleted (2026-01-29), not renamed. Now 5 real-fault findings (4
+  problems), 22 by design, 2 likely harmless; still no false alarms. Links
+  to every affected file at the surveyed commit.
 
 - `confirm/README.md`: second run on real Bonsai recorded: 13/13 cases
   confirmed (4 Oct 2026, macOS, Bonsai.Core/System 2.9.1, .NET 8.0.425),

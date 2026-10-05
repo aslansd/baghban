@@ -188,12 +188,14 @@ behaved as predicted (`confirm/`).
 `survey/` runs baghban over 32 public repositories (Bonsai's own, the Allen
 Institute's foraging tasks, SWC's Aeon, IBL's rig, NeuroGears' vestibular VR
 and others): 453 entry workflows, 61,915 nodes. Every error was read by
-hand. **None of the 29 was a false alarm**: 13 point at real faults (5
-distinct problems, including missing include files in two published rigs
-and a rig workflow that cannot build), 14 are documentation snippets that
-are never meant to build alone, and 2 are correct but likely harmless. Reading the first run's results is also where
-the module conventions above, two bugs and one wrong claim came from; see
-`survey/SURVEY.md`.
+hand, and every real fault against its repository's history. **None of the
+29 was a false alarm**: 5 point at real faults (4 distinct problems: a
+deleted module still used by documentation examples, a missing include in a
+rig, a template that overwrites its data, and a workflow that cannot
+build), 22 are correct about files never meant to work alone (documentation
+snippets and tutorial steps), and 2 are correct but likely harmless.
+Reading the first run's results is also where the module conventions above,
+two bugs and one wrong claim came from; see `survey/SURVEY.md`.
 
 ---
 
