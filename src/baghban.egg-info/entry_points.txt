@@ -1,0 +1,2 @@
+[console_scripts]
+baghban = baghban.cli:main

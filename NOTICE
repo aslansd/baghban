@@ -1,0 +1,11 @@
+baghban
+Copyright 2026 Aslan Satary Dizaji
+
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+tests/data/bonsai_upstream/ contains test workflows copied unchanged from
+Bonsai (https://github.com/bonsai-rx/bonsai), Copyright (c) 2011-2025 Bonsai
+Foundation CIC and Contributors, under the MIT licence
+(tests/data/bonsai_upstream/LICENSE). They are used only as test data.
+
+baghban reads the .bonsai file format; it contains no Bonsai code.

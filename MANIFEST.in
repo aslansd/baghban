@@ -1,0 +1,10 @@
+include README.md TESTING.md ROADMAP.md CHANGELOG.md LICENSE NOTICE
+recursive-include tests *.py *.bonsai *.md LICENSE
+recursive-include examples *.py *.bonsai
+global-exclude __pycache__ *.pyc *.html
+recursive-include survey *.py *.md *.txt
+recursive-include confirm *.py *.md *.cs *.csproj
+prune confirm/runner/bin
+prune confirm/runner/obj
+prune confirm/resources/bin
+prune confirm/resources/obj
