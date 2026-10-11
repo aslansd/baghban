@@ -26,13 +26,16 @@ Roadmap item 3: includes into packages from other repositories are read.
 - `check` reports the packages read (`Report.packages`); `deps` lists them;
   `fingerprint --fields` adds `bonsai.package.<id>`.
 - CLI: `--fetch`, `--package`, `--cache` on every command.
+- On case-insensitive file systems (macOS, Windows), a portable environment
+  folder is reported by its name on disk (`bonsai/`, not `Bonsai/`); found
+  by the first test run on a Mac.
 - `confirm/confirm_packages.py` and `confirm/resources/`: compare the reader
   with Microsoft's System.Reflection.Metadata on real Bonsai packages.
 - `survey/run_survey.py --fetch` and `--package-sources`; SURVEY.md: a
   preview with packages read from source, every new error read by hand
   (one new real fault, four false alarms from reading the wrong version).
 - Reader checked against dnfile on 168 real assemblies (identical); dnfile
-  added to the `dev` extra. 195 tests.
+  added to the `dev` extra. 196 tests.
 
 ## 0.2.2 (2026-10-05)
 

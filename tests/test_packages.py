@@ -145,6 +145,28 @@ def test_portable_install_next_to_workflows_is_an_environment(tmp_path, folder):
     assert env.package_of("MyVision") == ("MyVision", "0.9.0", None)
 
 
+def test_portable_folder_is_reported_by_its_name_on_disk(tmp_path, monkeypatch):
+    # simulate a case-insensitive file system (macOS): "Bonsai/..." exists because
+    # the folder "bonsai" does; the environment must name the folder as on disk
+    from baghban import packages as pk
+    (tmp_path / "bonsai").mkdir()
+    (tmp_path / "bonsai" / "Bonsai.config").write_text(
+        '<PackageConfiguration><Packages><Package id="MyVision" version="0.9.0" />'
+        "</Packages></PackageConfiguration>")
+    fold = lambda p: Path(str(p).replace("/Bonsai/", "/bonsai/"))
+    real_is_file, real_read = Path.is_file, pk.read_environment
+    monkeypatch.setattr(Path, "is_file", lambda self: real_is_file(fold(self)))
+
+    def read_through(config):  # opening "Bonsai/Bonsai.config" opens bonsai/'s file
+        env = real_read(fold(config))
+        if env is not None:
+            env.config = config  # ...but the path stays as it was asked for
+        return env
+    monkeypatch.setattr(pk, "read_environment", read_through)
+    env = pk.find_environment(tmp_path / "w.bonsai")
+    assert env.config == tmp_path / "bonsai" / "Bonsai.config"
+
+
 def test_dot_bonsai_wins_at_the_same_level_and_nearest_wins_overall(tmp_path):
     bonsai_config(tmp_path, {"MyVision": "1.0.0"})
     (tmp_path / "Bonsai").mkdir()

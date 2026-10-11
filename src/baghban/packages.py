@@ -148,10 +148,26 @@ def find_environment(start: Path) -> Optional[Environment]:
         for name in ENVIRONMENT_FOLDERS:
             config = folder / name / "Bonsai.config"
             if config.is_file():
+                # on a case-insensitive file system (macOS, Windows) "Bonsai/" also
+                # matches a folder named "bonsai": report the name on disk
+                config = folder / _name_on_disk(folder, name) / "Bonsai.config"
                 env = read_environment(config)
                 if env is not None and (name == ".bonsai" or env.packages):
                     return env
     return None
+
+
+def _name_on_disk(folder: Path, name: str) -> str:
+    try:
+        entries = os.listdir(folder)
+    except OSError:
+        return name
+    if name in entries:
+        return name
+    for entry in entries:
+        if entry.lower() == name.lower():
+            return entry
+    return name
 
 
 # --------------------------------------------------------------------------- resolution

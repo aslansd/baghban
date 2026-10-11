@@ -5,7 +5,7 @@ pip install -e ".[dev]"
 pytest -q
 ```
 
-Expected: `195 passed`, in well under a second. No network, no .NET, no
+Expected: `196 passed`, in well under a second. No network, no .NET, no
 Bonsai installation.
 
 ## What the suite checks

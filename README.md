@@ -406,7 +406,7 @@ Research prototype, honestly labelled.
 
 ```
 pip install -e ".[dev]"
-pytest -q                         # 195 tests, no network, no .NET
+pytest -q                         # 196 tests, no network, no .NET
 python confirm/confirm.py         # needs .NET 8: confirm findings with real Bonsai
                                   #   (install and troubleshooting: confirm/README.md)
 python confirm/confirm_packages.py  # needs .NET 8 and nuget.org: the package reader
