@@ -258,6 +258,50 @@ What this run establishes, and what it does not:
    is wrong, fix it, add the case to `tests/test_confirm_harness.py` and
    `tests/test_checks.py`, and record it here and in the CHANGELOG.
 
+## Confirming the package reader (0.3.0)
+
+baghban 0.3.0 reads embedded workflows out of package DLLs with its own
+pure-Python reader. `confirm_packages.py` checks that reader against
+Microsoft's (`System.Reflection.Metadata`, part of .NET itself, so the
+lister in `resources/` needs no packages) on real Bonsai packages:
+
+```
+python confirm/confirm_packages.py
+```
+
+For each package (by default the eight the survey most often could not
+read: BonVision, AllenNeuralDynamics.Core and .HarpUtils, Aeon.Acquisition,
+Bonsai.Harp, the two Bonsai.ML packages, AllenNeuralDynamics.AindManipulator)
+it downloads the newest version from nuget.org into baghban's cache, takes
+every DLL in it, and compares, DLL by DLL, what both readers see: the
+assembly name, and every resource's name, offset, whether it is embedded,
+and the SHA-256 of its bytes. Then it resolves every embedded `.bonsai`
+resource the way an include would, through baghban's resolver, and checks
+the extracted file is byte-for-byte what .NET read. Expected ending:
+
+```
+8/8 packages identical to .NET. Details: .../confirm/packages-results.json
+```
+
+A package nuget.org does not have is listed as "not checked", not as a
+failure. Other options:
+
+```
+python confirm/confirm_packages.py BonVision=0.9.0 Bonsai.Harp   # specific packages/versions
+python confirm/confirm_packages.py --dry-run                     # baghban's side only, no .NET
+```
+
+The first run builds `resources/` (a few seconds) and downloads the
+packages (tens of MB, once; later runs use the cache).
+
+### Results
+
+Not yet run: nuget.org was not reachable from the machine 0.3.0 was built
+on. There, the reader matched dnfile, an independent Python parser, on 168
+real assemblies from PyPI (a .NET runtime and pythonnet): identical names,
+offsets, bytes and assembly names, including large assemblies with 4-byte
+heaps. Record the first run here.
+
 ## Troubleshooting
 
 | Symptom | Cause and fix |
@@ -267,4 +311,6 @@ What this run establishes, and what it does not:
 | `brew install dotnet` compiles for hours | Intel Mac: use the install script instead and stop the Homebrew process |
 | `You must install or update .NET to run this application` | only a newer .NET is installed and an old copy of the runner is used: delete `confirm/runner/bin` and `confirm/runner/obj` and re-run |
 | `NU1101` / cannot find package `Bonsai.System` | no internet access to nuget.org during the first build |
+| `confirm_packages.py`: "not checked: ... CERTIFICATE_VERIFY_FAILED" | the python.org installer on macOS has no certificates: run `Install Certificates.command` from your Python folder once |
+| `confirm_packages.py`: a package "not checked: ... has no package" | that package is not on nuget.org (it may come from a private feed: set `BAGHBAN_NUGET_SOURCE`) |
 | Every case `NO` with empty files | the runner exited before writers flushed: make sure `runner/Program.cs` has the `Task.Delay` after the workflow completes |
