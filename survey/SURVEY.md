@@ -132,8 +132,8 @@ judgement.
 
 ## What limits coverage
 
-116 entry workflows carry `not checked:` notes, almost all from includes
-into packages that live in other repositories:
+In the 0.2.1 run, 116 entry workflows carried `not checked:` notes, almost
+all from includes into packages that live in other repositories:
 
 | Unresolved embedded includes | Package |
 | ---: | --- |
@@ -143,7 +143,79 @@ into packages that live in other repositories:
 | 18 | Aeon.Acquisition |
 | 17 | Bonsai.Harp |
 
-Resolving these (roadmap item 3) is the largest remaining gain in coverage.
+Roadmap item 3 (baghban 0.3.0) reads these: see the next section.
+
+## Packages: what reading them adds (0.3.0 preview, 11 Oct 2026)
+
+baghban 0.3.0 reads embedded workflows out of package DLLs, at the version
+the rig's environment pins. The real run downloads the packages from
+nuget.org (`python survey/run_survey.py WORKDIR --fetch`). nuget.org was not
+reachable from the machine this preview was made on, so it read each package
+from its **source repository at HEAD** instead (`--package-sources`: the
+survey's own clones, which hold AllenNeuralDynamics.Core, HarpUtils,
+Aeon.Acquisition and Bonsai.Harp, plus BonVision at `785fa61d35`). That is
+an approximation, and the review below shows where it fails. Full output:
+`survey-results-0.3.0-preview.json`.
+
+Both runs are on the repositories as of 11 Oct 2026. Six had moved since
+4 Oct; one of those changes came out of this survey:
+AllenNeuralDynamics/Bonsai.AllenNeuralDynamics merged
+[PR #142](https://github.com/AllenNeuralDynamics/Bonsai.AllenNeuralDynamics/pull/142),
+which fixed the two documentation examples reported in
+[issue #141](https://github.com/AllenNeuralDynamics/Bonsai.AllenNeuralDynamics/issues/141),
+so their two `MISSING_INCLUDE` errors are gone.
+
+| | Without packages | With packages (preview) |
+| --- | ---: | ---: |
+| Nodes checked | 62,696 | 72,047 |
+| Entry workflows with `not checked` notes | 115 | 86 |
+| `DANGLING_SUBJECT` | 13 | 21 |
+| `MISSING_INCLUDE` | 9 | 16 |
+| `SILENT_OVERWRITE` (error) | 3 | 3 |
+| `UNNAMED_SUBJECT` (error) | 2 | 2 |
+| `UNUSED_SUBJECT` (info) | 153 | 177 |
+
+Almost all remaining notes are now intrinsic: file names computed at run
+time (69) and module interfaces, not unreadable packages. Only the two
+`Bonsai.ML` packages stay unread (7 workflows): their current source no
+longer has those assembly names, which a `--fetch` run at the pinned
+version would read.
+
+Of the 193 cross-repository package includes in entry workflows, 166 (86%)
+have their version pinned by an environment; the 27 others (BonVision in
+documentation snippets, the two `Bonsai.ML` packages) would be read at the
+newest version, and every report says so.
+
+### The 15 new errors, read by hand
+
+Each was checked against the history of the package at the version the
+rig pins, not only against the preview's source at HEAD.
+
+| Findings | Where | Verdict |
+| ---: | --- | --- |
+| 3 | iblrig [`Gabor2D_clean.bonsai`](https://github.com/int-brain-lab/iblrig/blob/a0a031e2f9969c192767a255781920028034b7b0/visual_stim/GaborIBLTask/Gabor2D_clean.bonsai) includes `BonVision:Environment.OrthographicViewport`, `ViewingWindow` and `NormalizedViewport`. iblrig pins BonVision 0.9.0 (in `Bonsai/Bonsai.config`), released 2021-03-25; those modules were renamed in March 2020 (`2aec89b`, to `OrthographicView`, `ViewWindow`, `NormalizedView`) | **true fault**: with the version the rig installs, the workflow cannot build. Probably an unused variant: nothing in iblrig's code refers to it, and its sibling `Gabor2D.bonsai` uses the current names |
+| 8 | bonsai-rx/docs BonVision tutorial workflows subscribe to `Draw` (7) or `AngleDistribution` (1), declared nowhere in the file | **true, by design**: the tutorial (`vision-psychophysics.md`, line 33) has the reader declare `Draw` in an earlier step. Hidden before because BonVision was unreadable |
+| 4 | neurogears/vestibular-vr `Main.bonsai` and `TrialLogicTest.bonsai` include `Aeon.Acquisition:LogVideo.bonsai`, not in Aeon.Acquisition's source at HEAD | **false alarm of the preview method**: vestibular-vr pins Aeon.Acquisition 0.5.0-build240227 (in `bonsai/Bonsai.config`); in February 2024 `LogVideo.bonsai` was still in Aeon.Acquisition, and moved to Aeon.Video in July 2024 (`a46d067`). Read at the pinned version, as `--fetch` does, it resolves |
+
+So: no false alarm from baghban's model of Bonsai, one new real fault
+(3 findings), 8 more documentation fragments, and 4 false alarms that come
+from reading a package at the wrong version, which is the case for reading
+the pinned version in the first place.
+
+The review also changed baghban: both pinned environments above are
+*portable* Bonsai installs committed next to the workflows (`Bonsai/` and
+`bonsai/`), which Bonsai's own lookup (`.bonsai/` only) does not see. 0.3.0
+accepts them after `.bonsai/`, so `--fetch` reads the versions those labs run.
+
+The 24 new `UNUSED_SUBJECT` infos are subjects in the rigs' own workflows
+(e.g. `RawLoadCellData` in Aind.Behavior.Telekinesis): before, an unreadable
+include in the same scope might have subscribed to them, so baghban stayed
+quiet; now it can see that nothing does. None is in a package module:
+subjects a package declares are what it offers, and are never reported.
+
+**Still to do: the real run.** `python survey/run_survey.py WORKDIR --fetch`
+on a machine that reaches nuget.org replaces this preview's approximation
+with the pinned DLLs; its new errors get the same hand review.
 
 ## Caveats
 
@@ -152,6 +224,9 @@ Resolving these (roadmap item 3) is the largest remaining gain in coverage.
   Extensions modules.
 - Precision is estimated on errors only. Warnings were sampled, not read in
   full.
+- The package preview reads packages from source at HEAD, not at the pinned
+  version; the hand review checked every new error against the pinned
+  version's history, and the `--fetch` run will replace it.
 - Recall is not measured: nothing here says which faults baghban misses.
   The confirmation kit (`confirm/`, 13/13 on real Bonsai) addresses whether
   what baghban reports actually happens, not what it misses.
