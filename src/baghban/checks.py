@@ -70,6 +70,7 @@ class Report:
     n_nodes: int = 0
     kind: str = "workflow"
     interface: list = field(default_factory=list)
+    packages: list = field(default_factory=list)  # dicts: id, version, pinned, origin
 
     def by_severity(self, severity: str) -> list:
         return [f for f in self.findings if f.severity == severity]
@@ -114,6 +115,9 @@ class Report:
             lines.append(f"No findings in {self.n_nodes} nodes.")
         else:
             lines.append(", ".join(counts) + f" in {self.n_nodes} nodes.")
+        for p in self.packages:
+            how = "pinned" if p["pinned"] else "NOT pinned: newest found, findings assume it"
+            lines.append(f"package: {p['id']} {p['version']} ({how}; from {p['origin']})")
         for note in self.skipped:
             lines.append(f"not checked: {note}")
         return "\n".join(lines)
@@ -121,6 +125,7 @@ class Report:
     def to_dict(self) -> dict:
         return {"path": self.path, "kind": self.kind, "nodes": self.n_nodes,
                 "interface": list(self.interface),
+                "packages": list(self.packages),
                 "findings": [f.to_dict() for f in self.findings],
                 "skipped": list(self.skipped)}
 
@@ -140,7 +145,7 @@ def _bool(value: Optional[str]) -> bool:
 def _finding(code: str, node: Node, message: str, hint: str = "",
              severity: Optional[str] = None) -> Finding:
     return Finding(code=code, severity=severity or FINDINGS[code][0], message=message,
-                   location=node.location(), file=str(node.file) if node.file else None,
+                   location=node.location(), file=node.source,
                    node=node.id, hint=hint)
 
 
@@ -307,6 +312,8 @@ def check_subjects(doc: Document, report: Report) -> None:
             if len(nodes) > 1:
                 continue  # already reported as DUPLICATE_SUBJECT
             for decl in nodes:
+                if decl.in_package:
+                    continue  # a package's subjects are what it offers its user
                 if id(decl) not in used and not decl.type.is_core("ResourceSubject"):
                     report.findings.append(_finding(
                         "UNUSED_SUBJECT", decl,
@@ -427,10 +434,23 @@ def _normalise(fname: str) -> str:
 CHECKS = (check_includes, check_subjects, check_writers)
 
 
+def packages_used(doc: Document) -> list:
+    """Packages whose embedded workflows this document includes, read successfully."""
+    seen = {}
+    for node in doc.walk():
+        inc = node.include
+        if inc is not None and inc.package and inc.status == "ok":
+            seen.setdefault((inc.package, inc.package_version),
+                            {"id": inc.package, "version": inc.package_version,
+                             "pinned": inc.pinned, "origin": inc.origin})
+    return [seen[k] for k in sorted(seen)]
+
+
 def check(doc: Document) -> Report:
     """Run every check on a loaded document."""
     report = Report(path=str(doc.path) if doc.path else None,
-                    n_nodes=sum(1 for _ in doc.walk()), kind=doc.kind)
+                    n_nodes=sum(1 for _ in doc.walk()), kind=doc.kind,
+                    packages=packages_used(doc))
     for fn in CHECKS:
         fn(doc, report)
     order = {s: i for i, s in enumerate(SEVERITIES)}

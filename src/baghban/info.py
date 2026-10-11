@@ -27,7 +27,9 @@ def dependencies(doc: Document) -> dict:
             inc = node.include
             includes.append({"path": inc.path, "status": inc.status,
                              "resolved": str(inc.resolved) if inc.resolved else None,
-                             "location": node.location()})
+                             "location": node.location(), "package": inc.package,
+                             "package_version": inc.package_version, "pinned": inc.pinned,
+                             "origin": inc.origin, "note": inc.note})
             if inc.namespaces:
                 maps.append(inc.namespaces)
 
@@ -68,10 +70,21 @@ def format_dependencies(deps: dict) -> str:
     lines.append("Bonsai packages are named after their assembly (Bonsai.Vision -> package "
                  "Bonsai.Vision);")
     lines.append("third-party packages usually follow the same convention.")
+    pkgs = {}
+    for inc in deps["includes"]:
+        if inc.get("package") and inc["status"] == "ok":
+            pkgs.setdefault((inc["package"], inc["package_version"]), inc)
+    if pkgs:
+        lines += ["", "packages read for their embedded workflows"]
+        for (pid, ver), inc in sorted(pkgs.items()):
+            how = "pinned" if inc["pinned"] else "not pinned, newest found"
+            lines.append(f"  {pid} {ver}  ({how}; from {inc['origin']})")
     if deps["includes"]:
         lines += ["", "includes"]
         for inc in deps["includes"]:
             lines.append(f"  {inc['path']}  [{inc['status']}]")
+            if inc["status"] != "ok" and inc.get("note"):
+                lines.append(f"      {inc['note']}")
     return "\n".join(lines)
 
 
@@ -153,4 +166,7 @@ def manifest_fields(doc: Document) -> dict:
     for node in doc.walk():
         if node.is_include and node.include is not None:
             fields[f"bonsai.include.{node.include.path}"] = node.include.status
+            inc = node.include
+            if inc.package and inc.status == "ok":
+                fields[f"bonsai.package.{inc.package}"] = inc.package_version
     return fields

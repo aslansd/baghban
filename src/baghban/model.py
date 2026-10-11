@@ -119,6 +119,10 @@ class Include:
     overrides: dict = field(default_factory=dict)
     note: str = ""
     namespaces: dict = field(default_factory=dict)
+    package: Optional[str] = None  # package id when read out of a package DLL
+    package_version: Optional[str] = None
+    pinned: bool = False  # version pinned by an environment or --package, not guessed
+    origin: str = ""  # where the package DLL came from
 
 
 @dataclass(eq=False)
@@ -143,6 +147,18 @@ class Node:
     @property
     def file(self) -> Optional[Path]:
         return self.parent.file
+
+    @property
+    def in_package(self) -> bool:
+        return self.parent.package is not None
+
+    @property
+    def source(self) -> Optional[str]:
+        """Where this node is defined, for reports: a file, or a package resource."""
+        if self.parent.package is not None and self.parent.package[1] is not None:
+            pid, version, resource = self.parent.package
+            return f"{pid} {version}: {resource}"
+        return str(self.file) if self.file else None
 
     @property
     def id(self) -> tuple:
@@ -269,6 +285,9 @@ class Workflow:
     owner: Optional[Node] = field(default=None, repr=False)
     file: Optional[Path] = None
     from_include: bool = False
+    # (package or assembly, version, resource) for another assembly's embedded
+    # workflow; version is None when it was read from source (--resource-root)
+    package: Optional[tuple] = None
 
     @property
     def transparent(self) -> bool:
@@ -311,6 +330,7 @@ class Document:
     base_dir: Path
     included_files: list = field(default_factory=list)
     kind: str = "workflow"  # workflow | extension | package (see project.py)
+    packages: object = field(default=None, repr=False)  # the PackageResolver used, if any
 
     @property
     def is_module(self) -> bool:
@@ -342,9 +362,10 @@ def _child(el: ET.Element, name: str) -> Optional[ET.Element]:
 
 
 class _Loader:
-    def __init__(self, base_dir: Path, resource_roots: Optional[dict]):
+    def __init__(self, base_dir: Path, resource_roots: Optional[dict], packages=None):
         self.base_dir = base_dir
         self.resource_roots = {k: Path(v) for k, v in (resource_roots or {}).items()}
+        self.packages = packages  # a PackageResolver, or None
         self.included_files: list[Path] = []
 
     # -- file level ---------------------------------------------------------
@@ -374,8 +395,9 @@ class _Loader:
 
     # -- workflow level -------------------------------------------------------
     def parse_workflow(self, el: ET.Element, namespaces: dict, file: Optional[Path],
-                       owner: Optional[Node], stack: tuple, from_include: bool) -> Workflow:
-        wf = Workflow(owner=owner, file=file, from_include=from_include)
+                       owner: Optional[Node], stack: tuple, from_include: bool,
+                       package: Optional[tuple] = None) -> Workflow:
+        wf = Workflow(owner=owner, file=file, from_include=from_include, package=package)
         nodes_el = _child(el, "Nodes")
         if nodes_el is not None:
             for i, expr in enumerate(c for c in nodes_el if _local(c.tag) == "Expression"):
@@ -435,7 +457,7 @@ class _Loader:
         nested = _child(body, "Workflow")
         if nested is not None:
             node.workflow = self.parse_workflow(nested, namespaces, parent.file, node, stack,
-                                                parent.from_include)
+                                                parent.from_include, parent.package)
         elif node.is_include:
             node.include = self.resolve_include(body, node, stack)
             if node.include.workflow is not None:
@@ -456,18 +478,31 @@ class _Loader:
             inc.status, inc.note = "invalid", "IncludeWorkflow has an empty Path."
             return inc
 
+        package = None
         if embedded:
             assembly, _, resource = path.partition(":")
             root = self.resource_roots.get(assembly)
-            if root is None:
+            if root is None and self.packages is not None:
+                res = self.packages.resolve(assembly, resource)
+                inc.package, inc.package_version = res.package, res.version
+                inc.pinned, inc.origin = res.pinned, res.origin
+                if res.status != "ok":
+                    inc.status, inc.note = res.status, res.note
+                    return inc
+                candidate = res.path
+                package = (res.package, res.version, f"{assembly}.{resource}")
+            elif root is None:
                 inc.note = (f"embedded resource of assembly '{assembly}'; pass "
                             f"--resource-root {assembly}=DIR to check inside it")
                 return inc
-            candidate = _find_resource(root, resource)
-            if candidate is None:
-                inc.status = "missing"
-                inc.note = f"resource '{resource}' not found under {root}"
-                return inc
+            else:
+                candidate = _find_resource(root, resource)
+                if candidate is None:
+                    inc.status = "missing"
+                    inc.note = f"resource '{resource}' not found under {root}"
+                    return inc
+                # another assembly's module, read from its source: no version
+                package = (assembly, None, f"{assembly}.{resource}")
         elif _WINDOWS_ABSOLUTE.match(path) and os.name != "nt":
             inc.note = "absolute Windows path; cannot be checked on this machine"
             return inc
@@ -500,7 +535,7 @@ class _Loader:
         body = _child(root_el, "Workflow")
         inc.workflow = self.parse_workflow(body if body is not None else ET.Element("Workflow"),
                                            namespaces, candidate, node, stack + (candidate,),
-                                           from_include=True)
+                                           from_include=True, package=package)
         inc.status = "ok"
         return inc
 
@@ -573,7 +608,8 @@ def _find_resource(root: Path, resource: str) -> Optional[Path]:
 # --------------------------------------------------------------------------- API
 
 def load(path, resource_roots: Optional[dict] = None, base_dir=None,
-         discover: bool = True) -> Document:
+         discover: bool = True, packages=None, fetch: bool = False,
+         pins: Optional[dict] = None, cache_dir=None) -> Document:
     """Load a ``.bonsai`` file and resolve its includes.
 
     ``resource_roots`` maps an assembly name to the folder holding its source,
@@ -585,6 +621,13 @@ def load(path, resource_roots: Optional[dict] = None, base_dir=None,
     Files under an ``Extensions`` folder or inside such a package project are
     loaded as modules (``Document.kind``); an Extensions module resolves its
     includes from the project folder, as the editor does.
+
+    Includes into packages from elsewhere (``Path="BonVision:..."``) are read out
+    of the package DLL (see :mod:`baghban.packages`): versions come from the
+    workflow's ``.bonsai/Bonsai.config`` or ``pins`` (``{"BonVision": "0.13.0"}``);
+    DLLs from the installed environment, ``~/.nuget/packages`` or baghban's
+    cache, and from nuget.org only with ``fetch=True``. Pass a ``PackageResolver``
+    as ``packages`` to share one across files, or ``packages=False`` to skip.
     """
     from .project import classify, discover_projects, repository_root
     path = Path(path)
@@ -594,9 +637,9 @@ def load(path, resource_roots: Optional[dict] = None, base_dir=None,
     roots = {}
     for name, folder, _is_test in projects:
         roots.setdefault(name, folder)
-    packages = {name: folder for name, folder, is_test in projects if not is_test}
+    project_folders = {name: folder for name, folder, is_test in projects if not is_test}
     roots.update({k: Path(v) for k, v in (resource_roots or {}).items()})
-    kind, project = classify(path, packages)
+    kind, project = classify(path, project_folders)
     if kind == "extension":
         try:  # only trust an Extensions folder inside the repository
             project.resolve().relative_to(repository_root(path))
@@ -608,7 +651,8 @@ def load(path, resource_roots: Optional[dict] = None, base_dir=None,
         base = project
     else:
         base = path.resolve().parent
-    loader = _Loader(base, roots)
+    resolver = _resolver(packages, path, fetch, pins, cache_dir)
+    loader = _Loader(base, roots, resolver)
     root, namespaces = loader.read(str(path))
     body = _child(root, "Workflow")
     if body is None:
@@ -616,15 +660,26 @@ def load(path, resource_roots: Optional[dict] = None, base_dir=None,
     wf = loader.parse_workflow(body, namespaces, path, None, (path.resolve(),), False)
     return Document(path=path, version=root.get("Version"), namespaces=namespaces,
                     workflow=wf, base_dir=base, included_files=loader.included_files,
-                    kind=kind)
+                    kind=kind, packages=resolver)
+
+
+def _resolver(packages, where, fetch, pins, cache_dir):
+    if packages is False:
+        return None
+    if packages is not None:
+        return packages
+    from .packages import PackageResolver
+    return PackageResolver.for_workflow(where, fetch=fetch, pins=pins, cache_dir=cache_dir)
 
 
 def loads(text: str, resource_roots: Optional[dict] = None, base_dir=".",
-          kind: str = "workflow") -> Document:
+          kind: str = "workflow", packages=None, fetch: bool = False,
+          pins: Optional[dict] = None, cache_dir=None) -> Document:
     """Load a workflow from a string (includes resolve against ``base_dir``)."""
     import io
     base = Path(base_dir)
-    loader = _Loader(base, resource_roots)
+    resolver = _resolver(packages, base, fetch, pins, cache_dir)
+    loader = _Loader(base, resource_roots, resolver)
     root, namespaces = loader.read(io.BytesIO(text.encode("utf-8")))
     body = _child(root, "Workflow")
     if body is None:
@@ -632,4 +687,4 @@ def loads(text: str, resource_roots: Optional[dict] = None, base_dir=".",
     wf = loader.parse_workflow(body, namespaces, None, None, (), False)
     return Document(path=None, version=root.get("Version"), namespaces=namespaces,
                     workflow=wf, base_dir=base, included_files=loader.included_files,
-                    kind=kind)
+                    kind=kind, packages=resolver)

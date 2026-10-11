@@ -25,6 +25,23 @@ from .model import WorkflowLoadError, load
 from .render import dot, html, mermaid, outline
 
 
+def _pins(values) -> dict:
+    pins = {}
+    for item in values or []:
+        name, sep, version = item.partition("=")
+        if not sep or not name or not version:
+            raise SystemExit(f"--package expects ID=VERSION, got '{item}'")
+        pins[name] = version
+    return pins
+
+
+def _load_options(args) -> dict:
+    return {"resource_roots": _resource_roots(getattr(args, "resource_root", None)),
+            "fetch": getattr(args, "fetch", False),
+            "pins": _pins(getattr(args, "package", None)),
+            "cache_dir": getattr(args, "cache", None)}
+
+
 def _resource_roots(values) -> dict:
     roots = {}
     for item in values or []:
@@ -55,7 +72,7 @@ def _collect(paths, exclude=()) -> list:
 
 def _load(path, args):
     try:
-        return load(path, resource_roots=_resource_roots(getattr(args, "resource_root", None)))
+        return load(path, **_load_options(args))
     except (WorkflowLoadError, OSError) as exc:
         raise SystemExit(f"baghban: {exc}")
 
@@ -82,7 +99,7 @@ def cmd_check(args) -> int:
     docs, failures = [], []
     for f in files:
         try:
-            docs.append(load(f, resource_roots=_resource_roots(args.resource_root)))
+            docs.append(load(f, **_load_options(args)))
         except (WorkflowLoadError, OSError) as exc:
             failures.append(str(exc))
 
@@ -174,6 +191,16 @@ def build_parser() -> argparse.ArgumentParser:
         sp.add_argument("--resource-root", action="append", metavar="ASSEMBLY=DIR",
                         help="folder holding the source of an assembly, to follow "
                              "embedded-resource includes (repeatable)")
+        sp.add_argument("--fetch", action="store_true",
+                        help="download packages that are not installed or cached from "
+                             "nuget.org, to read their embedded workflows (off by default: "
+                             "baghban makes no network calls otherwise)")
+        sp.add_argument("--package", action="append", metavar="ID=VERSION",
+                        help="use this version of a package, overriding .bonsai/Bonsai.config "
+                             "(repeatable)")
+        sp.add_argument("--cache", metavar="DIR",
+                        help="where downloaded packages and extracted workflows are kept "
+                             "(default: $BAGHBAN_CACHE or ~/.cache/baghban)")
         return sp
 
     c = with_roots(sub.add_parser("check", help="find problems before the rig runs"))
