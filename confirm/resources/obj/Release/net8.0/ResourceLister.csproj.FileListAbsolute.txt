@@ -1,0 +1,15 @@
+/Users/asataryd/Documents/ENI-Projects/Aslan/B2B Scientific Startups/Summary Feasibility Plans/baghban/confirm/resources/bin/confirm/ResourceLister
+/Users/asataryd/Documents/ENI-Projects/Aslan/B2B Scientific Startups/Summary Feasibility Plans/baghban/confirm/resources/bin/confirm/ResourceLister.deps.json
+/Users/asataryd/Documents/ENI-Projects/Aslan/B2B Scientific Startups/Summary Feasibility Plans/baghban/confirm/resources/bin/confirm/ResourceLister.runtimeconfig.json
+/Users/asataryd/Documents/ENI-Projects/Aslan/B2B Scientific Startups/Summary Feasibility Plans/baghban/confirm/resources/bin/confirm/ResourceLister.dll
+/Users/asataryd/Documents/ENI-Projects/Aslan/B2B Scientific Startups/Summary Feasibility Plans/baghban/confirm/resources/bin/confirm/ResourceLister.pdb
+/Users/asataryd/Documents/ENI-Projects/Aslan/B2B Scientific Startups/Summary Feasibility Plans/baghban/confirm/resources/obj/Release/net8.0/ResourceLister.GeneratedMSBuildEditorConfig.editorconfig
+/Users/asataryd/Documents/ENI-Projects/Aslan/B2B Scientific Startups/Summary Feasibility Plans/baghban/confirm/resources/obj/Release/net8.0/ResourceLister.AssemblyInfoInputs.cache
+/Users/asataryd/Documents/ENI-Projects/Aslan/B2B Scientific Startups/Summary Feasibility Plans/baghban/confirm/resources/obj/Release/net8.0/ResourceLister.AssemblyInfo.cs
+/Users/asataryd/Documents/ENI-Projects/Aslan/B2B Scientific Startups/Summary Feasibility Plans/baghban/confirm/resources/obj/Release/net8.0/ResourceLister.csproj.CoreCompileInputs.cache
+/Users/asataryd/Documents/ENI-Projects/Aslan/B2B Scientific Startups/Summary Feasibility Plans/baghban/confirm/resources/obj/Release/net8.0/ResourceLister.sourcelink.json
+/Users/asataryd/Documents/ENI-Projects/Aslan/B2B Scientific Startups/Summary Feasibility Plans/baghban/confirm/resources/obj/Release/net8.0/ResourceLister.dll
+/Users/asataryd/Documents/ENI-Projects/Aslan/B2B Scientific Startups/Summary Feasibility Plans/baghban/confirm/resources/obj/Release/net8.0/refint/ResourceLister.dll
+/Users/asataryd/Documents/ENI-Projects/Aslan/B2B Scientific Startups/Summary Feasibility Plans/baghban/confirm/resources/obj/Release/net8.0/ResourceLister.pdb
+/Users/asataryd/Documents/ENI-Projects/Aslan/B2B Scientific Startups/Summary Feasibility Plans/baghban/confirm/resources/obj/Release/net8.0/ResourceLister.genruntimeconfig.cache
+/Users/asataryd/Documents/ENI-Projects/Aslan/B2B Scientific Startups/Summary Feasibility Plans/baghban/confirm/resources/obj/Release/net8.0/ref/ResourceLister.dll

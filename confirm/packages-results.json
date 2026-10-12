@@ -1,0 +1,100 @@
+[
+  {
+    "package": "BonVision",
+    "version": "0.12.0",
+    "dlls": [
+      "lib/net462/BonVision.dll"
+    ],
+    "resources": 59,
+    "workflows": 34,
+    "same": true,
+    "differences": [],
+    "compared_with_dotnet": true
+  },
+  {
+    "package": "AllenNeuralDynamics.Core",
+    "version": "0.5.0",
+    "dlls": [
+      "lib/net472/AllenNeuralDynamics.Core.dll"
+    ],
+    "resources": 23,
+    "workflows": 20,
+    "same": true,
+    "differences": [],
+    "compared_with_dotnet": true
+  },
+  {
+    "package": "AllenNeuralDynamics.HarpUtils",
+    "version": "0.3.2",
+    "dlls": [
+      "lib/net472/AllenNeuralDynamics.HarpUtils.dll"
+    ],
+    "resources": 12,
+    "workflows": 11,
+    "same": true,
+    "differences": [],
+    "compared_with_dotnet": true
+  },
+  {
+    "package": "Aeon.Acquisition",
+    "version": "0.7.0",
+    "dlls": [
+      "lib/net472/Aeon.Acquisition.dll"
+    ],
+    "resources": 22,
+    "workflows": 22,
+    "same": true,
+    "differences": [],
+    "compared_with_dotnet": true
+  },
+  {
+    "package": "Bonsai.Harp",
+    "version": "3.6.1",
+    "dlls": [
+      "lib/net462/Bonsai.Harp.dll",
+      "lib/netstandard2.0/Bonsai.Harp.dll"
+    ],
+    "resources": 8,
+    "workflows": 8,
+    "same": true,
+    "differences": [],
+    "compared_with_dotnet": true
+  },
+  {
+    "package": "Bonsai.ML.LinearDynamicalSystems",
+    "version": "0.4.1",
+    "dlls": [
+      "lib/net472/Bonsai.ML.LinearDynamicalSystems.dll",
+      "lib/netstandard2.0/Bonsai.ML.LinearDynamicalSystems.dll"
+    ],
+    "resources": 24,
+    "workflows": 20,
+    "same": true,
+    "differences": [],
+    "compared_with_dotnet": true
+  },
+  {
+    "package": "Bonsai.ML.HiddenMarkovModels",
+    "version": "0.4.1",
+    "dlls": [
+      "lib/net472/Bonsai.ML.HiddenMarkovModels.dll"
+    ],
+    "resources": 10,
+    "workflows": 8,
+    "same": true,
+    "differences": [],
+    "compared_with_dotnet": true
+  },
+  {
+    "package": "AllenNeuralDynamics.AindManipulator",
+    "version": "0.4.1",
+    "dlls": [
+      "lib/net48/AllenNeuralDynamics.AindManipulator.dll"
+    ],
+    "resources": 7,
+    "workflows": 6,
+    "same": true,
+    "differences": [],
+    "compared_with_dotnet": true
+  }
+]
