@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: baghban
-Version: 0.4.0
+Version: 0.4.1
 Summary: Check, draw and compare Bonsai workflows on any machine, before the rig runs.
 Author: Aslan Satary Dizaji
 License-Expression: Apache-2.0
@@ -114,6 +114,7 @@ the two copies of the included module are told apart.
 | `DUPLICATE_OUTPUT` | error | Do two writers write to the same file? |
 | `DANGLING_SUBJECT` | error | Does a `SubscribeSubject` or `MulticastSubject` name a subject that is not declared where it can see it? |
 | `DUPLICATE_SUBJECT` | error | Are two subjects with one name declared in the same scope? |
+| `DUPLICATE_PROPERTY` | error | Do two externalized properties in one workflow share a name? |
 | `MISSING_INCLUDE` | error | Does an `IncludeWorkflow` point at a file that does not exist? |
 | `RECURSIVE_INCLUDE` | error | Do workflows include each other in a cycle? |
 | `INVALID_INCLUDE` | error | Is an included file not a readable workflow? |
@@ -246,7 +247,7 @@ must agree with Bonsai on every one:
 On the file-writer findings, where Bonsai has no test fixtures, each finding
 is tested in both directions on paired workflows: it must fire where the fault
 exists and stay quiet on the nearest workflow without it (see `TESTING.md`).
-And every finding has been run on the real Bonsai runtime: 13 of 13 cases
+And the findings have been run on the real Bonsai runtime: 15 of 15 cases
 behaved as predicted (`confirm/`).
 
 ### On published rigs
@@ -404,7 +405,7 @@ fields = baghban.provenance(command_line=launcher_args, cwd=rig_folder)
 $ baghban provenance examples/rig_v2/foraging.bonsai -p TrialInterval=PT15S
 {
   "bonsai.provenance": "1",
-  "bonsai.baghban": "0.4.0",
+  "bonsai.baghban": "0.4.1",
   "bonsai.workflow": "/path/to/examples/rig_v2/foraging.bonsai",
   "bonsai.version": "2.9.0",
   "bonsai.fingerprint": "fc07dd88c5331b2dfeb53671f5e05cd80b03f49e96060cb58a745b1682b600fd",
@@ -453,10 +454,10 @@ Research prototype, honestly labelled.
 - On 453 published workflows, no error was a false alarm (`survey/SURVEY.md`).
   Warnings were sampled, not read in full, and nothing measures what baghban
   misses.
-- **Confirmed on the real Bonsai runtime:** `confirm/` runs 13 cases (every
+- **Confirmed on the real Bonsai runtime:** `confirm/` runs 15 cases (every
   finding baghban reports about writers and subjects, with a quiet control
-  for each) on Bonsai 2.9.1 packages under .NET 8. On macOS all 13 behaved
-  as baghban predicts. The first run (8/12) exposed a flaw in the kit and a
+  for each) on Bonsai 2.9.1 packages under .NET 8. On macOS all 15 behave
+  as baghban predicts (12 Oct 2026, 0.4.1). The first run (8/12) exposed a flaw in the kit and a
   wrong claim about unnamed subjects, both fixed in 0.2.1
   (`confirm/README.md`). Not yet run on Windows, where rigs run.
 - **Packages are read** (0.3.0), and the reader is **confirmed against
@@ -465,8 +466,12 @@ Research prototype, honestly labelled.
   on every name, offset and byte (`confirm/README.md`).
 - **Launcher values** (0.4.0): `--property` values are applied by Bonsai's
   rules, read from its source (`SetWorkflowProperty`, the same from 2.6.2
-  to 2.9.1). `confirm/confirm_properties.py` checks 10 cases on the real
-  runtime; it has not been run yet.
+  to 2.9.1). `confirm/confirm_properties.py` checks them on the real
+  runtime. Its first run (12 Oct 2026, macOS) confirmed 9 of 10 cases. The
+  tenth showed that Bonsai refuses to build a workflow with two properties
+  of the same name, where baghban had said the first one wins. Fixed in
+  0.4.1 and reported (`DUPLICATE_PROPERTY`). The corrected kit: 11/11
+  (12 Oct 2026).
 - Timing problems (unbounded `Zip` queues, timestamps taken after heavy
   processing) need stream rates the XML rarely states, and are not checked.
 
@@ -474,7 +479,7 @@ Research prototype, honestly labelled.
 
 ```
 pip install -e ".[dev]"
-pytest -q                         # 228 tests, no network, no .NET
+pytest -q                         # 231 tests, no network, no .NET
 python confirm/confirm.py         # needs .NET 8: confirm findings with real Bonsai
                                   #   (install and troubleshooting: confirm/README.md)
 python confirm/confirm_packages.py  # needs .NET 8 and nuget.org: the package reader

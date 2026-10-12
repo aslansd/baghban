@@ -36,6 +36,7 @@ FINDINGS = {
     "DUPLICATE_OUTPUT": ("error", "two writers write to the same file"),
     "DANGLING_SUBJECT": ("error", "a SubscribeSubject/MulticastSubject names a subject that is not declared in scope"),
     "DUPLICATE_SUBJECT": ("error", "two subjects with the same name are declared in one scope"),
+    "DUPLICATE_PROPERTY": ("error", "two externalized properties with the same name in one workflow"),
     "MISSING_INCLUDE": ("error", "an IncludeWorkflow points at a file that does not exist"),
     "RECURSIVE_INCLUDE": ("error", "workflows include each other in a cycle"),
     "INVALID_INCLUDE": ("error", "an included file is not a readable workflow"),
@@ -171,6 +172,37 @@ def check_includes(doc: Document, report: Report) -> None:
             report.findings.append(_finding("INVALID_INCLUDE", node, inc.note))
         elif inc.status == "unresolved":
             report.skipped.append(f"{node.location()}: {inc.note}")
+
+
+# --------------------------------------------------------------------------- properties
+
+def check_properties(doc: Document, report: Report) -> None:
+    """Bonsai builds each workflow (the top level, every group, include and
+    nested workflow) with its own set of property names, and refuses to build
+    one where two enabled ExternalizedMapping entries share a name: DisplayName,
+    or else Name (ExpressionBuilderGraphExtensions.RegisterPropertyName)."""
+    for wf in doc.workflow.workflows():
+        if wf.owner is not None and wf.owner.is_effectively_disabled():
+            continue  # a disabled workflow is not built
+        seen: dict = {}
+        for node in wf.nodes:
+            if node.disabled or not node.type.is_core("ExternalizedMapping"):
+                continue
+            for prop, display in node.mappings:
+                if not prop:
+                    continue
+                name = display or prop
+                if name in seen:
+                    where = "this ExternalizedMapping" if seen[name] is node else seen[name].location()
+                    report.findings.append(_finding(
+                        "DUPLICATE_PROPERTY", node,
+                        f"The workflow property '{name}' is already exposed by {where}. Bonsai "
+                        "refuses to build the workflow ('A workflow property with the name "
+                        f"'{name}' already exists.').",
+                        hint="Give one of them another DisplayName. Properties with the same "
+                             "name are allowed in different groups."))
+                else:
+                    seen[name] = node
 
 
 # --------------------------------------------------------------------------- subjects
@@ -431,7 +463,7 @@ def _normalise(fname: str) -> str:
 
 # --------------------------------------------------------------------------- entry point
 
-CHECKS = (check_includes, check_subjects, check_writers)
+CHECKS = (check_includes, check_properties, check_subjects, check_writers)
 
 
 def packages_used(doc: Document) -> list:

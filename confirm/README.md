@@ -1,7 +1,7 @@
 # Confirming findings with the real Bonsai runtime
 
 baghban's findings are grounded in Bonsai's *source*. This kit checks them
-against Bonsai's *behaviour*: for each of 13 small workflows it asks baghban
+against Bonsai's *behaviour*: for each of 15 small workflows it asks baghban
 for a prediction, runs the workflow with the released Bonsai packages on
 .NET 8, and inspects exit codes and the files left on disk. A row says `yes`
 when what Bonsai did matches what baghban said, `NO` when it does not.
@@ -9,7 +9,7 @@ when what Bonsai did matches what baghban said, `NO` when it does not.
 A `NO` is not a failure of the kit. It means baghban's model of Bonsai (or
 the kit itself) is wrong somewhere, which is exactly what the kit is for: the
 first run on a Mac produced four, each one led to a fix, and the second run
-confirmed all 13 cases (see [Results](#results)).
+confirmed all 13 cases then in the kit (see [Results](#results)).
 
 ## 1. Install .NET 8
 
@@ -71,7 +71,7 @@ cd "/path/to/baghban"
 python -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
-pytest -q                          # 228 passed
+pytest -q                          # 231 passed
 ```
 
 **Order matters: .NET before the virtual environment.** A virtual
@@ -153,6 +153,8 @@ error message and file list. Send it along when reporting a `NO`.
 | `dangling_subject` | `DANGLING_SUBJECT` | Bonsai refuses to build it |
 | `unnamed_subscribe` | `UNNAMED_SUBJECT` (error) | Bonsai refuses to build the node after it |
 | `unnamed_subscribe_alone` | `UNNAMED_SUBJECT` (info) | it builds, and the rest of the workflow runs |
+| `duplicate_property` | `DUPLICATE_PROPERTY` | Bonsai refuses to build it ("already exists") and nothing is written (added in 0.4.1) |
+| `same_property_in_two_groups` | quiet | two files, three rows each: each group has its own names (added in 0.4.1) |
 
 Every workflow is three timer ticks, 100 ms apart, through `Take(3)` and
 `Timestamp`, so every case ends on its own and every run writes different
@@ -249,6 +251,23 @@ What this run establishes, and what it does not:
   systems, which matters most for `DUPLICATE_OUTPUT`), and other Bonsai
   versions.
 
+### Third run: 12 Oct 2026, baghban 0.4.0, 13/13 confirmed
+
+The same 13 cases, on the same machine, with the runner changed for
+`confirm_properties.py` (it now takes `NAME=VALUE` arguments; with none, it
+does what it did before). Same outcomes as the second run.
+
+### Fourth run: 12 Oct 2026, baghban 0.4.1, 15/15 confirmed
+
+The 13 cases again, plus the two added in 0.4.1. Same machine and packages:
+
+| Case | baghban | Confirmed | What Bonsai did |
+| --- | --- | --- | --- |
+| `duplicate_property` | `DUPLICATE_PROPERTY` | yes | exit 1: `WorkflowBuildException: A workflow property with the name 'Out' already exists.` |
+| `same_property_in_two_groups` | quiet | yes | exit 0; 2 file(s) with [3, 3] rows |
+
+The other 13 rows are identical to the second run's.
+
 ## If a case says NO
 
 1. Re-run with `--keep` and open the files in the printed folder.
@@ -333,7 +352,7 @@ runtime:
 python confirm/confirm_properties.py
 ```
 
-For each of 10 cases it writes a small workflow (and the include file it
+For each of 11 cases it writes a small workflow (and the include file it
 needs), asks baghban either which files the session will write or which
 name Bonsai will refuse, then runs it with the runner, which now applies
 `NAME=VALUE` arguments exactly as Bonsai.exe applies `--property`: build,
@@ -347,20 +366,78 @@ value is a CsvWriter's file name, so where it went is visible on disk.
 | `through_a_named_selectmany` | `Trial.Log=e.csv` | writes `e.csv`: any named nested workflow, not only groups |
 | `groups_then_include_then_group` | `Stim.RF.FileNameRF=c.csv` | writes `c.csv`: iblrig's shape, through two groups, into an include, into a group inside it |
 | `include_value_reaches_group` | (none) | writes `left.csv`, the value saved on the include; 0.3.0 said `noise.csv` |
-| `first_of_two_same_names` | `Out=z.csv` | writes `z.csv` and `w2.csv`: the first property of a name wins |
+| `two_properties_same_name` | `Out=z.csv` | refused: `WorkflowBuildException` (two properties named `Out` in one workflow; the build fails before any value is set) |
+| `same_name_in_two_groups` | `Left.Out=z.csv` | writes `z.csv` and `r.csv`: each group has its own names |
 | `unknown_name` | `Nope=x.csv` | refused: `KeyNotFoundException` |
 | `ambiguous_group` | `Rec.Log=x.csv` | refused: `InvalidOperationException` (two groups named `Rec`) |
 | `disabled_group` | `Off.Log=x.csv` | refused: `KeyNotFoundException` (a disabled group is not a workflow) |
 | `include_by_name` | `RF.FileNameRF=x.csv` | refused: `KeyNotFoundException` (an include is reached only through a mapping) |
 
-Expected ending: `10/10 confirmed. Details: .../confirm/properties-results.json`.
+Expected ending: `11/11 confirmed. Details: .../confirm/properties-results.json`.
 `--dry-run` checks baghban's side only. The name rules were read from the
 Bonsai source and are identical from 2.6.2 to 2.9.1 (`SetWorkflowProperty`);
 the runner uses the 2.9 packages, like the other kits.
 
 ### Results
 
-Not run yet.
+**First run: 12 Oct 2026, baghban 0.4.0 (before the fix below), macOS
+(Intel), Bonsai 2.9 packages: 9/10 confirmed.** All five cases where a value
+goes somewhere wrote exactly the predicted file, including iblrig's shape
+(two groups, an include, a group inside it) and the value saved on an
+include reaching a group inside it, which 0.3.0 got wrong. All four refusals
+happened with the predicted exception.
+
+The NO was `first_of_two_same_names`. baghban said that of two properties
+named `Out` in one workflow, the first receives the value. Bonsai never got
+that far:
+
+```
+WorkflowBuildException: A workflow property with the name 'Out' already exists.
+```
+
+Bonsai.exe builds the workflow before it assigns any value, and the build
+registers every externalized property name of each workflow, refusing a
+repeat (`RegisterPropertyName` in `ExpressionBuilderGraphExtensions.cs`, the
+same in 2.6.2). So such a workflow never runs, launcher or not. Fixed in
+0.4.1:
+- `set_properties` reports the name as `duplicate`.
+- `check` reports the new error `DUPLICATE_PROPERTY`, with two cases in
+  `confirm.py`.
+- The case is now `two_properties_same_name`, predicting the refusal, with a
+  quiet twin `same_name_in_two_groups`.
+
+None of the 572 survey workflows has such a pair.
+
+**Second run: 12 Oct 2026, baghban 0.4.1, same machine: 11/11 confirmed.**
+
+| Case | baghban says | Confirmed | What Bonsai did |
+| --- | --- | --- | --- |
+| `top_level` | writes `a.csv` | yes | wrote `a.csv` |
+| `through_a_group` | writes `b.csv` | yes | wrote `b.csv` |
+| `through_a_named_selectmany` | writes `e.csv` | yes | wrote `e.csv` |
+| `groups_then_include_then_group` | writes `c.csv` | yes | wrote `c.csv` |
+| `include_value_reaches_group` | writes `left.csv` | yes | wrote `left.csv` |
+| `two_properties_same_name` | refused (`WorkflowBuildException`) | yes | `WorkflowBuildException: A workflow property with the name 'Out' already exists.` |
+| `same_name_in_two_groups` | writes `r.csv`, `z.csv` | yes | wrote `r.csv`, `z.csv` |
+| `unknown_name` | refused (`KeyNotFoundException`) | yes | `KeyNotFoundException: No property or named element 'Nope' was found in the workflow.` |
+| `ambiguous_group` | refused (`InvalidOperationException`) | yes | `InvalidOperationException: Multiple elements with the specified name 'Rec' were found in the workflow.` |
+| `disabled_group` | refused (`KeyNotFoundException`) | yes | `KeyNotFoundException: No property or named element 'Off.Log' was found in the workflow.` |
+| `include_by_name` | refused (`KeyNotFoundException`) | yes | `KeyNotFoundException: No property or named element 'RF.FileNameRF' was found in the workflow.` |
+
+What this establishes, and what it does not:
+
+- **Established:** on Bonsai 2.9 packages, a launcher value goes where
+  baghban says. That holds at the top level, through named groups and
+  other nested workflows, and through a group into an include and a group
+  inside it. Each name baghban reports as refused is refused, with the
+  stated exception. So `bonsai.property.*` and `bonsai.param.*` in a
+  provenance record describe what the session ran with.
+- **Not established:** values that need type conversion (baghban keeps
+  values as strings, and a value that does not convert fails only when
+  Bonsai runs). Also not tested: Bonsai.exe's own command-line parser,
+  which baghban mirrors from source and tests in `tests/test_launch.py`
+  (the runner takes `NAME=VALUE` directly); other Bonsai versions; and
+  Windows.
 
 ## Troubleshooting
 

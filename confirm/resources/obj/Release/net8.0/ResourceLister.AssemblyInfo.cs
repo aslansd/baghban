@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ResourceLister")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b1d8f812ed89af3ef60fa3ce61b0578adaba21de")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f4e467724669f1bbd2873f67a35d313ca33b941d")]
 [assembly: System.Reflection.AssemblyProductAttribute("ResourceLister")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ResourceLister")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

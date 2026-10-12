@@ -1,6 +1,6 @@
 """Roadmap item 1: confirm baghban's findings by running the workflows.
 
-For each case (13) this script writes a small workflow, asks baghban what it
+For each case (15) this script writes a small workflow, asks baghban what it
 predicts, runs the workflow with the real Bonsai runtime (runner/, released
 NuGet packages, .NET 8), then inspects exit codes and the files on disk. A
 finding is *confirmed* when what happened matches what baghban said; each
@@ -207,6 +207,33 @@ def unnamed_alone() -> str:
                CHAIN + [(2, 3)])
 
 
+def two_properties(grouped: bool) -> str:
+    """Two writers whose FileName is exposed as 'Out': both in the top-level
+    workflow, or each in its own group (separate workflows, separate names)."""
+    mapping = ('<Expression xsi:type="ExternalizedMapping">'
+               '<Property Name="FileName" DisplayName="Out" /></Expression>')
+    labelled = lambda es: "".join(f'<Edge From="{a}" To="{b}" Label="{l}" />' for a, b, l in es)
+    if not grouped:
+        nodes = SOURCE + mapping + csv("w1.csv") + mapping + csv("w2.csv")
+        es = [(0, 1, "Source1"), (1, 2, "Source1"), (2, 4, "Source1"), (3, 4, "Source2"),
+              (2, 6, "Source1"), (5, 6, "Source2")]
+    else:
+        def grp(name, fname):
+            body = ('<Expression xsi:type="WorkflowInput"><Name>Source1</Name></Expression>'
+                    + mapping + csv(fname) + '<Expression xsi:type="WorkflowOutput" />')
+            inner = labelled([(0, 2, "Source1"), (1, 2, "Source2"), (2, 3, "Source1")])
+            return (f'<Expression xsi:type="GroupWorkflow"><Name>{name}</Name><Workflow>'
+                    f'<Nodes>{body}</Nodes><Edges>{inner}</Edges></Workflow></Expression>')
+        nodes = SOURCE + grp("Left", "w1.csv") + grp("Right", "w2.csv")
+        es = [(0, 1, "Source1"), (1, 2, "Source1"), (2, 3, "Source1"), (2, 4, "Source1")]
+    return HEAD + f"<Nodes>{nodes}</Nodes><Edges>{labelled(es)}</Edges>" + TAIL
+
+
+def refused_duplicate_property(rs):
+    ok = rs[0].code != 0 and "already exists" in rs[0].error and not csvs(rs[0])
+    return ok, f"exit {rs[0].code} ({rs[0].error[:70]})"
+
+
 CASES = [
     Case("overwrite_across_runs", linear(csv("data.csv", overwrite=True)), ["SILENT_OVERWRITE"], 2,
          replaced_across_runs),
@@ -229,6 +256,11 @@ CASES = [
          note="the node after it gets no input: Bonsai refuses to build (first Mac run)"),
     Case("unnamed_subscribe_alone", unnamed_alone(), ["UNNAMED_SUBJECT"], 1, runs_normally,
          note="nothing after it: builds, and the rest of the workflow runs"),
+    Case("duplicate_property", two_properties(grouped=False), ["DUPLICATE_PROPERTY"], 1,
+         refused_duplicate_property,
+         note="found by confirm_properties.py on its first run (0.4.1)"),
+    Case("same_property_in_two_groups", two_properties(grouped=True), [], 1, two_clean_files,
+         note="each group is its own workflow, with its own property names"),
 ]
 
 

@@ -22,7 +22,9 @@ Mirrored from the Bonsai source:
   (an include is not a WorkflowExpressionBuilder); an include's properties
   are reached through an ExternalizedMapping wired into it, as the editor
   does. The last part names a property the workflow exposes through an
-  ExternalizedMapping (DisplayName, or else Name); the first match wins.
+  ExternalizedMapping (DisplayName, or else Name). Bonsai.exe builds the
+  workflow before assigning, and building refuses two properties of one name
+  in one workflow, so such a name is reported as ``duplicate``.
 
 Values stay strings. Bonsai converts them with the property's TypeConverter,
 which needs the .NET types, so a value that does not convert (``Period=fast``)
@@ -137,7 +139,7 @@ class Assignment:
 
     name: str
     value: str
-    status: str  # ok | unknown | ambiguous | invalid
+    status: str  # ok | unknown | ambiguous | duplicate | invalid
     note: str = ""
     targets: list = field(default_factory=list)  # locations of the nodes the value went to
     previous: object = None  # the value saved in the file (a list when the targets differ)
@@ -192,6 +194,10 @@ def _resolve(doc: Document, name: str):
         scope = ".".join([p for p in name.split(".") if p][:-1]) or "the workflow"
         hint = f"; it exposes {', '.join(exposed)}" if exposed else "; it exposes none"
         return None, "unknown", f"{scope} has no externalized property '{prop}'{hint}"
+    if sum(1 for n, _, _ in externalized_properties(wf) if n == prop) > 1:
+        scope = ".".join([p for p in name.split(".") if p][:-1]) or "the workflow"
+        return None, "duplicate", (f"{scope} exposes two properties named '{prop}', so Bonsai "
+                                   "refuses to build it (DUPLICATE_PROPERTY)")
     return wf, prop, ""
 
 
@@ -203,7 +209,7 @@ def set_properties(doc: Document, properties: dict, strict: bool = False) -> lis
     every node it reaches, through groups and into includes, and those nodes
     record the property in ``Node.overridden``. Returns one ``Assignment`` per
     name; names Bonsai would refuse are reported (``unknown``, ``ambiguous``,
-    ``invalid``) and left alone, or with ``strict`` raise
+    ``duplicate``, ``invalid``) and left alone, or with ``strict`` raise
     ``PropertyAssignmentError`` before anything is changed.
     """
     resolved = [(name, str(value), _resolve(doc, name)) for name, value in properties.items()]

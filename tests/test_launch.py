@@ -166,11 +166,21 @@ def test_include_is_not_walked_into_by_name(tmp_path):
     assert a.status == "unknown" and "is an include" in a.note
 
 
-def test_first_property_of_a_name_wins():
+def test_two_properties_of_one_name_are_refused():
+    # Bonsai refuses to build such a workflow, so Bonsai.exe never assigns
+    # (confirm/confirm_properties.py, first Mac run; baghban had said the first wins)
     doc = rig(expr(externalized(("Period", "T"))), expr(timer("PT1S")),
               expr(externalized(("Period", "T"))), expr(timer("PT2S")), edges=[(0, 1), (2, 3)])
-    baghban.set_properties(doc, {"T": "PT9S"})
-    assert [n.properties["Period"] for n in doc.workflow.nodes[1::2]] == ["PT9S", "PT2S"]
+    [a] = baghban.set_properties(doc, {"T": "PT9S"})
+    assert a.status == "duplicate" and "DUPLICATE_PROPERTY" in a.note
+    assert [n.properties["Period"] for n in doc.workflow.nodes[1::2]] == ["PT1S", "PT2S"]
+    assert [f.code for f in baghban.check(doc).errors] == ["DUPLICATE_PROPERTY"]
+
+
+def test_same_name_in_two_groups_is_fine():
+    doc = rig(expr(stim_group("A")), expr(stim_group("B")))
+    assert not baghban.check(doc).errors
+    assert baghban.set_properties(doc, {"A.Interval": "PT2S"})[0].status == "ok"
 
 
 def test_unconnected_property_is_set_but_goes_nowhere():

@@ -555,9 +555,10 @@ class _Loader:
 #
 # A workflow's own properties are the entries of its enabled ExternalizedMapping
 # nodes, named DisplayName or else Name (Bonsai.Core WorkflowTypeDescriptor).
-# Setting one sets the mapped property on every node the mapping feeds. Bonsai
-# looks a name up with PropertyDescriptorCollection.Find, so when two entries
-# share a name the first one wins. A target that is itself a workflow (a group,
+# Setting one sets the mapped property on every node the mapping feeds. Names
+# are unique in any workflow Bonsai builds: it refuses a workflow where two
+# share one (checks.DUPLICATE_PROPERTY), so taking the first match below only
+# matters for workflows that never run. A target that is itself a workflow (a group,
 # SelectMany, ...) exposes its inner workflow's properties, so the value goes on
 # down; an IncludeWorkflow stores the value on its own element and passes it on
 # to the included file.

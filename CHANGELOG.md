@@ -1,6 +1,35 @@
 # Changelog
 
-## 0.4.0 (unreleased)
+## 0.4.1 (2026-10-12)
+
+A fix found by the first run of `confirm/confirm_properties.py` on real
+Bonsai (12 Oct 2026, macOS: 9/10 confirmed).
+
+- **Two externalized properties with one name in one workflow.** 0.4.0 said
+  a `--property` value goes to the first of them. In fact Bonsai.exe builds
+  the workflow before assigning any value, and the build refuses a repeated
+  name ("A workflow property with the name 'Out' already exists.",
+  `RegisterPropertyName`, the same since at least 2.6.2). Such a workflow
+  never runs, launcher or not.
+  - `set_properties` now reports the name as `duplicate` and changes
+    nothing; `provenance` lists it under `bonsai.problems`.
+  - **New finding `DUPLICATE_PROPERTY`** (error): two enabled externalized
+    properties with the same name (DisplayName, or else Name) in one
+    workflow. The same name in different groups is fine (each group is its
+    own workflow), as are disabled ones. None of the 572 survey workflows
+    has one, so the survey's numbers are unchanged.
+- `confirm/confirm_properties.py`: the case now predicts the refusal
+  (`two_properties_same_name`), plus a quiet twin, `same_name_in_two_groups`
+  (11 cases). `confirm/confirm.py` gains `duplicate_property` and
+  `same_property_in_two_groups` (15 cases).
+- Re-run on real Bonsai with 0.4.1 (12 Oct 2026, macOS): `confirm.py`
+  15/15, `confirm_properties.py` 11/11, `confirm_packages.py` 8/8. The
+  survey with `--fetch` gives the same errors and warnings as 0.3.0's real
+  run, with one false `UNUSED_SUBJECT` and one "not checked" note fewer
+  (the include fix in 0.4.0).
+- 231 tests.
+
+## 0.4.0 (2026-10-12)
 
 Roadmap item 4, baghban's side: what daftar's Bonsai adapter needs. The
 adapter itself lives in daftar (`daftar.adapters.bonsai`,
@@ -26,9 +55,9 @@ way round.
   applied as Bonsai's `SetWorkflowProperty` applies them. A dotted name walks
   through uniquely named, enabled nested workflows (groups, SelectMany, ...),
   but not into an include by name. The last part is an externalized
-  property, and the first one with that name wins. The value reaches every
-  node it maps to, through groups and into includes. Each name gets an
-  `Assignment` (`ok`, `unknown`, `ambiguous`, `invalid`, with a note and
+  property, and the first one with that name wins (wrong: see 0.4.1). The
+  value reaches every node it maps to, through groups and into includes.
+  Each name gets an `Assignment` (`ok`, `unknown`, `ambiguous`, `invalid`, with a note and
   the saved value). `strict` raises `PropertyAssignmentError` before
   changing anything.
 - **`baghban.outputs(doc)`**: every enabled file writer with its effective
@@ -48,7 +77,7 @@ way round.
 - Removed the `provenance = ["daftar"]` extra.
 - `confirm/confirm_properties.py`: 10 cases checking launcher values on the
   real runtime. The runner now takes `NAME=VALUE` arguments and applies them
-  as Bonsai.exe does. Not run yet.
+  as Bonsai.exe does.
 - Checked on the survey: provenance built for all 572 workflows, and 1,114
   dotted names made from the workflows' own properties all resolve. 228
   tests.

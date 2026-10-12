@@ -22,7 +22,7 @@ def test_every_prediction_matches_its_case(tmp_path):
 
 def test_cases_cover_every_refusal_and_both_routes_into_includes():
     kinds = {c.expect[1] for c in cp.CASES if c.expect[0] == "refuses"}
-    assert kinds == {"KeyNotFoundException", "InvalidOperationException"}
+    assert kinds == {"KeyNotFoundException", "InvalidOperationException", "WorkflowBuildException"}
     assert sum(c.expect[0] == "writes" for c in cp.CASES) >= 5
     assert any(c.files and c.properties for c in cp.CASES)  # into an include
     assert any(c.files and not c.properties for c in cp.CASES)  # the saved include value
@@ -42,8 +42,8 @@ def test_writes_judgement():
     assert not judge("top_level", Run(0, "", {"a.csv": ROWS, "default.csv": ROWS}))
     assert not judge("top_level", Run(0, "", {"a.csv": ""}))
     assert not judge("top_level", Run(1, "KeyNotFoundException: Out", {}))
-    assert judge("first_of_two_same_names", Run(0, "", {"z.csv": ROWS, "w2.csv": ROWS}))
-    assert not judge("first_of_two_same_names", Run(0, "", {"z.csv": ROWS}))
+    assert judge("same_name_in_two_groups", Run(0, "", {"z.csv": ROWS, "r.csv": ROWS}))
+    assert not judge("same_name_in_two_groups", Run(0, "", {"z.csv": ROWS}))
 
 
 def test_refusal_judgement():
@@ -52,3 +52,7 @@ def test_refusal_judgement():
     assert not judge("unknown_name", Run(1, "InvalidOperationException: ambiguous", {}))
     assert not judge("unknown_name", Run(0, "", {"default.csv": ROWS}))
     assert judge("ambiguous_group", Run(1, "InvalidOperationException: Rec", {}))
+    # the first Mac run (12 Oct 2026): Bonsai's own message for this case
+    assert judge("two_properties_same_name", Run(1, "WorkflowBuildException: A workflow property "
+                                                 "with the name 'Out' already exists.", {}))
+    assert not judge("two_properties_same_name", Run(0, "", {"z.csv": ROWS, "w2.csv": ROWS}))

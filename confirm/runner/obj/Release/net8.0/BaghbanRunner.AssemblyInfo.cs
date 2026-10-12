@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BaghbanRunner")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+033d77c55b7de7cf3ab4792ca379fc241f38c750")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f4e467724669f1bbd2873f67a35d313ca33b941d")]
 [assembly: System.Reflection.AssemblyProductAttribute("BaghbanRunner")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BaghbanRunner")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -360,3 +360,38 @@ def test_unnamed_multicast_is_info():
 
 def test_named_subscribe_is_not_unnamed():
     assert "UNNAMED_SUBJECT" not in codes(workflow(expr(publish("A")), expr(subscribe("A"))))
+
+
+# ------------------------------------------------------------------ DUPLICATE_PROPERTY
+
+def test_duplicate_property_fires_in_one_workflow():
+    xml = workflow(expr(externalized(("FileName", "Out"))), expr(csv_writer("a.csv")),
+                   expr(externalized(("FileName", "Out"))), expr(csv_writer("b.csv")),
+                   edges=[(0, 1), (2, 3)])
+    assert "DUPLICATE_PROPERTY" in codes(xml)
+    # two entries of one mapping count too: names are per workflow
+    one = workflow(expr(externalized(("FileName", "Out"), ("Overwrite", "Out"))),
+                   expr(csv_writer("a.csv")), edges=[(0, 1)])
+    assert "DUPLICATE_PROPERTY" in codes(one)
+
+
+def test_duplicate_property_quiet():
+    pair = lambda name: group(name, workflow(expr(externalized(("FileName", "Out"))),
+                                             expr(csv_writer(f"{name}.csv")), edges=[(0, 1)]))
+    # the same name in two groups: separate workflows
+    assert "DUPLICATE_PROPERTY" not in codes(workflow(expr(pair("a")), expr(pair("b"))))
+    # one of the two disabled
+    xml = workflow(expr(externalized(("FileName", "Out"))), expr(csv_writer("a.csv")),
+                   disable(externalized(("FileName", "Out"))), expr(csv_writer("b.csv")),
+                   edges=[(0, 1), (2, 3)])
+    assert "DUPLICATE_PROPERTY" not in codes(xml)
+    # inside a disabled group, which is never built
+    dup = workflow(expr(externalized(("FileName", "Out"))), expr(csv_writer("a.csv")),
+                   expr(externalized(("FileName", "Out"))), expr(csv_writer("b.csv")),
+                   edges=[(0, 1), (2, 3)])
+    assert "DUPLICATE_PROPERTY" not in codes(workflow(disable(group("off", dup))))
+    # different DisplayNames for the same property
+    ok = workflow(expr(externalized(("FileName", "A"))), expr(csv_writer("a.csv")),
+                  expr(externalized(("FileName", "B"))), expr(csv_writer("b.csv")),
+                  edges=[(0, 1), (2, 3)])
+    assert "DUPLICATE_PROPERTY" not in codes(ok)

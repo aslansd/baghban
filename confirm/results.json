@@ -35,15 +35,15 @@
         "exit": 0,
         "error": "",
         "files": [
-          "data2026-10-11T21_58_22.csv"
+          "data2026-10-12T14_48_48.csv"
         ]
       },
       {
         "exit": 0,
         "error": "",
         "files": [
-          "data2026-10-11T21_58_22.csv",
-          "data2026-10-11T21_58_25.csv"
+          "data2026-10-12T14_48_48.csv",
+          "data2026-10-12T14_48_51.csv"
         ]
       }
     ]
@@ -245,6 +245,39 @@
         "error": "",
         "files": [
           "out.csv"
+        ]
+      }
+    ]
+  },
+  {
+    "case": "duplicate_property",
+    "baghban": [
+      "DUPLICATE_PROPERTY"
+    ],
+    "confirmed": true,
+    "observed": "exit 1 (WorkflowBuildException: A workflow property with the name 'Out' alread)",
+    "note": "found by confirm_properties.py on its first run (0.4.1)",
+    "runs": [
+      {
+        "exit": 1,
+        "error": "WorkflowBuildException: A workflow property with the name 'Out' already exists.",
+        "files": []
+      }
+    ]
+  },
+  {
+    "case": "same_property_in_two_groups",
+    "baghban": [],
+    "confirmed": true,
+    "observed": "exit 0; 2 file(s) with [3, 3] rows",
+    "note": "each group is its own workflow, with its own property names",
+    "runs": [
+      {
+        "exit": 0,
+        "error": "",
+        "files": [
+          "w1.csv",
+          "w2.csv"
         ]
       }
     ]

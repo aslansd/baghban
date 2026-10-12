@@ -273,6 +273,13 @@ with 0.4.0:
 | `UNUSED_SUBJECT` (info) | 153 | 152 |
 | Entry workflows with `not checked` notes | 115 | 114 |
 
+With packages read at their pinned versions (`--fetch`, baghban 0.4.1, run
+on macOS on 12 Oct 2026), the comparison is the same. Errors and warnings
+match 0.3.0's real run (23 `DANGLING_SUBJECT`, 12 `MISSING_INCLUDE`, 3
+`SILENT_OVERWRITE`, 2 `UNNAMED_SUBJECT`; 57 `DISABLED_WRITER`).
+`UNUSED_SUBJECT` goes from 179 to 178, and `not checked` notes from 84 to 83.
+The new `DUPLICATE_PROPERTY` check finds nothing.
+
 Both differences are one workflow, AIND Dynamic Foraging's
 `src/test_saturation_visualizer.bonsai`. It includes
 `Extensions/CameraPreviewVisualizer.bonsai` with

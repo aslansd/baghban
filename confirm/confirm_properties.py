@@ -36,9 +36,10 @@ from confirm import HEAD, SOURCE, TAIL, build_runner  # noqa: E402
 
 # Bonsai's exception for each way baghban says a name is refused
 # (SetWorkflowProperty: KeyNotFoundException when nothing matches,
-# InvalidOperationException when two nested workflows share the name)
+# InvalidOperationException when two nested workflows share the name; the
+# build before it: WorkflowBuildException when two properties share a name)
 REFUSALS = {"unknown": "KeyNotFoundException", "ambiguous": "InvalidOperationException",
-            "invalid": "ArgumentException"}
+            "duplicate": "WorkflowBuildException", "invalid": "ArgumentException"}
 
 
 # ----------------------------------------------------------------------------- building blocks
@@ -157,11 +158,17 @@ CASES = [
                                             (2, 3, "Source1")),
          {}, ("writes", ["left.csv"]), files={"RF.bonsai": RF_MODULE},
          note="no --property: the value saved on the include; baghban 0.3.0 predicted noise.csv"),
-    Case("first_of_two_same_names",
+    Case("two_properties_same_name",
          top(mapping("FileName", "Out") + csv("w1.csv") + mapping("FileName", "Out") + csv("w2.csv"),
              (2, 4, "Source1"), (3, 4, "Source2"), (2, 6, "Source1"), (5, 6, "Source2")),
-         {"Out": "z.csv"}, ("writes", ["w2.csv", "z.csv"]),
-         note="PropertyDescriptorCollection.Find returns the first"),
+         {"Out": "z.csv"}, ("refuses", "WorkflowBuildException"),
+         note="the build refuses two properties of one name in one workflow; the first run "
+              "showed it (baghban had predicted the first one wins)"),
+    Case("same_name_in_two_groups",
+         top(group("Left", writer_body("l.csv", "Out")) + group("Right", writer_body("r.csv", "Out")),
+             (2, 3, "Source1"), (2, 4, "Source1")),
+         {"Left.Out": "z.csv"}, ("writes", ["r.csv", "z.csv"]),
+         note="each group is its own workflow, with its own names"),
     Case("unknown_name", top(mapping("FileName", "Out") + csv("default.csv"),
                              (2, 4, "Source1"), (3, 4, "Source2")),
          {"Nope": "x.csv"}, ("refuses", "KeyNotFoundException")),

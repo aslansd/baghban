@@ -1,11 +1,11 @@
 # Roadmap
 
-Status as of 0.4.0. Evidence for the ordering is in `survey/SURVEY.md`.
+Status as of 0.4.1. Evidence for the ordering is in `survey/SURVEY.md`.
 
-1. **Confirm the findings by running them.** *Done on macOS.* Second run
-   (4 Oct 2026, baghban 0.2.1, Bonsai 2.9.1 packages, .NET 8, Intel Mac):
-   13/13 cases confirmed, after the first run (8/12) exposed a kit flaw and
-   a wrong claim about unnamed subjects, both fixed. Open: run the same kit
+1. **Confirm the findings by running them.** *Done on macOS.* Latest run
+   (12 Oct 2026, baghban 0.4.1, Bonsai 2.9 packages, .NET 8, Intel Mac):
+   15/15 cases confirmed. Earlier runs: 8/12 (a kit flaw and a wrong claim
+   about unnamed subjects, both fixed), then 13/13 on 4 Oct 2026. Open: run the same kit
    on Windows, where rigs actually run (file locking differs, which matters
    most for `DUPLICATE_OUTPUT`), and add a case whenever a finding is added
    or its message changes.
@@ -49,9 +49,15 @@ Status as of 0.4.0. Evidence for the ordering is in `survey/SURVEY.md`.
    workflows' own properties all resolve. Building it fixed include values
    not reaching groups inside the included file. In the survey this removed
    one false `UNUSED_SUBJECT` and one "not checked" note; errors and
-   warnings are unchanged. `confirm/confirm_properties.py` runs 10 cases on
-   the real runtime. Open: run that kit (not run yet); the adapter, in
-   daftar.
+   warnings are unchanged. `confirm/confirm_properties.py` checks this on
+   the real runtime. Its first run (12 Oct 2026, macOS) confirmed 9 of 10
+   cases. The tenth was a wrong claim: baghban said that of two properties
+   with one name the first wins, but Bonsai refuses to build such a
+   workflow. Since 0.4.1, `set_properties` refuses the name and `check` reports
+   `DUPLICATE_PROPERTY`. None of the 572 survey workflows has such a pair.
+   Re-run with 0.4.1 (12 Oct 2026, macOS): `confirm_properties.py` 11/11
+   and `confirm.py` 15/15. Open: values that need type conversion are not
+   checked (they stay strings); the adapter, in daftar.
 5. **`UNRECORDED_PARAMETER`**: an externalized property whose value is never
    written to any output, so the data does not say what settings produced it.
 6. **Rate-dependent checks**, only where rates are stated in the XML (a

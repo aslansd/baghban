@@ -5,7 +5,7 @@ pip install -e ".[dev]"
 pytest -q
 ```
 
-Expected: `228 passed`, in about ten seconds. No network, no .NET, no
+Expected: `231 passed`, in about ten seconds. No network, no .NET, no
 Bonsai installation.
 
 ## What the suite checks
@@ -32,6 +32,7 @@ stay quiet. The quiet cases are the ones that matter for trust:
 | `DUPLICATE_OUTPUT` | the file names differ; one copy is disabled; an included module gets its own `FileName` per include |
 | `DANGLING_SUBJECT` | the subject is declared in an enclosing scope, or inside a group (groups share their parent's scope); the subscriber is disabled; an unreadable include in scope might declare it |
 | `DUPLICATE_SUBJECT` | the second declaration is inside a nested workflow (closest redefinition) |
+| `DUPLICATE_PROPERTY` | the two are in different groups (separate workflows); one is disabled, or inside a disabled group; the DisplayNames differ |
 | `MISSING_INCLUDE` | the file exists, including with backslashes, without the `.bonsai` extension, or as a nested include resolved from the top-level folder; the include is disabled |
 | `DISABLED_WRITER` | the writer is enabled |
 
@@ -72,17 +73,17 @@ Bonsai's `CommandLineParser` reads it (every spelling of `--property`,
 short aliases, values containing `:` and `=`, the arguments Bonsai.exe
 refuses). Where a value goes, as Bonsai's `SetWorkflowProperty` sends it:
 top level, dotted through groups and a named SelectMany, through a group
-into an include and a group inside it (iblrig's shape), the first of two
-properties with one name, a mapping connected to nothing. The names Bonsai
-refuses: unknown, ambiguous, a disabled group, an include named directly,
-an empty name; with `strict`, nothing changes. Also include values reaching
+into an include and a group inside it (iblrig's shape), a mapping connected
+to nothing. The names Bonsai
+refuses: unknown, ambiguous, two properties of one name in one workflow,
+a disabled group, an include named directly, an empty name; with `strict`, nothing changes. Also include values reaching
 a group inside the included file (fixed in 0.4.0), `outputs`, the
 provenance fields (all strings, fingerprint of the file as saved, the
 caller's document unchanged), the CLI's `-p`, and that baghban does not
 depend on daftar.
 
 **`test_confirm_properties.py`** tests `confirm/confirm_properties.py`
-without .NET: baghban's prediction for each of its 10 cases, and the
+without .NET: baghban's prediction for each of its 11 cases, and the
 judgement of simulated runs in both directions.
 
 **`test_confirm_packages.py`** tests `confirm/confirm_packages.py` without
@@ -110,16 +111,17 @@ example rigs.
 
 ## Beyond the unit tests
 
-- `python confirm/confirm.py` runs 13 cases with the real Bonsai runtime
-  (needs .NET 8). Last run: 13/13 confirmed (4 Oct 2026, macOS, Bonsai 2.9.1
-  packages). `confirm/README.md` explains installing .NET on a Mac, running
+- `python confirm/confirm.py` runs 15 cases with the real Bonsai runtime
+  (needs .NET 8). Last run: 15/15 confirmed (12 Oct 2026, macOS, Bonsai 2.9
+  packages, baghban 0.4.1). `confirm/README.md` explains installing .NET on a Mac, running
   the kit, reading its output, and records every run's results.
 - `python confirm/confirm_packages.py` compares the package reader with
   Microsoft's metadata reader on real Bonsai packages (needs .NET 8 and
   nuget.org). Last run: 8/8 packages identical (12 Oct 2026).
-- `python confirm/confirm_properties.py` runs 10 cases of launcher
-  `--property` values with the real Bonsai runtime (needs .NET 8). Not run
-  yet.
+- `python confirm/confirm_properties.py` runs 11 cases of launcher
+  `--property` values with the real Bonsai runtime (needs .NET 8). First
+  run: 9/10 (12 Oct 2026). The NO led to `DUPLICATE_PROPERTY`. With 0.4.1:
+  11/11 (12 Oct 2026).
 - `python survey/run_survey.py DIR` re-runs the survey of published
   repositories; `survey/SURVEY.md` records the last run and its hand review,
   and `survey/survey-results.json` holds that run's full output.

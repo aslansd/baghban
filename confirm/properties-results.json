@@ -1,0 +1,202 @@
+[
+  {
+    "case": "top_level",
+    "properties": {
+      "Out": "a.csv"
+    },
+    "baghban": [
+      "writes",
+      [
+        "a.csv"
+      ]
+    ],
+    "confirmed": true,
+    "observed": "wrote a.csv",
+    "note": "",
+    "exit": 0,
+    "error": "",
+    "files": [
+      "a.csv"
+    ]
+  },
+  {
+    "case": "through_a_group",
+    "properties": {
+      "Rec.Log": "b.csv"
+    },
+    "baghban": [
+      "writes",
+      [
+        "b.csv"
+      ]
+    ],
+    "confirmed": true,
+    "observed": "wrote b.csv",
+    "note": "",
+    "exit": 0,
+    "error": "",
+    "files": [
+      "b.csv"
+    ]
+  },
+  {
+    "case": "through_a_named_selectmany",
+    "properties": {
+      "Trial.Log": "e.csv"
+    },
+    "baghban": [
+      "writes",
+      [
+        "e.csv"
+      ]
+    ],
+    "confirmed": true,
+    "observed": "wrote e.csv",
+    "note": "any named nested workflow, not only groups",
+    "exit": 0,
+    "error": "",
+    "files": [
+      "e.csv"
+    ]
+  },
+  {
+    "case": "groups_then_include_then_group",
+    "properties": {
+      "Stim.RF.FileNameRF": "c.csv"
+    },
+    "baghban": [
+      "writes",
+      [
+        "c.csv"
+      ]
+    ],
+    "confirmed": true,
+    "observed": "wrote c.csv",
+    "note": "iblrig's Stim.ReceptiveFieldMappingStim.FileNameRFMapStim, in miniature",
+    "exit": 0,
+    "error": "",
+    "files": [
+      "c.csv"
+    ]
+  },
+  {
+    "case": "include_value_reaches_group",
+    "properties": {},
+    "baghban": [
+      "writes",
+      [
+        "left.csv"
+      ]
+    ],
+    "confirmed": true,
+    "observed": "wrote left.csv",
+    "note": "no --property: the value saved on the include; baghban 0.3.0 predicted noise.csv",
+    "exit": 0,
+    "error": "",
+    "files": [
+      "left.csv"
+    ]
+  },
+  {
+    "case": "two_properties_same_name",
+    "properties": {
+      "Out": "z.csv"
+    },
+    "baghban": [
+      "refuses",
+      "WorkflowBuildException"
+    ],
+    "confirmed": true,
+    "observed": "refused: WorkflowBuildException: A workflow property with the name 'Out' already exists.",
+    "note": "the build refuses two properties of one name in one workflow; the first run showed it (baghban had predicted the first one wins)",
+    "exit": 1,
+    "error": "WorkflowBuildException: A workflow property with the name 'Out' already exists.",
+    "files": []
+  },
+  {
+    "case": "same_name_in_two_groups",
+    "properties": {
+      "Left.Out": "z.csv"
+    },
+    "baghban": [
+      "writes",
+      [
+        "r.csv",
+        "z.csv"
+      ]
+    ],
+    "confirmed": true,
+    "observed": "wrote r.csv, z.csv",
+    "note": "each group is its own workflow, with its own names",
+    "exit": 0,
+    "error": "",
+    "files": [
+      "r.csv",
+      "z.csv"
+    ]
+  },
+  {
+    "case": "unknown_name",
+    "properties": {
+      "Nope": "x.csv"
+    },
+    "baghban": [
+      "refuses",
+      "KeyNotFoundException"
+    ],
+    "confirmed": true,
+    "observed": "refused: KeyNotFoundException: No property or named element 'Nope' was found in the workflow.",
+    "note": "",
+    "exit": 1,
+    "error": "KeyNotFoundException: No property or named element 'Nope' was found in the workflow.",
+    "files": []
+  },
+  {
+    "case": "ambiguous_group",
+    "properties": {
+      "Rec.Log": "x.csv"
+    },
+    "baghban": [
+      "refuses",
+      "InvalidOperationException"
+    ],
+    "confirmed": true,
+    "observed": "refused: InvalidOperationException: Multiple elements with the specified name 'Rec' were found in the workflow.",
+    "note": "",
+    "exit": 1,
+    "error": "InvalidOperationException: Multiple elements with the specified name 'Rec' were found in the workflow.",
+    "files": []
+  },
+  {
+    "case": "disabled_group",
+    "properties": {
+      "Off.Log": "x.csv"
+    },
+    "baghban": [
+      "refuses",
+      "KeyNotFoundException"
+    ],
+    "confirmed": true,
+    "observed": "refused: KeyNotFoundException: No property or named element 'Off.Log' was found in the workflow.",
+    "note": "a disabled node is a DisableBuilder, not a workflow",
+    "exit": 1,
+    "error": "KeyNotFoundException: No property or named element 'Off.Log' was found in the workflow.",
+    "files": []
+  },
+  {
+    "case": "include_by_name",
+    "properties": {
+      "RF.FileNameRF": "x.csv"
+    },
+    "baghban": [
+      "refuses",
+      "KeyNotFoundException"
+    ],
+    "confirmed": true,
+    "observed": "refused: KeyNotFoundException: No property or named element 'RF.FileNameRF' was found in the workflow.",
+    "note": "an include is not a WorkflowExpressionBuilder: reached only through a mapping",
+    "exit": 1,
+    "error": "KeyNotFoundException: No property or named element 'RF.FileNameRF' was found in the workflow.",
+    "files": []
+  }
+]
