@@ -1,6 +1,59 @@
 # Changelog
 
-## 0.3.0 (unreleased)
+## 0.4.0 (unreleased)
+
+Roadmap item 4, baghban's side: what daftar's Bonsai adapter needs. The
+adapter itself lives in daftar (`daftar.adapters.bonsai`,
+`pip install "daftar[bonsai]"`). daftar depends on baghban, not the other
+way round.
+
+- **`baghban.provenance(workflow, properties, command_line=..., cwd=...)`**:
+  the stable entry point for provenance tools. Flat string fields, with a
+  layout version (`bonsai.provenance = "1"`), the baghban version, the
+  `Bonsai.config` package versions came from (`bonsai.environment`), each
+  launcher value (`bonsai.property.<name>`), top-level parameters with those
+  values applied, includes, packages, output paths (`bonsai.output.<n>`) and
+  any values Bonsai would refuse (`bonsai.problems`). The fingerprint is of
+  the file as saved, and a `Document` passed in is not changed.
+  `bonsai.workflow` is now an absolute path.
+- **`manifest_fields(doc)`** is kept as an alias of `provenance(doc)`, and so
+  gains the new fields.
+- **`baghban.parse_command_line(args)`**: Bonsai.exe's arguments read as its
+  `CommandLineParser` reads them: `--property:N=V`, `--property N=V`, `-p:N=V`,
+  `-p N=V`, the other commands and their short aliases, and the errors
+  Bonsai.exe stops on.
+- **`baghban.set_properties(doc, values, strict=False)`**: launcher values
+  applied as Bonsai's `SetWorkflowProperty` applies them. A dotted name walks
+  through uniquely named, enabled nested workflows (groups, SelectMany, ...),
+  but not into an include by name. The last part is an externalized
+  property, and the first one with that name wins. The value reaches every
+  node it maps to, through groups and into includes. Each name gets an
+  `Assignment` (`ok`, `unknown`, `ambiguous`, `invalid`, with a note and
+  the saved value). `strict` raises `PropertyAssignmentError` before
+  changing anything.
+- **`baghban.outputs(doc)`**: every enabled file writer with its effective
+  path, `Suffix`, location, whether a launcher or includer set it, and
+  whether the path is assigned from data at run time.
+- **Fix: include values now reach groups inside the included file.** A value
+  on an IncludeWorkflow element (`<FrameSubject>Frame</FrameSubject>`) set
+  only nodes the included file's mapping fed directly, not nodes inside a
+  group it fed. In the survey this removed one false `UNUSED_SUBJECT` (AIND
+  `test_saturation_visualizer.bonsai`) and one "not checked" note. Errors
+  and warnings are unchanged.
+- `parameters` reports the value of a property mapped onto a group or an
+  include, which lives inside it (it was empty).
+- CLI: `-p/--property NAME=VALUE` on `check`, `show`, `render`, `params`
+  and `provenance` (and on `fingerprint --fields`). New `baghban provenance`
+  command; `fingerprint --fields` is the same.
+- Removed the `provenance = ["daftar"]` extra.
+- `confirm/confirm_properties.py`: 10 cases checking launcher values on the
+  real runtime. The runner now takes `NAME=VALUE` arguments and applies them
+  as Bonsai.exe does. Not run yet.
+- Checked on the survey: provenance built for all 572 workflows, and 1,114
+  dotted names made from the workflows' own properties all resolve. 228
+  tests.
+
+## 0.3.0 (2026-10-11)
 
 Roadmap item 3: includes into packages from other repositories are read.
 

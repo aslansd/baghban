@@ -7,6 +7,10 @@
     baghban deps   WORKFLOW           assemblies/packages and includes it needs
     baghban params WORKFLOW           externalized properties and their values
     baghban fingerprint WORKFLOW      content hash, stable across re-saves
+    baghban provenance WORKFLOW       fields recording which protocol a session ran
+
+Commands that read one workflow take -p/--property NAME=VALUE, as Bonsai.exe
+does, to see the values a launcher passes instead of the saved ones.
 """
 
 from __future__ import annotations
@@ -20,7 +24,8 @@ from . import __version__
 from .checks import check
 from .diff import diff
 from .info import (dependencies, fingerprint, format_dependencies, format_parameters,
-                   manifest_fields, parameters)
+                   parameters, provenance)
+from .launch import set_properties
 from .model import WorkflowLoadError, load
 from .render import dot, html, mermaid, outline
 
@@ -70,11 +75,36 @@ def _collect(paths, exclude=()) -> list:
                        for pat in exclude)]
 
 
+def _properties(args) -> dict:
+    props = {}
+    for item in getattr(args, "property", None) or []:
+        name, sep, value = item.partition("=")
+        if not sep or not name:
+            raise SystemExit(f"--property expects NAME=VALUE, got '{item}'")
+        if name in props:
+            raise SystemExit(f"--property {name} is given twice (Bonsai.exe refuses that too)")
+        props[name] = value
+    return props
+
+
 def _load(path, args):
+    """Load one workflow and apply any --property values; problems go to stderr
+    and are remembered on ``args`` so the command can exit 1."""
     try:
-        return load(path, **_load_options(args))
+        doc = load(path, **_load_options(args))
     except (WorkflowLoadError, OSError) as exc:
         raise SystemExit(f"baghban: {exc}")
+    args.property_problems = 0
+    for a in set_properties(doc, _properties(args)):
+        if a.status != "ok":
+            args.property_problems += 1
+            print(f"baghban: --property {a.name}: {a.note} (Bonsai would refuse it)",
+                  file=sys.stderr)
+    return doc
+
+
+def _with_problems(args, code: int) -> int:
+    return max(code, 1 if getattr(args, "property_problems", 0) else 0)
 
 
 def select_roots(docs) -> list:
@@ -96,10 +126,12 @@ def cmd_check(args) -> int:
     if not files:
         print("baghban: no .bonsai files found", file=sys.stderr)
         return 2
+    if _properties(args) and len(files) != 1:
+        raise SystemExit("baghban: --property applies to one workflow; check it on its own")
     docs, failures = [], []
     for f in files:
         try:
-            docs.append(load(f, **_load_options(args)))
+            docs.append(_load(f, args) if _properties(args) else load(f, **_load_options(args)))
         except (WorkflowLoadError, OSError) as exc:
             failures.append(str(exc))
 
@@ -109,7 +141,8 @@ def cmd_check(args) -> int:
     via_includer = len(docs) - len(roots)
 
     reports = [check(d) for d in roots]
-    code = max([r.exit_code(args.strict) for r in reports] + [1 if failures else 0])
+    code = _with_problems(args, max([r.exit_code(args.strict) for r in reports]
+                                    + [1 if failures else 0]))
 
     if args.json:
         print(json.dumps({"reports": [r.to_dict() for r in reports], "unreadable": failures},
@@ -129,7 +162,7 @@ def cmd_check(args) -> int:
 
 def cmd_show(args) -> int:
     print(outline(_load(args.workflow, args)))
-    return 0
+    return _with_problems(args, 0)
 
 
 def cmd_render(args) -> int:
@@ -150,7 +183,7 @@ def cmd_render(args) -> int:
         print(f"wrote {Path(out).resolve()}")
     else:
         print(text)
-    return 0
+    return _with_problems(args, 0)
 
 
 def cmd_diff(args) -> int:
@@ -168,15 +201,29 @@ def cmd_deps(args) -> int:
 def cmd_params(args) -> int:
     params = parameters(_load(args.workflow, args))
     print(json.dumps(params, indent=2) if args.json else format_parameters(params))
-    return 0
+    return _with_problems(args, 0)
 
 
 def cmd_fingerprint(args) -> int:
-    doc = _load(args.workflow, args)
-    if args.fields:
-        print(json.dumps(manifest_fields(doc), indent=2))
-    else:
-        print(f"{fingerprint(doc)}  {args.workflow}")
+    if args.fields:  # kept from 0.1: the same as `baghban provenance`
+        return cmd_provenance(args)
+    if _properties(args):
+        raise SystemExit("baghban: the fingerprint is of the workflow as saved; --property "
+                         "only applies with --fields (or use `baghban provenance`)")
+    print(f"{fingerprint(_load(args.workflow, args))}  {args.workflow}")
+    return 0
+
+
+def cmd_provenance(args) -> int:
+    try:
+        doc = load(args.workflow, **_load_options(args))
+    except (WorkflowLoadError, OSError) as exc:
+        raise SystemExit(f"baghban: {exc}")
+    fields = provenance(doc, _properties(args))
+    print(json.dumps(fields, indent=2))
+    if "bonsai.problems" in fields:
+        print(f"baghban: {fields['bonsai.problems']} (Bonsai would refuse it)", file=sys.stderr)
+        return 1
     return 0
 
 
@@ -203,7 +250,13 @@ def build_parser() -> argparse.ArgumentParser:
                              "(default: $BAGHBAN_CACHE or ~/.cache/baghban)")
         return sp
 
-    c = with_roots(sub.add_parser("check", help="find problems before the rig runs"))
+    def with_properties(sp):
+        sp.add_argument("-p", "--property", action="append", metavar="NAME=VALUE",
+                        help="set an externalized property as Bonsai.exe --property does "
+                             "(dotted names reach into nested workflows; repeatable)")
+        return sp
+
+    c = with_properties(with_roots(sub.add_parser("check", help="find problems before the rig runs")))
     c.add_argument("paths", nargs="+", help=".bonsai files or folders")
     c.add_argument("--json", action="store_true")
     c.add_argument("--strict", action="store_true", help="exit 1 on warnings too")
@@ -213,11 +266,11 @@ def build_parser() -> argparse.ArgumentParser:
                         "(repeatable)")
     c.set_defaults(func=cmd_check)
 
-    s = with_roots(sub.add_parser("show", help="print the workflow as a tree"))
+    s = with_properties(with_roots(sub.add_parser("show", help="print the workflow as a tree")))
     s.add_argument("workflow")
     s.set_defaults(func=cmd_show)
 
-    r = with_roots(sub.add_parser("render", help="draw the workflow"))
+    r = with_properties(with_roots(sub.add_parser("render", help="draw the workflow")))
     r.add_argument("workflow")
     r.add_argument("-f", "--format", choices=("html", "mermaid", "dot"), default="html")
     r.add_argument("-o", "--output", help="output file (html defaults to the workflow's name with .html, next to it)")
@@ -234,16 +287,22 @@ def build_parser() -> argparse.ArgumentParser:
     dp.add_argument("--json", action="store_true")
     dp.set_defaults(func=cmd_deps)
 
-    pa = with_roots(sub.add_parser("params", help="externalized properties and values"))
+    pa = with_properties(with_roots(sub.add_parser("params", help="externalized properties and values")))
     pa.add_argument("workflow")
     pa.add_argument("--json", action="store_true")
     pa.set_defaults(func=cmd_params)
 
-    f = with_roots(sub.add_parser("fingerprint", help="content hash stable across re-saves"))
+    f = with_properties(with_roots(sub.add_parser("fingerprint",
+                                                  help="content hash stable across re-saves")))
     f.add_argument("workflow")
     f.add_argument("--fields", action="store_true",
-                   help="print provenance fields (for daftar) instead of the hash")
+                   help="print the provenance fields instead (same as `baghban provenance`)")
     f.set_defaults(func=cmd_fingerprint)
+
+    pv = with_properties(with_roots(sub.add_parser(
+        "provenance", help="fields recording which protocol a session ran (JSON)")))
+    pv.add_argument("workflow")
+    pv.set_defaults(func=cmd_provenance)
     return p
 
 

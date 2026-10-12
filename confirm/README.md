@@ -71,7 +71,7 @@ cd "/path/to/baghban"
 python -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
-pytest -q                          # 134 passed
+pytest -q                          # 228 passed
 ```
 
 **Order matters: .NET before the virtual environment.** A virtual
@@ -319,6 +319,48 @@ an include would resolve it, and came out byte-for-byte identical. Full record: 
 Before this, the reader had matched dnfile, an independent Python parser,
 on 168 real assemblies from PyPI (a .NET runtime and pythonnet), including
 large assemblies with 4-byte heaps.
+
+## Confirming launcher values (0.4.0)
+
+baghban 0.4.0 records the values a launcher passes with
+`Bonsai.exe rig.bonsai -p:Stim.RF.FileNameRF=c.csv` (`baghban.provenance`),
+and applies them so checks see what the session ran with
+(`baghban.set_properties`). The record is only worth keeping if each value
+goes where Bonsai sends it. `confirm_properties.py` checks that on the real
+runtime:
+
+```
+python confirm/confirm_properties.py
+```
+
+For each of 10 cases it writes a small workflow (and the include file it
+needs), asks baghban either which files the session will write or which
+name Bonsai will refuse, then runs it with the runner, which now applies
+`NAME=VALUE` arguments exactly as Bonsai.exe applies `--property`: build,
+`SetWorkflowProperty` for each, run (Bonsai.Editor/WorkflowRunner.cs). Each
+value is a CsvWriter's file name, so where it went is visible on disk.
+
+| Case | Values | baghban says |
+| --- | --- | --- |
+| `top_level` | `Out=a.csv` | writes `a.csv` |
+| `through_a_group` | `Rec.Log=b.csv` | writes `b.csv` |
+| `through_a_named_selectmany` | `Trial.Log=e.csv` | writes `e.csv`: any named nested workflow, not only groups |
+| `groups_then_include_then_group` | `Stim.RF.FileNameRF=c.csv` | writes `c.csv`: iblrig's shape, through two groups, into an include, into a group inside it |
+| `include_value_reaches_group` | (none) | writes `left.csv`, the value saved on the include; 0.3.0 said `noise.csv` |
+| `first_of_two_same_names` | `Out=z.csv` | writes `z.csv` and `w2.csv`: the first property of a name wins |
+| `unknown_name` | `Nope=x.csv` | refused: `KeyNotFoundException` |
+| `ambiguous_group` | `Rec.Log=x.csv` | refused: `InvalidOperationException` (two groups named `Rec`) |
+| `disabled_group` | `Off.Log=x.csv` | refused: `KeyNotFoundException` (a disabled group is not a workflow) |
+| `include_by_name` | `RF.FileNameRF=x.csv` | refused: `KeyNotFoundException` (an include is reached only through a mapping) |
+
+Expected ending: `10/10 confirmed. Details: .../confirm/properties-results.json`.
+`--dry-run` checks baghban's side only. The name rules were read from the
+Bonsai source and are identical from 2.6.2 to 2.9.1 (`SetWorkflowProperty`);
+the runner uses the 2.9 packages, like the other kits.
+
+### Results
+
+Not run yet.
 
 ## Troubleshooting
 

@@ -8,16 +8,20 @@ machine, macOS included, without Windows or .NET. Standard library only.
     print(baghban.check(doc).summary())
 """
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 from .model import Document, Node, Workflow, TypeRef, Include, WorkflowLoadError, load, loads
 from .checks import Finding, Report, check, FINDINGS
 from .diff import diff, WorkflowDiff
-from .info import dependencies, parameters, fingerprint, manifest_fields
+from .info import dependencies, parameters, fingerprint, outputs, provenance, manifest_fields
+from .launch import (Launch, Assignment, PropertyAssignmentError, parse_command_line,
+                     set_properties)
 from .render import outline, mermaid, dot, html
 
 __all__ = [
     "Document", "Node", "Workflow", "TypeRef", "Include", "WorkflowLoadError", "load", "loads",
     "Finding", "Report", "check", "FINDINGS", "diff", "WorkflowDiff", "dependencies",
-    "parameters", "fingerprint", "manifest_fields", "outline", "mermaid", "dot", "html",
+    "parameters", "fingerprint", "outputs", "provenance", "manifest_fields", "Launch", "Assignment",
+    "PropertyAssignmentError", "parse_command_line", "set_properties", "outline", "mermaid", "dot",
+    "html",
 ]

@@ -258,6 +258,39 @@ Reading packages also confirmed the reader itself: on the 8 packages the
 survey most needed, it agrees with Microsoft's System.Reflection.Metadata on
 every name, offset and byte (`confirm/README.md`).
 
+## Launcher values: what 0.4.0 changes (12 Oct 2026)
+
+0.4.0 applies `--property` values as Bonsai does, and in doing so fixed
+how values written on an IncludeWorkflow element travel: they now reach
+groups inside the included file, as they do in Bonsai. Re-running the
+survey without packages (`--no-clone`, the same clones), with 0.3.0 and
+with 0.4.0:
+
+| | 0.3.0 | 0.4.0 |
+| --- | ---: | ---: |
+| Errors | 27 | 27 (identical) |
+| `DISABLED_WRITER` (warning) | 57 | 57 (identical) |
+| `UNUSED_SUBJECT` (info) | 153 | 152 |
+| Entry workflows with `not checked` notes | 115 | 114 |
+
+Both differences are one workflow, AIND Dynamic Foraging's
+`src/test_saturation_visualizer.bonsai`. It includes
+`Extensions/CameraPreviewVisualizer.bonsai` with
+`<FrameSubject>Frame</FrameSubject>`, and the included file maps
+`FrameSubject` into the group `CameraPreview`, onto a `SubscribeSubject`.
+0.3.0 stopped at the group: it reported the subject `Frame` as unused (a
+**false alarm**, at info level) and the module as expecting a subject
+`Camera` from its includer. 0.4.0 follows the value, sees `Frame`
+subscribed, and checks the module fully.
+
+The same clones were also used to test the new API. Provenance was built for
+all 572 readable workflows. Every property each workflow exposes, through
+uniquely named nested workflows, was turned into a dotted `--property`
+name (1,114 names with a single saved value) and set to that value: all
+resolve. The fingerprint changes in one workflow, where a value that came
+from a module's default is now written on the include element, as Bonsai
+also does. This is why provenance fingerprints the file as saved.
+
 ## Caveats
 
 - Public repositories over-represent documentation and packages: 187 of the

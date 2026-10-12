@@ -136,7 +136,8 @@ class Node:
     workflow: Optional["Workflow"] = None  # nested workflow, if any
     include: Optional[Include] = None
     mappings: list = field(default_factory=list)  # (Name, DisplayName) for mapping builders
-    overridden: set = field(default_factory=set)  # property names set by an includer
+    # property names set from outside: by an includer, or by a launcher's --property
+    overridden: set = field(default_factory=set)
 
     # -- identity -------------------------------------------------------------
     @property
@@ -546,23 +547,101 @@ class _Loader:
         owner = wf.owner
         if owner is None or not owner.is_include or owner.include is None:
             return
-        overrides = owner.include.overrides
-        if not overrides:
-            return
-        for mapping in wf.nodes:
-            if not mapping.type.is_core("ExternalizedMapping") or mapping.disabled:
-                continue
-            for name, display in mapping.mappings:
-                key = display or name
-                if key in overrides:
-                    for target in mapping.successors():
-                        target.properties[name] = overrides[key]
-                        target.overridden.add(name)
-                        # an externalized property of a nested include: pass it on
-                        if target.is_include and target.include is not None \
-                                and target.include.workflow is not None:
-                            target.include.overrides[name] = overrides[key]
-                            _Loader.apply_include_overrides(target.include.workflow)
+        for key, value in list(owner.include.overrides.items()):
+            assign_external(wf, key, value)
+
+
+# --------------------------------------------------------------------------- properties
+#
+# A workflow's own properties are the entries of its enabled ExternalizedMapping
+# nodes, named DisplayName or else Name (Bonsai.Core WorkflowTypeDescriptor).
+# Setting one sets the mapped property on every node the mapping feeds. Bonsai
+# looks a name up with PropertyDescriptorCollection.Find, so when two entries
+# share a name the first one wins. A target that is itself a workflow (a group,
+# SelectMany, ...) exposes its inner workflow's properties, so the value goes on
+# down; an IncludeWorkflow stores the value on its own element and passes it on
+# to the included file.
+
+def externalized_properties(wf: Workflow) -> list:
+    """``(name, mapping node, mapped property)`` for each property ``wf`` exposes,
+    in Bonsai's order."""
+    out = []
+    for node in wf.nodes:
+        if node.disabled or not node.type.is_core("ExternalizedMapping"):
+            continue
+        for prop, display in node.mappings:
+            if prop:
+                out.append((display or prop, node, prop))
+    return out
+
+
+def _inner_workflow(target: Node) -> Optional[Workflow]:
+    if target.is_include:
+        return target.include.workflow if target.include is not None else None
+    return target.workflow
+
+
+def _exposes(target: Node, prop: str) -> Optional[bool]:
+    """Whether ``target`` has property ``prop``: True/False when baghban can tell
+    (a group or a resolved include), None for an operator, whose .NET type
+    baghban cannot see."""
+    if target.workflow is None and not target.is_include:
+        return None
+    inner = _inner_workflow(target)
+    if inner is None:
+        return None
+    return any(name == prop for name, _, _ in externalized_properties(inner))
+
+
+def find_external(wf: Workflow, key: str) -> Optional[tuple]:
+    """The ``(mapping node, mapped property)`` Bonsai would use for ``key``."""
+    for name, mapping, prop in externalized_properties(wf):
+        if name == key and all(_exposes(t, prop) is not False for t in mapping.successors()):
+            return mapping, prop
+    return None
+
+
+def assign_external(wf: Workflow, key: str, value: str) -> list:
+    """Set workflow property ``key`` of ``wf`` to ``value`` as Bonsai would, so
+    every node it reaches holds the effective value. Returns the nodes the
+    mapping feeds (empty when ``wf`` has no such property)."""
+    found = find_external(wf, key)
+    if found is None:
+        return []
+    mapping, prop = found
+    targets = mapping.successors()
+    for target in targets:
+        if target.is_include:
+            target.properties[prop] = value
+            target.overridden.add(prop)
+            if target.include is not None:
+                target.include.overrides[prop] = value
+                if target.include.workflow is not None:
+                    assign_external(target.include.workflow, prop, value)
+        elif target.workflow is not None:
+            assign_external(target.workflow, prop, value)
+        else:
+            target.properties[prop] = value
+            target.overridden.add(prop)
+    return targets
+
+
+def target_values(target: Node, prop: str) -> set:
+    """Effective value(s) of ``prop`` on ``target``, looking inside groups and
+    includes, whose values live on the nodes they map to."""
+    if target.is_include and prop in target.properties:
+        return {target.properties[prop]}
+    inner = _inner_workflow(target) if (target.is_include or target.workflow is not None) else None
+    if inner is None:
+        return {target.properties.get(prop, "")}
+    found = find_external(inner, prop)
+    if found is None:
+        return {""}
+    mapping, inner_prop = found
+    values = set()
+    for t in mapping.successors():
+        values |= target_values(t, inner_prop)
+    return values or {""}
 
 
 def _flatten(el: ET.Element, prefix: str, out: dict, namespaces: dict,

@@ -198,7 +198,7 @@ Aind.Behavior.VrForaging pins.)
 A finding inside a package names the package and version
 (`in BonVision 0.12.0: BonVision.Primitives.DrawQuad.bonsai`). Subjects a
 package declares are what it offers its user and are never reported as
-unused. `deps` lists the packages read, and `fingerprint --fields` records
+unused. `deps` lists the packages read, and `provenance` records
 their versions (`bonsai.package.BonVision = 0.12.0`).
 
 ---
@@ -262,13 +262,27 @@ baghban render WORKFLOW [-f html]    draw it: html (default), mermaid, dot
 baghban diff   A B                   what changed, by meaning; exit 0 if equivalent
 baghban deps   WORKFLOW              assemblies (= packages) and includes it needs
 baghban params WORKFLOW              externalized properties and their values
-baghban fingerprint WORKFLOW         content hash, stable across re-saves (--fields for daftar)
+baghban fingerprint WORKFLOW         content hash, stable across re-saves
+baghban provenance WORKFLOW          fields recording which protocol a session ran (JSON)
 ```
 
 `check` accepts folders. A file that another checked file includes is checked
 through its includer, where the subjects and file names it relies on are
 defined, rather than on its own. `--exclude GLOB` skips files, e.g.
 `--exclude 'docs/*'` for documentation snippets.
+
+`check`, `show`, `render`, `params` and `provenance` take
+`-p NAME=VALUE` (repeatable), as `Bonsai.exe --property` does, to see the
+workflow with the values a launcher passes rather than the saved ones. A
+dotted name reaches into nested workflows (`-p Stim.Contrast=0.5`). A name
+Bonsai would refuse is reported, and the command exits 1:
+
+```
+$ baghban params examples/rig_v2/foraging.bonsai -p TrialIntervl=PT5S
+baghban: --property TrialIntervl: the workflow has no externalized property 'TrialIntervl'; it exposes TrialInterval (Bonsai would refuse it)
+TrialInterval  = PT12S
+                 -> Timer #5.Period
+```
 
 Every command takes:
 
@@ -341,6 +355,11 @@ baghban.mermaid(doc)
 doc = baghban.load("rig/main.bonsai", fetch=True, pins={"BonVision": "0.12.0"})
 report = baghban.check(doc)
 report.packages             # [{"id": "BonVision", "version": "0.12.0", "pinned": True, "origin": ...}]
+
+launch = baghban.parse_command_line(["Bonsai.exe", "rig.bonsai", "--no-editor",
+                                     "-p:Stim.Contrast=0.5"])
+baghban.set_properties(doc, launch.properties)   # [Assignment(name, value, status, ...)]
+baghban.outputs(doc)        # [{"writer": "CsvWriter", "path": "events.csv", "suffix": ...}]
 ```
 
 ---
@@ -348,31 +367,50 @@ report.packages             # [{"id": "BonVision", "version": "0.12.0", "pinned"
 ## Provenance, with daftar
 
 A session's data is only as interpretable as the record of the protocol that
-produced it, and that protocol is a `.bonsai` file plus its includes plus the
-parameter values it ran with. `baghban.manifest_fields` turns that into flat
-fields for [daftar](https://pypi.org/project/daftar/):
+produced it: a `.bonsai` file, plus its includes, plus the parameter values
+it ran with, which a launcher often passes on the command line
+(`Bonsai.exe rig.bonsai -p:Animal=M12`). `baghban.provenance` turns all of
+that into flat fields:
 
 ```
-with daftar.track("session-0412", params=baghban.manifest_fields(doc)) as run:
-    ...
+fields = baghban.provenance("rig/foraging.bonsai", {"TrialInterval": "PT12S"})
+fields = baghban.provenance(command_line=launcher_args, cwd=rig_folder)
 ```
 
 ```
-$ baghban fingerprint rig_v2/foraging.bonsai --fields
+$ baghban provenance examples/rig_v2/foraging.bonsai -p TrialInterval=PT15S
 {
-  "bonsai.workflow": "examples/rig_v2/foraging.bonsai",
+  "bonsai.provenance": "1",
+  "bonsai.baghban": "0.4.0",
+  "bonsai.workflow": "/path/to/examples/rig_v2/foraging.bonsai",
   "bonsai.version": "2.9.0",
   "bonsai.fingerprint": "fc07dd88c5331b2dfeb53671f5e05cd80b03f49e96060cb58a745b1682b600fd",
-  "bonsai.param.TrialInterval": "PT12S",
-  "bonsai.include.modules/CameraRecorder.bonsai": "ok"
+  "bonsai.property.TrialInterval": "PT15S",
+  "bonsai.param.TrialInterval": "PT15S",
+  "bonsai.include.modules/CameraRecorder.bonsai": "ok",
+  "bonsai.output.0": "left.avi",
+  "bonsai.output.1": "right.avi",
+  "bonsai.output.2": "session.csv",
+  "bonsai.output.3": "licks.csv",
+  "bonsai.output.4": "trials.csv"
 }
 ```
 
-The fingerprint ignores whitespace, attribute order, namespace prefixes and
-the `Version` stamp the editor writes on every save, and changes with every
-operator, property value, edge, disabled flag and included file's content.
-Two sessions that ran the same protocol then diff as identical in daftar,
-even when someone re-saved the file in between.
+`bonsai.property.*` are the values the launcher passed; `bonsai.param.*`
+are the workflow's top-level parameters with those values applied. Every
+value is a string. `bonsai.provenance` numbers the layout, so tools reading
+the fields can rely on it. The function's docstring lists every field.
+
+The fingerprint is of the workflow as saved, so all sessions of one protocol
+share it whatever values they ran with. It ignores whitespace, attribute
+order, namespace prefixes and the `Version` stamp the editor writes on every
+save. It changes with every operator, property value, edge, disabled flag
+and included file's content. Two sessions of the same protocol therefore
+compare as identical, even when someone re-saved the file in between.
+
+[daftar](https://pypi.org/project/daftar/) records these fields through its
+Bonsai adapter (`pip install "daftar[bonsai]"`). daftar depends on baghban,
+not the other way round.
 
 ---
 
@@ -402,6 +440,10 @@ Research prototype, honestly labelled.
   Microsoft's**: on 8 real Bonsai packages from nuget.org (10 DLLs, 165
   resources, 129 embedded workflows) it agrees with System.Reflection.Metadata
   on every name, offset and byte (`confirm/README.md`).
+- **Launcher values** (0.4.0): `--property` values are applied by Bonsai's
+  rules, read from its source (`SetWorkflowProperty`, the same from 2.6.2
+  to 2.9.1). `confirm/confirm_properties.py` checks 10 cases on the real
+  runtime; it has not been run yet.
 - Timing problems (unbounded `Zip` queues, timestamps taken after heavy
   processing) need stream rates the XML rarely states, and are not checked.
 
@@ -409,11 +451,13 @@ Research prototype, honestly labelled.
 
 ```
 pip install -e ".[dev]"
-pytest -q                         # 196 tests, no network, no .NET
+pytest -q                         # 228 tests, no network, no .NET
 python confirm/confirm.py         # needs .NET 8: confirm findings with real Bonsai
                                   #   (install and troubleshooting: confirm/README.md)
 python confirm/confirm_packages.py  # needs .NET 8 and nuget.org: the package reader
                                     #   against Microsoft's metadata reader
+python confirm/confirm_properties.py  # needs .NET 8: launcher --property values
+                                      #   against Bonsai's SetWorkflowProperty
 python survey/run_survey.py DIR [--fetch]   # clone and check the published repositories
 ```
 

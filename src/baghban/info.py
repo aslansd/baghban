@@ -6,8 +6,10 @@ from __future__ import annotations
 import hashlib
 import json
 from collections import Counter
+from pathlib import Path
+from typing import Optional
 
-from .model import Document, Node, Workflow, parse_namespace_uri
+from .model import Document, Node, Workflow, parse_namespace_uri, target_values
 
 DOTNET_ASSEMBLIES = {"mscorlib", "System", "System.Core", "netstandard", "System.Private.CoreLib",
                      "System.Runtime", "System.Xml", "System.Drawing"}
@@ -100,7 +102,8 @@ def parameters(doc: Document) -> list:
             continue
         for name, display in node.mappings:
             targets = node.successors()
-            values = sorted({t.properties.get(name, "") for t in targets})
+            # a group's or include's value lives on the nodes it maps to
+            values = sorted(set().union(*(target_values(t, name) for t in targets))) or [""]
             out.append({"name": display or name, "property": name,
                         "value": values[0] if len(values) == 1 else values,
                         "targets": [t.location() for t in targets]})
@@ -146,27 +149,123 @@ def fingerprint(doc: Document) -> str:
     return hashlib.sha256(blob.encode("utf-8")).hexdigest()
 
 
-def manifest_fields(doc: Document) -> dict:
-    """Flat, dotted fields describing the protocol, for provenance tools.
+def outputs(doc: Document) -> list:
+    """The files the workflow writes: every enabled file writer, with its path.
 
-    With daftar::
-
-        with daftar.track("session", params=baghban.manifest_fields(doc)) as run:
-            ...
-
-    records which exact workflow (includes and parameter values included)
-    produced the data being analysed.
+    ``path`` is the effective value (after includes and any ``set_properties``),
+    as written: Bonsai opens a relative path against its working folder (the
+    workflow's folder in the editor, the launcher's folder with ``--no-editor``).
+    ``suffix`` is the writer's ``Suffix``: ``None`` means exactly ``path``;
+    ``Timestamp`` or ``FileCount`` mean Bonsai adds to the name, so look for
+    ``path``'s stem followed by anything. ``set_at_run_time`` means a
+    PropertyMapping assigns the path from data, so the value here is only the
+    starting one.
     """
-    fields = {"bonsai.workflow": str(doc.path) if doc.path else None,
+    out = []
+    for node in doc.walk():
+        prop = node.filename_property
+        if prop is None or node.is_effectively_disabled():
+            continue
+        out.append({"writer": node.type.name, "property": prop,
+                    "path": node.properties.get(prop, ""),
+                    "suffix": node.properties.get("Suffix", ""),
+                    "location": node.location(), "source": node.source,
+                    "overridden": prop in node.overridden,
+                    "set_at_run_time": prop in node.mapped()})
+    return out
+
+
+PROVENANCE_SCHEMA = "1"
+
+
+def provenance(workflow=None, properties: Optional[dict] = None, *, command_line=None,
+               cwd=None, **load_options) -> dict:
+    """Flat, dotted fields recording which protocol a session ran.
+
+    The entry point for provenance tools (daftar's Bonsai adapter uses it).
+    ``workflow`` is a ``Document`` or a path; ``properties`` are the launcher's
+    ``--property`` values (``{"Animal": "M12", "Stim.Contrast": "0.5"}``);
+    ``command_line`` is the launcher's Bonsai.exe arguments instead, from
+    which the workflow and properties are read (``properties`` adds to them).
+    A relative workflow path is taken against ``cwd``. Other keyword arguments
+    go to ``baghban.load``. A ``Document`` passed in is not changed.
+
+    Every value is a string (``None`` when unknown). Fields:
+
+    ``bonsai.provenance``      version of this field layout (bumped on any change)
+    ``bonsai.baghban``         baghban version that wrote them
+    ``bonsai.workflow``        absolute path of the workflow
+    ``bonsai.version``         Bonsai version stamped in the file
+    ``bonsai.fingerprint``     ``fingerprint`` of the file as saved (launcher
+                               values not included, so sessions of one
+                               protocol share it)
+    ``bonsai.environment``     the ``Bonsai.config`` package versions came from
+    ``bonsai.property.<name>`` each value the launcher passed
+    ``bonsai.param.<name>``    each top-level externalized property, effective value
+    ``bonsai.include.<path>``  each include's status (ok, missing, ...)
+    ``bonsai.package.<id>``    version of each package whose workflows were read
+    ``bonsai.output.<n>``      path of each enabled file writer (see ``outputs``)
+    ``bonsai.problems``        launcher values Bonsai would refuse, ``; ``-joined
+                               (only present when there are some)
+    """
+    from . import __version__
+    from .launch import parse_command_line, set_properties
+    from .model import load
+
+    props = {}
+    if command_line is not None:
+        launch = parse_command_line(command_line)
+        props.update(launch.properties)
+        if workflow is None:
+            workflow = launch.workflow
+    props.update(properties or {})
+    if workflow is None:
+        raise ValueError("no workflow: pass one, or a command line that names it")
+    if isinstance(workflow, Document):
+        doc = _copy(workflow) if props else workflow
+    else:
+        path = Path(workflow)
+        if not path.is_absolute() and cwd is not None:
+            path = Path(cwd) / path
+        doc = load(path, **load_options)
+
+    fields = {"bonsai.provenance": PROVENANCE_SCHEMA, "bonsai.baghban": __version__,
+              "bonsai.workflow": str(doc.path.resolve()) if doc.path else None,
               "bonsai.version": doc.version,
               "bonsai.fingerprint": fingerprint(doc)}
+    env = getattr(doc.packages, "environment", None)
+    if env is not None:
+        fields["bonsai.environment"] = str(env.config)
+    assignments = set_properties(doc, props) if props else []
+    for a in assignments:
+        fields[f"bonsai.property.{a.name}"] = a.value
     for p in parameters(doc):
         value = p["value"] if isinstance(p["value"], str) else "|".join(p["value"])
         fields[f"bonsai.param.{p['name']}"] = value
     for node in doc.walk():
         if node.is_include and node.include is not None:
-            fields[f"bonsai.include.{node.include.path}"] = node.include.status
             inc = node.include
+            fields[f"bonsai.include.{inc.path}"] = inc.status
             if inc.package and inc.status == "ok":
                 fields[f"bonsai.package.{inc.package}"] = inc.package_version
+    for i, o in enumerate(outputs(doc)):
+        fields[f"bonsai.output.{i}"] = o["path"]
+    problems = [f"--property {a.name}: {a.note}" for a in assignments if a.status != "ok"]
+    if problems:
+        fields["bonsai.problems"] = "; ".join(problems)
     return fields
+
+
+def _copy(doc: Document) -> Document:
+    """A deep copy to apply launcher values to; the package resolver is shared."""
+    import copy
+    return copy.deepcopy(doc, {id(doc.packages): doc.packages})
+
+
+def manifest_fields(doc: Document) -> dict:
+    """Provenance fields of a loaded workflow; the same as ``provenance(doc)``.
+
+    Kept from 0.1 for existing callers; new code should call ``provenance``,
+    which also takes the launcher's ``--property`` values.
+    """
+    return provenance(doc)

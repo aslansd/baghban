@@ -33,8 +33,8 @@ print(baghban.check(v2).summary())
 section("4. What changed between the two (baghban diff)")
 print(baghban.diff(v1, v2).summary())
 
-section("5. Protocol identity for provenance (baghban fingerprint --fields)")
-for key, value in baghban.manifest_fields(v2).items():
+section("5. Protocol identity for provenance (baghban provenance -p TrialInterval=PT15S)")
+for key, value in baghban.provenance(v2, {"TrialInterval": "PT15S"}).items():
     print(f"  {key:<50} {value}")
 
 out = HERE / "rig_v1.html"

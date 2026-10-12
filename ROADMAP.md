@@ -1,6 +1,6 @@
 # Roadmap
 
-Status as of 0.3.0. Evidence for the ordering is in `survey/SURVEY.md`.
+Status as of 0.4.0. Evidence for the ordering is in `survey/SURVEY.md`.
 
 1. **Confirm the findings by running them.** *Done on macOS.* Second run
    (4 Oct 2026, baghban 0.2.1, Bonsai 2.9.1 packages, .NET 8, Intel Mac):
@@ -24,12 +24,34 @@ Status as of 0.3.0. Evidence for the ordering is in `survey/SURVEY.md`.
    false alarms among 40 (`survey/SURVEY.md`). Open: versions nuget.org does
    not have (CI builds on private feeds) stay unchecked unless
    `BAGHBAN_NUGET_SOURCE` points at that feed.
-4. **daftar adapter.** *Next.* Move `manifest_fields` into a
-   `daftar.adapters.bonsai` adapter that also records the parameter values a
-   launcher passes with `--property`. 0.3.0 already records each package's
-   version (`bonsai.package.<id>`). The survey showed launchers set *nested*
-   properties (iblrig sets `Stim.ReceptiveFieldMappingStim.FileNameRFMapStim`), so the
-   adapter needs to resolve dotted paths through groups and includes.
+4. **daftar adapter.** *baghban's side done in 0.4.0; the adapter itself is
+   built in daftar.* The dependency runs one way: `daftar.adapters.bonsai`
+   (installed with `daftar[bonsai]`) imports baghban, and baghban does not
+   depend on daftar (the `provenance` extra is gone). baghban provides what
+   the adapter calls:
+   - `baghban.provenance(workflow, properties, command_line=...)`: flat
+     string fields, with a layout version (`bonsai.provenance`) the adapter
+     can rely on; `manifest_fields` stays as an alias.
+   - `parse_command_line`: a launcher's Bonsai.exe arguments, read as
+     Bonsai's `CommandLineParser` reads them (`--property:N=V`, `-p N=V`, ...).
+   - `set_properties`: the `--property` values applied as Bonsai's
+     `SetWorkflowProperty` applies them. A dotted name walks through named
+     groups and other nested workflows, but not into an include by name (an
+     include is reached through an ExternalizedMapping wired into it). Names
+     Bonsai would refuse are reported, not guessed.
+   - `outputs`: the files a session writes, so the adapter can hash them
+     afterwards. A `Suffix` (timestamp, count) is added at run time, so the
+     adapter matches on the name's stem.
+
+   Checked on iblrig's `Stim.ReceptiveFieldMappingStim.FileNameRFMapStim`,
+   which reaches a MatrixWriter through two groups, an include and a group
+   inside it, and on the survey: 1,114 dotted names built from the 572
+   workflows' own properties all resolve. Building it fixed include values
+   not reaching groups inside the included file. In the survey this removed
+   one false `UNUSED_SUBJECT` and one "not checked" note; errors and
+   warnings are unchanged. `confirm/confirm_properties.py` runs 10 cases on
+   the real runtime. Open: run that kit (not run yet); the adapter, in
+   daftar.
 5. **`UNRECORDED_PARAMETER`**: an externalized property whose value is never
    written to any output, so the data does not say what settings produced it.
 6. **Rate-dependent checks**, only where rates are stated in the XML (a

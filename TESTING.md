@@ -5,7 +5,7 @@ pip install -e ".[dev]"
 pytest -q
 ```
 
-Expected: `196 passed`, in well under a second. No network, no .NET, no
+Expected: `228 passed`, in about ten seconds. No network, no .NET, no
 Bonsai installation.
 
 ## What the suite checks
@@ -67,6 +67,24 @@ local server serving nuget.org's layout (no test touches the network),
 missing modules in pinned and guessed versions, nested includes, unsafe
 resource names, reports, provenance and the CLI.
 
+**`test_launch.py`: launcher values and provenance.** The command line as
+Bonsai's `CommandLineParser` reads it (every spelling of `--property`,
+short aliases, values containing `:` and `=`, the arguments Bonsai.exe
+refuses). Where a value goes, as Bonsai's `SetWorkflowProperty` sends it:
+top level, dotted through groups and a named SelectMany, through a group
+into an include and a group inside it (iblrig's shape), the first of two
+properties with one name, a mapping connected to nothing. The names Bonsai
+refuses: unknown, ambiguous, a disabled group, an include named directly,
+an empty name; with `strict`, nothing changes. Also include values reaching
+a group inside the included file (fixed in 0.4.0), `outputs`, the
+provenance fields (all strings, fingerprint of the file as saved, the
+caller's document unchanged), the CLI's `-p`, and that baghban does not
+depend on daftar.
+
+**`test_confirm_properties.py`** tests `confirm/confirm_properties.py`
+without .NET: baghban's prediction for each of its 10 cases, and the
+judgement of simulated runs in both directions.
+
 **`test_confirm_packages.py`** tests `confirm/confirm_packages.py` without
 .NET or nuget.org, with a simulated .NET lister that agrees and disagrees.
 
@@ -99,6 +117,9 @@ example rigs.
 - `python confirm/confirm_packages.py` compares the package reader with
   Microsoft's metadata reader on real Bonsai packages (needs .NET 8 and
   nuget.org). Last run: 8/8 packages identical (12 Oct 2026).
+- `python confirm/confirm_properties.py` runs 10 cases of launcher
+  `--property` values with the real Bonsai runtime (needs .NET 8). Not run
+  yet.
 - `python survey/run_survey.py DIR` re-runs the survey of published
   repositories; `survey/SURVEY.md` records the last run and its hand review,
   and `survey/survey-results.json` holds that run's full output.
