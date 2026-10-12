@@ -98,7 +98,7 @@ example rigs.
   the kit, reading its output, and records every run's results.
 - `python confirm/confirm_packages.py` compares the package reader with
   Microsoft's metadata reader on real Bonsai packages (needs .NET 8 and
-  nuget.org). Not yet run.
+  nuget.org). Last run: 8/8 packages identical (12 Oct 2026).
 - `python survey/run_survey.py DIR` re-runs the survey of published
   repositories; `survey/SURVEY.md` records the last run and its hand review,
   and `survey/survey-results.json` holds that run's full output.

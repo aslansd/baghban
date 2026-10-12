@@ -230,7 +230,7 @@ behaved as predicted (`confirm/`).
 
 `survey/` runs baghban over 32 public repositories (Bonsai's own, the Allen
 Institute's foraging tasks, SWC's Aeon, IBL's rig, NeuroGears' vestibular VR
-and others): 451 entry workflows, 62,696 nodes. Every error was read by
+and others): 453 entry workflows, 61,915 nodes (4 Oct 2026). Every error was read by
 hand, and every real fault against its repository's history. **None of the
 29 was a false alarm**: 5 point at real faults (4 distinct problems: a
 deleted module still used by documentation examples, a missing include in a
@@ -240,11 +240,16 @@ snippets and tutorial steps), and 2 are correct but likely harmless.
 Reading the first run's results is also where the module conventions above,
 two bugs and one wrong claim came from; see `survey/SURVEY.md`.
 
-Reading packages adds 9,351 nodes to the survey and 15 errors. A preview
-that read each package from its source repository found one new real fault
-(an IBL workflow including BonVision modules renamed before the version the
-rig pins), 8 more documentation fragments, and 4 false alarms, all caused by
-reading a package at the wrong version, the case for reading the pinned one.
+Re-run on 12 Oct 2026, the same workflows had 27 errors: the two Allen
+documentation examples are fixed upstream since they were reported
+([PR #142](https://github.com/AllenNeuralDynamics/Bonsai.AllenNeuralDynamics/pull/142)).
+Reading packages at the versions the rigs pin (`--fetch`) adds 8,651 nodes
+and 13 errors, and still **no false alarm among the 40**: one new real fault
+(an IBL workflow including BonVision modules that were renamed before the
+0.9.0 the rig installs) and 10 more documentation snippets and templates. An
+earlier preview that read packages from source at HEAD instead produced 4
+false alarms, all from reading a package at the wrong version: the case for
+reading the pinned one.
 
 ---
 
@@ -393,12 +398,10 @@ Research prototype, honestly labelled.
   as baghban predicts. The first run (8/12) exposed a flaw in the kit and a
   wrong claim about unnamed subjects, both fixed in 0.2.1
   (`confirm/README.md`). Not yet run on Windows, where rigs run.
-- **Packages are read** (0.3.0): the reader matches dnfile, an independent
-  parser, on 168 real assemblies; `confirm/confirm_packages.py` compares it
-  with Microsoft's own reader on real Bonsai packages from nuget.org, and
-  has not been run yet. The survey's package results are a preview that
-  read packages from source; the `--fetch` run at the pinned versions is
-  still to do (`survey/SURVEY.md`).
+- **Packages are read** (0.3.0), and the reader is **confirmed against
+  Microsoft's**: on 8 real Bonsai packages from nuget.org (10 DLLs, 165
+  resources, 129 embedded workflows) it agrees with System.Reflection.Metadata
+  on every name, offset and byte (`confirm/README.md`).
 - Timing problems (unbounded `Zip` queues, timestamps taken after heavy
   processing) need stream rates the XML rarely states, and are not checked.
 

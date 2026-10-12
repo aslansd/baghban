@@ -213,9 +213,50 @@ include in the same scope might have subscribed to them, so baghban stayed
 quiet; now it can see that nothing does. None is in a package module:
 subjects a package declares are what it offers, and are never reported.
 
-**Still to do: the real run.** `python survey/run_survey.py WORKDIR --fetch`
-on a machine that reaches nuget.org replaces this preview's approximation
-with the pinned DLLs; its new errors get the same hand review.
+### The real run: packages at their pinned versions (12 Oct 2026)
+
+`python survey/run_survey.py ~/baghban-survey --fetch` on a Mac that reaches
+nuget.org, on exactly the same repository commits as the runs above. Full
+output: `survey-results-0.3.0.json`. Each package was read from its DLL at
+the version the rig's environment pins: BonVision 0.9.0 for iblrig, 0.11.0
+for vestibular-vr and 0.12.0 for the Allen tasks, AllenNeuralDynamics.Core
+0.4.1, Bonsai.Harp 3.5.0 and 3.6.1, and so on. 42 of the 54 uses of a package
+in an entry workflow had a pinned version; the 12 others (BonVision in the
+documentation, the two `Bonsai.ML` packages in their own documentation) were
+read at the newest version, and their reports say so.
+
+| | Without packages | Preview (source at HEAD) | Real run (pinned DLLs) |
+| --- | ---: | ---: | ---: |
+| Nodes checked | 62,696 | 72,047 | 71,347 |
+| Entry workflows with `not checked` notes | 115 | 86 | 84 |
+| `DANGLING_SUBJECT` | 13 | 21 | 23 |
+| `MISSING_INCLUDE` | 9 | 16 | 12 |
+| `SILENT_OVERWRITE` (error) | 3 | 3 | 3 |
+| `UNNAMED_SUBJECT` (error) | 2 | 2 | 2 |
+| `UNUSED_SUBJECT` (info) | 153 | 177 | 179 |
+
+One package could not be read: vestibular-vr pins Aeon.Acquisition
+`0.5.0-build240227`, a CI build that nuget.org does not have (18 includes in
+3 workflows). baghban reports those includes as not checked instead of
+reading another version, so the four preview false alarms about `LogVideo`
+do not appear.
+
+**The 13 new errors, read by hand:**
+
+| Findings | Where | Verdict |
+| ---: | --- | --- |
+| 3 | iblrig `Gabor2D_clean.bonsai`: `BonVision 0.9.0 ... has no embedded workflow 'BonVision.Environment.OrthographicViewport.bonsai'`, and the same for `ViewingWindow` and `NormalizedViewport` | **true fault**, now read from the DLL the rig installs; the preview had found it from BonVision's history |
+| 8 | bonsai-rx/docs BonVision tutorial workflows (`Draw`, `AngleDistribution`) | **true, by design**, as in the preview |
+| 2 | bonsai-rx/machinelearning `docs/workflows/HMMImplementation.bonsai` (`Data`) and `KFModelImplementation.bonsai` (`BehaviorData`) | **true, by design**: the getting-started pages tell the reader to "connect your data source to a `Subject` named `Data`" (or `BehaviorData`); these are templates the reader completes. Hidden until the `Bonsai.ML` packages could be read |
+
+**No false alarms among the 40 errors.** 6 point at real faults (4 distinct
+problems), 32 are correct about files never meant to work alone
+(documentation snippets, tutorial steps and templates), and 2 are correct
+but likely harmless. No finding disappeared.
+
+Reading packages also confirmed the reader itself: on the 8 packages the
+survey most needed, it agrees with Microsoft's System.Reflection.Metadata on
+every name, offset and byte (`confirm/README.md`).
 
 ## Caveats
 
@@ -224,9 +265,9 @@ with the pinned DLLs; its new errors get the same hand review.
   Extensions modules.
 - Precision is estimated on errors only. Warnings were sampled, not read in
   full.
-- The package preview reads packages from source at HEAD, not at the pinned
-  version; the hand review checked every new error against the pinned
-  version's history, and the `--fetch` run will replace it.
+- The package preview read packages from source at HEAD; the real run read
+  them at the pinned versions, and the tables above keep both. A version
+  nuget.org does not have (a CI build) is not checked.
 - Recall is not measured: nothing here says which faults baghban misses.
   The confirmation kit (`confirm/`, 13/13 on real Bonsai) addresses whether
   what baghban reports actually happens, not what it misses.

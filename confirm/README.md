@@ -296,11 +296,29 @@ packages (tens of MB, once; later runs use the cache).
 
 ### Results
 
-Not yet run: nuget.org was not reachable from the machine 0.3.0 was built
-on. There, the reader matched dnfile, an independent Python parser, on 168
-real assemblies from PyPI (a .NET runtime and pythonnet): identical names,
-offsets, bytes and assembly names, including large assemblies with 4-byte
-heaps. Record the first run here.
+**First run: 12 Oct 2026, baghban 0.3.0, macOS (Intel), .NET 8.0.425:
+8/8 packages identical to .NET.** Newest versions on nuget.org that day:
+
+| Package | Version | DLLs | Resources | Workflows | Result |
+| --- | --- | ---: | ---: | ---: | --- |
+| BonVision | 0.12.0 | 1 (net462) | 59 | 34 | same as .NET |
+| AllenNeuralDynamics.Core | 0.5.0 | 1 (net472) | 23 | 20 | same as .NET |
+| AllenNeuralDynamics.HarpUtils | 0.3.2 | 1 (net472) | 12 | 11 | same as .NET |
+| Aeon.Acquisition | 0.7.0 | 1 (net472) | 22 | 22 | same as .NET |
+| Bonsai.Harp | 3.6.1 | 2 (net462, netstandard2.0) | 8 | 8 | same as .NET |
+| Bonsai.ML.LinearDynamicalSystems | 0.4.1 | 2 (net472, netstandard2.0) | 24 | 20 | same as .NET |
+| Bonsai.ML.HiddenMarkovModels | 0.4.1 | 1 (net472) | 10 | 8 | same as .NET |
+| AllenNeuralDynamics.AindManipulator | 0.4.1 | 1 (net48) | 7 | 6 | same as .NET |
+
+For all 10 DLLs, baghban and System.Reflection.Metadata agree on the
+assembly name and on every one of the 165 resources: name, offset, embedded
+or not, and SHA-256 of the bytes. Every embedded workflow addressable by
+an include (named after its assembly) was also resolved through baghban as
+an include would resolve it, and came out byte-for-byte identical. Full record: `packages-results.json`.
+
+Before this, the reader had matched dnfile, an independent Python parser,
+on 168 real assemblies from PyPI (a .NET runtime and pythonnet), including
+large assemblies with 4-byte heaps.
 
 ## Troubleshooting
 

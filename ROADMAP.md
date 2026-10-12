@@ -17,10 +17,13 @@ Status as of 0.3.0. Evidence for the ordering is in `survey/SURVEY.md`.
    baghban finds them.
 3. **Follow includes into packages from other repositories.** *Done in
    0.3.0.* Embedded workflows are read out of package DLLs by a pure-Python
-   ECMA-335 reader, at the version the environment pins. Open: run
-   `confirm/confirm_packages.py` (the reader against Microsoft's, on real
-   packages) and the survey with `--fetch` at the pinned versions; both need
-   nuget.org, which the machine 0.3.0 was built on could not reach.
+   ECMA-335 reader, at the version the environment pins. Confirmed against
+   Microsoft's reader on 8 real packages (10 DLLs, 165 resources, 129
+   workflows): identical (`confirm/README.md`). The survey with `--fetch` at
+   the pinned versions (12 Oct 2026): 13 new errors, one new real fault, no
+   false alarms among 40 (`survey/SURVEY.md`). Open: versions nuget.org does
+   not have (CI builds on private feeds) stay unchecked unless
+   `BAGHBAN_NUGET_SOURCE` points at that feed.
 4. **daftar adapter.** *Next.* Move `manifest_fields` into a
    `daftar.adapters.bonsai` adapter that also records the parameter values a
    launcher passes with `--property`. 0.3.0 already records each package's

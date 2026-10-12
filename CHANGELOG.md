@@ -34,8 +34,11 @@ Roadmap item 3: includes into packages from other repositories are read.
 - `survey/run_survey.py --fetch` and `--package-sources`; SURVEY.md: a
   preview with packages read from source, every new error read by hand
   (one new real fault, four false alarms from reading the wrong version).
-- Reader checked against dnfile on 168 real assemblies (identical); dnfile
-  added to the `dev` extra. 196 tests.
+- Reader checked against dnfile on 168 real assemblies (identical), and
+  against Microsoft's System.Reflection.Metadata on 8 real Bonsai packages
+  (identical, `confirm/README.md`); dnfile added to the `dev` extra.
+- Survey with `--fetch` at the pinned versions: 13 new errors (one new real
+  fault, 10 documentation snippets and templates), no false alarms among 40. 196 tests.
 
 ## 0.2.2 (2026-10-05)
 
