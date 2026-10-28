@@ -46,8 +46,10 @@ EXPRESSIONS = "Bonsai.Expressions"  # namespace of types in the default xmlns
 REACTIVE = "Bonsai.Reactive"
 
 # Nested workflows whose contents are subscribed again for every input element
-# (or window), so anything inside runs many times per session.
-REPEATING = {"SelectMany", "CreateObservable", "WindowWorkflow"}
+# (or window), so anything inside runs many times per session. Window is the
+# Bonsai.Reactive operator whose nested workflow closes each window: it is
+# subscribed once per window (Bonsai.Core/Reactive/Window.cs).
+REPEATING = {"SelectMany", "CreateObservable", "WindowWorkflow", "Window"}
 
 SUBJECT_DECLARATIONS = {
     "PublishSubject", "BehaviorSubject", "ReplaySubject",

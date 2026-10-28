@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: baghban
-Version: 0.5.0
+Version: 0.6.0
 Summary: Check, draw and compare Bonsai workflows on any machine, before the rig runs.
 Author: Aslan Satary Dizaji
 License-Expression: Apache-2.0
@@ -130,7 +130,9 @@ the two copies of the included module are told apart.
 
 `SILENT_OVERWRITE` has three levels:
 - **Error** inside a loop: all but the last trial are lost within one
-  session, which is rarely anyone's intent.
+  session, which is rarely anyone's intent. A loop the XML shows receives at
+  most one element per run counts as no loop (see **Loops that run once**
+  below).
 - **Warning** across runs. `Overwrite=True` is a setting someone has to
   switch on, and replacing the last run's file is often the point, as in a
   demo (see [When a finding is intended](#when-a-finding-is-intended)).
@@ -149,9 +151,20 @@ the Bonsai source implements them (Bonsai.Core, Bonsai.System):
   `Defer`, `CreateObservable`, ...) builds in a new `BuildContext`: lookups
   fall back outwards, declarations stay inside. Declaring a name twice in one
   build context is a build error.
-- **Loops.** `SelectMany`, `CreateObservable` and `WindowWorkflow` subscribe
-  their nested workflow once per input element, so a writer inside one is
-  opened once per element, typically once per trial.
+- **Loops.** `SelectMany`, `CreateObservable`, `WindowWorkflow` and
+  `Window` subscribe their nested workflow once per input element (or
+  window), so a writer inside one is opened once per element, typically once
+  per trial.
+- **Loops that run once.** Rigs often run a sequence of stages, each a
+  `SelectMany` fed by a `LastOrDefault`, a `Take(1)` or a `Timer` with no
+  period (IBL's stimulus sessions do). When the XML shows a loop receives at
+  most one element per run, and nothing after it re-subscribes it (`Repeat`,
+  `Retry`), its writers are judged as if outside the loop, and the message
+  names the operator that bounds it. The rules cover only operators whose
+  behaviour was read in the Bonsai source (`src/baghban/flow.py` lists them).
+  Anything else, such as a subject, `Merge` or a third-party operator, leaves
+  the loop a loop. So this can only remove an error baghban can justify; it
+  never hides one it cannot.
 - **Writers.** `CsvWriter` and the `FileSink`/`StreamSink` families
   (`VideoWriter`, `TextWriter`, `AudioWriter`, `MatrixWriter`, `ImageWriter`)
   open their file on subscription, check `File.Exists(path) && !Overwrite`,
@@ -298,7 +311,8 @@ On the file-writer findings, where Bonsai has no test fixtures, each finding
 is tested in both directions on paired workflows: it must fire where the fault
 exists and stay quiet on the nearest workflow without it (see `TESTING.md`).
 And the findings have been run on the real Bonsai runtime: 15 of 15 cases
-behaved as predicted (`confirm/`).
+behaved as predicted (`confirm/`). The 2 cases added in 0.6.0 have not been
+run yet.
 
 ### On published rigs
 
@@ -328,6 +342,12 @@ and 13 errors, and still **no false alarm among the 40**: one new real fault
 earlier preview that read packages from source at HEAD instead produced 4
 false alarms, all from reading a package at the wrong version: the case for
 reading the pinned one.
+
+Since then, two changes made errors more precise without losing any fault.
+0.5.0 made overwriting across runs a warning. 0.6.0 showed that iblrig's
+stimulus loop runs once per session, so its two "likely harmless" errors
+became info. Without packages, the same workflows now have 24 errors
+(`survey/SURVEY.md`).
 
 ---
 
@@ -465,7 +485,7 @@ fields = baghban.provenance(command_line=launcher_args, cwd=rig_folder)
 $ baghban provenance examples/rig_v2/foraging.bonsai -p TrialInterval=PT15S
 {
   "bonsai.provenance": "1",
-  "bonsai.baghban": "0.5.0",
+  "bonsai.baghban": "0.6.0",
   "bonsai.workflow": "/path/to/examples/rig_v2/foraging.bonsai",
   "bonsai.version": "2.9.0",
   "bonsai.fingerprint": "fc07dd88c5331b2dfeb53671f5e05cd80b03f49e96060cb58a745b1682b600fd",
@@ -517,10 +537,11 @@ Research prototype, honestly labelled.
   runs is a warning since 0.5.0, and findings can be marked as intended.
   Warnings were sampled, not read in full, and nothing measures what baghban
   misses.
-- **Confirmed on the real Bonsai runtime:** `confirm/` runs 15 cases (every
+- **Confirmed on the real Bonsai runtime:** `confirm/` runs 17 cases (every
   finding baghban reports about writers and subjects, with a quiet control
-  for each) on Bonsai 2.9.1 packages under .NET 8. On macOS all 15 behave
-  as baghban predicts (12 Oct 2026, 0.4.1). The first run (8/12) exposed a flaw in the kit and a
+  for each) on Bonsai 2.9.1 packages under .NET 8. On macOS 15 of 15
+  behaved as baghban predicts (28 Oct 2026, 0.5.0). The 2 cases added in
+  0.6.0 for loops that run once have not been run yet. The first run (8/12) exposed a flaw in the kit and a
   wrong claim about unnamed subjects, both fixed in 0.2.1
   (`confirm/README.md`). Not yet run on Windows, where rigs run.
 - **Packages are read** (0.3.0), and the reader is **confirmed against
@@ -542,7 +563,7 @@ Research prototype, honestly labelled.
 
 ```
 pip install -e ".[dev]"
-pytest -q                         # 250 tests, no network, no .NET
+pytest -q                         # 281 tests, no network, no .NET
 python confirm/confirm.py         # needs .NET 8: confirm findings with real Bonsai
                                   #   (install and troubleshooting: confirm/README.md)
 python confirm/confirm_packages.py  # needs .NET 8 and nuget.org: the package reader

@@ -376,6 +376,8 @@ def _loop_name(node: Node) -> str:
 
 
 def check_writers(doc: Document, report: Report) -> None:
+    from .flow import FlowAnalysis, runs_once
+    analysis = FlowAnalysis()
     outputs: dict[str, list] = {}
     for node in doc.walk():
         if not node.is_writer:
@@ -405,6 +407,22 @@ def check_writers(doc: Document, report: Report) -> None:
         append = _bool(node.properties.get("Append"))
         externalized = prop in node.externalized()
         loop = node.repeating_container()
+        once_note = ""
+        if loop is not None:
+            # a loop shown to receive at most one element per run opens the
+            # writer once per run, like no loop at all (baghban.flow)
+            once, loops = runs_once(node, analysis)
+            if once:
+                if len(loops) == 1:
+                    (container, bound), = loops
+                    once_note = (f" It sits inside {_loop_name(container)}, which receives at "
+                                 f"most one element per run (bounded by {bound}), so it is "
+                                 "opened once per run.")
+                else:
+                    each = "; ".join(f"{_loop_name(c)}: {b}" for c, b in loops)
+                    once_note = (" Every loop around it receives at most one element per run "
+                                 f"(bounded by {each}), so it is opened once per run.")
+                loop = None
 
         if suffix == "None":
             outputs.setdefault(_normalise(fname), []).append(node)
@@ -439,7 +457,7 @@ def check_writers(doc: Document, report: Report) -> None:
                 report.findings.append(_finding(
                     "SILENT_OVERWRITE", node,
                     f"Overwrite=True with Suffix=None: each run replaces '{fname}' from the "
-                    f"previous session, without an error.{extra}",
+                    f"previous session, without an error.{once_note}{extra}",
                     hint="If this is intended, mark it so (baghban check --ignore "
                          "SILENT_OVERWRITE, or per file in baghban.toml). Otherwise use "
                          "Suffix=Timestamp (one file per run), or Overwrite=False so a second "

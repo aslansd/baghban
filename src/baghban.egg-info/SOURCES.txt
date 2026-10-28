@@ -26,6 +26,7 @@ src/baghban/cli.py
 src/baghban/config.py
 src/baghban/diff.py
 src/baghban/dotnet.py
+src/baghban/flow.py
 src/baghban/info.py
 src/baghban/launch.py
 src/baghban/model.py
@@ -50,6 +51,7 @@ tests/test_confirm_packages.py
 tests/test_confirm_properties.py
 tests/test_diff_render_cli.py
 tests/test_dotnet.py
+tests/test_flow.py
 tests/test_ground_truth.py
 tests/test_launch.py
 tests/test_model.py

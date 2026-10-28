@@ -1,5 +1,48 @@
 # Changelog
 
+## 0.6.0 (unreleased)
+
+Roadmap item 5: loops that run once.
+
+- **A loop shown to receive at most one element per run counts as no
+  loop.** Rigs often run a sequence of stages, each a `SelectMany` fed by
+  `LastOrDefault`, `Take(1)` or a `Timer` with no period. A writer inside such
+  a stage is opened once per run, not once per trial. New module
+  `baghban.flow` follows elements through the workflow to show this,
+  including through nested workflows and includes. It uses only operators
+  whose behaviour was read in the Bonsai source (Bonsai.Core,
+  Bonsai.Shaders); its docstring lists them. Anything else (subjects,
+  `Merge`, multiple inputs, disabled nodes, third-party operators) leaves the
+  loop a loop. A `Repeat`, `RepeatCount`, `Retry` or `RetryCount` after the
+  loop, or after anything containing it, also keeps it a loop.
+  - Inside such a loop, `SILENT_OVERWRITE` is judged as across runs: a
+    warning, or info with an externalized file name. The message names the
+    operator that bounds the loop.
+  - `FAILS_ON_REPEAT` is not reported there, since there is no second
+    element.
+  - Only `SelectMany` can be shown to run once. `CreateObservable`,
+    `WindowWorkflow` and `Window` stay loops.
+- **`Window` with a nested workflow is now a loop.** Bonsai.Reactive's
+  `Window` subscribes its nested (closing) workflow once per window, but
+  baghban only knew the older `WindowWorkflow`. Nothing in the survey
+  changes.
+- **Survey:** iblrig's two `SILENT_OVERWRITE` errors in
+  `ReceptiveFieldMappingStim.bonsai` were read as likely harmless, because
+  the loop most likely receives one element per session. baghban now shows
+  it: the loop is the fourth (or seventh) of a chain of stages that each end
+  in `LastOrDefault`. Each was checked by hand. With the writer's path
+  externalized (IBL's launcher sets `Stim.ReceptiveFieldMappingStim.FileNameRFMapStim`),
+  they become info. Without packages, errors go from 26 to 24, and nothing
+  else changes (`survey-results-0.6.0.json`). Across the survey, 124 of 849
+  `SelectMany` loops are shown to run once per subscription. AIND's
+  `RunTrial` is one of them, and the `Repeat` after it rightly keeps it a
+  loop.
+- `confirm/confirm.py`: `loop_runs_once` (a writer behind `LastOrDefault`
+  writes one row and does not fail) and `loop_run_again_by_repeat` (the same
+  loop under `RepeatCount(2)` fails on the second run). 17 cases; the two
+  new ones have not been run yet.
+- 281 tests.
+
 ## 0.5.0 (2026-10-28)
 
 Intent. The vestibular-vr maintainers explained that their `GNGTemplate.bonsai`

@@ -1,6 +1,6 @@
 """Roadmap item 1: confirm baghban's findings by running the workflows.
 
-For each case (15) this script writes a small workflow, asks baghban what it
+For each case (17) this script writes a small workflow, asks baghban what it
 predicts, runs the workflow with the real Bonsai runtime (runner/, released
 NuGet packages, .NET 8), then inspects exit codes and the files on disk. A
 finding is *confirmed* when what happened matches what baghban said; each
@@ -207,6 +207,28 @@ def unnamed_alone() -> str:
                CHAIN + [(2, 3)])
 
 
+def loop_after_last(writer: str, repeat: bool = False) -> str:
+    """The three elements reduced to one (LastOrDefault), then a SelectMany
+    holding the writer; with ``repeat``, a RepeatCount(2) after the loop."""
+    last = ('<Expression xsi:type="Combinator"><Combinator xsi:type="rx:LastOrDefault" />'
+            '</Expression>')
+    inner = ('<Workflow><Nodes><Expression xsi:type="WorkflowInput"><Name>Source1</Name>'
+             f'</Expression>{writer}<Expression xsi:type="WorkflowOutput" /></Nodes>'
+             '<Edges><Edge From="0" To="1" Label="Source1" /><Edge From="1" To="2" '
+             'Label="Source1" /></Edges></Workflow>')
+    again = ('<Expression xsi:type="Combinator"><Combinator xsi:type="rx:RepeatCount">'
+             '<rx:Count>2</rx:Count></Combinator></Expression>') if repeat else ""
+    edges = CHAIN + [(2, 3), (3, 4)] + ([(4, 5)] if repeat else [])
+    return doc(SOURCE + last + f'<Expression xsi:type="rx:SelectMany">{inner}</Expression>'
+               + again, edges)
+
+
+def one_row(rs):
+    f = csvs(rs[0])
+    n = [lines(t) for t in f.values()]
+    return rs[0].code == 0 and n == [1], f"exit {rs[0].code}; rows per file: {n}"
+
+
 def two_properties(grouped: bool) -> str:
     """Two writers whose FileName is exposed as 'Out': both in the top-level
     workflow, or each in its own group (separate workflows, separate names)."""
@@ -261,6 +283,11 @@ CASES = [
          note="found by confirm_properties.py on its first run (0.4.1)"),
     Case("same_property_in_two_groups", two_properties(grouped=True), [], 1, two_clean_files,
          note="each group is its own workflow, with its own property names"),
+    Case("loop_runs_once", loop_after_last(csv("once.csv")), [], 1, one_row,
+         note="LastOrDefault before the loop: the writer opens once, no FAILS_ON_REPEAT (0.6.0)"),
+    Case("loop_run_again_by_repeat", loop_after_last(csv("once.csv"), repeat=True),
+         ["FAILS_ON_REPEAT"], 1, fails_mid_session,
+         note="the same loop, re-subscribed by RepeatCount(2): the second run finds the file"),
 ]
 
 

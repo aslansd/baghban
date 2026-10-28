@@ -8,7 +8,7 @@ machine, macOS included, without Windows or .NET. Standard library only.
     print(baghban.check(doc).summary())
 """
 
-__version__ = "0.5.0"
+__version__ = "0.6.0"
 
 from .model import Document, Node, Workflow, TypeRef, Include, WorkflowLoadError, load, loads
 from .checks import Finding, Report, check, FINDINGS

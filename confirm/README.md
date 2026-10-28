@@ -1,7 +1,7 @@
 # Confirming findings with the real Bonsai runtime
 
 baghban's findings are grounded in Bonsai's *source*. This kit checks them
-against Bonsai's *behaviour*: for each of 15 small workflows it asks baghban
+against Bonsai's *behaviour*: for each of 17 small workflows it asks baghban
 for a prediction, runs the workflow with the released Bonsai packages on
 .NET 8, and inspects exit codes and the files left on disk. A row says `yes`
 when what Bonsai did matches what baghban said, `NO` when it does not.
@@ -123,7 +123,7 @@ case                               baghban                observed   what happen
 overwrite_across_runs              SILENT_OVERWRITE       yes        run 2 exit 0; 1 file(s) after 2 runs; rows per run [3] then [3]; content replaced: True
 overwrite_with_timestamp_suffix    (quiet)                yes        run 2 exit 0; 2 file(s) after 2 runs
 ...
-13/13 confirmed. Details: .../confirm/results.json
+17/17 confirmed. Details: .../confirm/results.json
 ```
 
 - **case**: the workflow (table below).
@@ -155,6 +155,8 @@ error message and file list. Send it along when reporting a `NO`.
 | `unnamed_subscribe_alone` | `UNNAMED_SUBJECT` (info) | it builds, and the rest of the workflow runs |
 | `duplicate_property` | `DUPLICATE_PROPERTY` | Bonsai refuses to build it ("already exists") and nothing is written (added in 0.4.1) |
 | `same_property_in_two_groups` | quiet | two files, three rows each: each group has its own names (added in 0.4.1) |
+| `loop_runs_once` | quiet | the three elements reduced to one by `LastOrDefault` before a `SelectMany` holding a writer (`Overwrite=False`): the run succeeds and writes one row (added in 0.6.0) |
+| `loop_run_again_by_repeat` | `FAILS_ON_REPEAT` | the same loop followed by `RepeatCount(2)`: the second run of the loop finds the file and fails (added in 0.6.0) |
 
 Every workflow is three timer ticks, 100 ms apart, through `Take(3)` and
 `Timestamp`, so every case ends on its own and every run writes different
@@ -267,6 +269,13 @@ The 13 cases again, plus the two added in 0.4.1. Same machine and packages:
 | `same_property_in_two_groups` | quiet | yes | exit 0; 2 file(s) with [3, 3] rows |
 
 The other 13 rows are identical to the second run's.
+
+### Fifth run: 28 Oct 2026, baghban 0.5.0, 15/15 confirmed
+
+The same 15 cases, after `SILENT_OVERWRITE` across runs became a warning.
+The kit compares finding codes, not severities, so the predictions were
+unchanged, and so were Bonsai's outcomes. The 2 cases added in 0.6.0
+(`loop_runs_once`, `loop_run_again_by_repeat`) have not been run yet.
 
 ## If a case says NO
 

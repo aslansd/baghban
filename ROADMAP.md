@@ -1,6 +1,6 @@
 # Roadmap
 
-Status as of 0.5.0. Evidence for the ordering is in `survey/SURVEY.md`.
+Status as of 0.6.0. Evidence for the ordering is in `survey/SURVEY.md`.
 
 1. **Confirm the findings by running them.** *Done on macOS.* Latest run
    (12 Oct 2026, baghban 0.4.1, Bonsai 2.9 packages, .NET 8, Intel Mac):
@@ -63,12 +63,18 @@ Status as of 0.5.0. Evidence for the ordering is in `survey/SURVEY.md`.
    Re-run with 0.4.1 (12 Oct 2026, macOS): `confirm_properties.py` 11/11
    and `confirm.py` 15/15. Open: values that need type conversion are not
    checked (they stay strings); the adapter, in daftar.
-5. **Loops that run once.** iblrig's two remaining `SILENT_OVERWRITE`
-   errors sit in a `SelectMany` that most likely receives one element per
-   session, so they are likely harmless. baghban cannot know how many
-   elements a loop receives. Where the XML shows it (a `Take(1)` before the
-   loop, or a source that emits once), the in-loop error could become the
-   across-run warning.
+5. **Loops that run once.** *Done in 0.6.0.* `baghban.flow` follows
+   elements through a workflow. A loop that is shown to receive at most one
+   element per run, and that nothing re-subscribes, is judged as no loop.
+   It uses only operators read in the Bonsai source; anything else keeps
+   the loop a loop. iblrig's two "likely harmless" errors are now shown to
+   be once per session, so 26 errors become 24. 124 of the survey's 849
+   `SelectMany` loops are shown to run once per subscription; the
+   `Repeat` after AIND's `RunTrial` rightly keeps that one a loop. Open: run
+   the 2 new confirm cases; follow subjects (a loop fed by a
+   `SubscribeSubject` is "not known" today); a writer upstream of `Repeat`
+   at the top level is opened again on every repetition, which no check
+   reports yet.
 6. **`UNRECORDED_PARAMETER`**: an externalized property whose value is never
    written to any output, so the data does not say what settings produced it.
 7. **Rate-dependent checks**, only where rates are stated in the XML (a

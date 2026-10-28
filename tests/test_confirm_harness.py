@@ -66,3 +66,14 @@ def test_other_judgements():
     assert not judge("unnamed_subscribe_alone", [Run(0, "", {"out.csv": ""})])
     assert judge("overwrite_with_timestamp_suffix",
                  [Run(0, "", {"a.csv": T1}), Run(0, "", {"a.csv": T1, "b.csv": T2})])
+
+
+def test_loop_runs_once_judgement():
+    # 0.6.0: a loop fed by LastOrDefault opens its writer once
+    assert judge("loop_runs_once", [Run(0, "", {"once.csv": "3,2026-01-01T00:00:00.3\n"})])
+    assert not judge("loop_runs_once", [Run(0, "", {"once.csv": T1})])  # three rows: it repeated
+    assert not judge("loop_runs_once", [Run(1, "IOException: The file 'once.csv' already exists.", {})])
+    # re-subscribed by RepeatCount(2): the second run fails
+    assert judge("loop_run_again_by_repeat",
+                 [Run(1, "IOException: The file 'once.csv' already exists.", {})])
+    assert not judge("loop_run_again_by_repeat", [Run(0, "", {"once.csv": T1})])

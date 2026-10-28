@@ -5,7 +5,7 @@ pip install -e ".[dev]"
 pytest -q
 ```
 
-Expected: `250 passed`, in about ten seconds. No network, no .NET, no
+Expected: `281 passed`, in about ten seconds. No network, no .NET, no
 Bonsai installation.
 
 ## What the suite checks
@@ -93,6 +93,20 @@ without the table. Bad files, unknown settings and unknown codes are
 errors. The CLI honours `--no-config`. On Python 3.10 without `tomli`, the
 error says what to install.
 
+**`test_flow.py`: loops that run once.** Each operator rule in both
+directions: `Timer` with and without a period; `Take(1)` against `Take(2)`;
+`LastOrDefault`, `First` and `Count`; a property source with an input
+against one without (it re-emits when the property changes);
+pass-throughs; `Scan`, subjects, disabled nodes and `Merge` staying
+"not known"; `TakeUntil` and `Zip` by their inputs; groups, `Defer` and
+`SelectMany`, whose inner input is one element unless the elements are
+observables (a `WindowCount` window). For writers: an overwrite in a loop
+behind `LastOrDefault` becomes the across-run warning and names its bound;
+behind a periodic timer it stays an error; `FAILS_ON_REPEAT` disappears
+when the loop runs once; `Repeat` after the loop, a repeating outer loop and
+`CreateObservable` keep the error; `Window` is a loop. And iblrig's
+sequential-stage shape in miniature.
+
 **`test_confirm_properties.py`** tests `confirm/confirm_properties.py`
 without .NET: baghban's prediction for each of its 11 cases, and the
 judgement of simulated runs in both directions.
@@ -122,9 +136,10 @@ example rigs.
 
 ## Beyond the unit tests
 
-- `python confirm/confirm.py` runs 15 cases with the real Bonsai runtime
-  (needs .NET 8). Last run: 15/15 confirmed (12 Oct 2026, macOS, Bonsai 2.9
-  packages, baghban 0.4.1). `confirm/README.md` explains installing .NET on a Mac, running
+- `python confirm/confirm.py` runs 17 cases with the real Bonsai runtime
+  (needs .NET 8). Last run: 15/15 confirmed (28 Oct 2026, macOS, Bonsai 2.9
+  packages, baghban 0.5.0); the 2 cases added in 0.6.0 have not been run
+  yet. `confirm/README.md` explains installing .NET on a Mac, running
   the kit, reading its output, and records every run's results.
 - `python confirm/confirm_packages.py` compares the package reader with
   Microsoft's metadata reader on real Bonsai packages (needs .NET 8 and
@@ -137,4 +152,5 @@ example rigs.
   repositories; `survey/SURVEY.md` records the last run and its hand review,
   and `survey/survey-results.json` holds that run's full output. Later
   runs are kept beside it: `survey-results-0.3.0.json` (with packages) and
-  `survey-results-0.5.0.json` (without, after the 0.5.0 severity change).
+  `survey-results-0.5.0.json` and `survey-results-0.6.0.json` (without,
+  after the 0.5.0 and 0.6.0 changes).

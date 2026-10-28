@@ -101,7 +101,7 @@ want that behaviour), **true, likely harmless**, or **false alarm**.
 | 8 | bonsai-rx/docs: five BonVision tutorial workflows include `Extensions\RandomOrientationGrating.bonsai`, which is not in the repository | **true, by design**: the tutorial (`tutorials/vision-psychophysics.md`, line 81) has the reader create this extension with *Save as Workflow*; the workflows are snapshots of the tutorial's steps. Recorded as a fault in the first version of this write-up, and corrected before reporting it, after reading the tutorial |
 | 13 | `docs/workflows` in bonsai-rx/docs (5), Bonsai.AllenNeuralDynamics (5) and bonsai-rx/machinelearning (3): diagram snippets that subscribe to subjects declared nowhere | **true, by design**: snippets for rendering documentation figures, never built alone. `--exclude 'docs/*'` skips them |
 | 1 | bonsai-rx/docs `language-subject-subscribe.bonsai`: unnamed `SubscribeSubject` feeding a `VideoWriter` | **true, by design**: a documentation snippet |
-| 2 | iblrig `ReceptiveFieldMappingStim.bonsai` (two task copies): `MatrixWriter 'NoiseLocations.bin'`, `Overwrite=True`, `Suffix=None` | **true, likely harmless**: the file is replaced every session, but IBL's launcher collects the stimulus data through a different, externalized file name and nothing in the repository reads `NoiseLocations.bin` |
+| 2 | iblrig `ReceptiveFieldMappingStim.bonsai` (two task copies): `MatrixWriter 'NoiseLocations.bin'`, `Overwrite=True`, `Suffix=None` | **true, likely harmless**: the file is replaced every session, but IBL's launcher collects the stimulus data through a different, externalized file name and nothing in the repository reads `NoiseLocations.bin`. Since 0.6.0 these are info: baghban shows the loop runs once per session, and the launcher sets the path per session (see [Loops that run once](#loops-that-run-once-what-060-changes-28-oct-2026)) |
 
 **No false alarms among the 29 errors.** 4 point at real faults (3
 distinct problems), 23 are correct about files that are not meant to work
@@ -351,6 +351,61 @@ findings, so it should go from 40 errors to 39. That run needs nuget.org,
 so it is done on a machine that can reach it, with
 `python survey/run_survey.py WORKDIR --no-clone --fetch` over existing
 clones.
+
+## Loops that run once: what 0.6.0 changes (28 Oct 2026)
+
+The two errors left after 0.5.0 were iblrig's `ReceptiveFieldMappingStim`
+writer, inside a `SelectMany`, read by hand as likely harmless because the
+loop "most likely receives one element per session". 0.6.0 lets baghban show
+that from the XML (`src/baghban/flow.py`). It follows elements through the
+workflow, using only operators whose behaviour was read in the Bonsai source.
+
+**iblrig, checked step by step.** `ephys_certification.bonsai` runs its
+stimuli as a chain of stages: `Defer 'Spacer'`, then `SelectMany` stages
+(`SpontaneousActivity0`, `Spacer`, `OrientationDirectionSelectivityStim0`,
+`Spacer`, `ReceptiveFieldMappingStim`, ...).
+- Each stage's workflow ends in `LastOrDefault` (at most one element),
+  followed by `IntProperty` with an input (one value per input) and a
+  `MulticastSubject` (passes elements on).
+- The first `Spacer` include ends in `LastOrDefault` too.
+- So each stage emits at most once, the stimulus loop receives one element
+  per session, and nothing at the top level re-subscribes it.
+- `passiveChoiceWorld_passive.bonsai` has the same shape inside
+  `NestedWorkflow 'Stim'`.
+
+Both writers are therefore opened once per session. Their `Path` is
+externalized, and IBL's launcher sets it per session (`iblrig/base_tasks.py`,
+line 982: `'Stim.ReceptiveFieldMappingStim.FileNameRFMapStim': file_output_rfm`,
+a file in the session's raw-data folder). So they are reported as info, like
+the other 44 externalized overwrites in iblrig. As a cross-check, all five
+values that launcher passes (`Stim.DisplayIndex`,
+`Stim.SpontaneousActivity0.DueTime`, `...FileNameRFMapStim`,
+`...MappingTime`, `...Rate`) resolve with `baghban.set_properties`, and the
+session path reaches the writer.
+
+Re-running the survey without packages, on the same 32 commits
+(`survey-results-0.6.0.json`):
+
+| | 0.5.0 | 0.6.0 |
+| --- | ---: | ---: |
+| Errors | 26 | 24 |
+| `SILENT_OVERWRITE` (error) | 2 | 0 |
+| `SILENT_OVERWRITE` (info) | 44 | 46 |
+| Everything else | | identical |
+
+**How often it applies.** Of the survey's 849 `SelectMany` loops, 124 are
+shown to receive at most one element per subscription. That is per
+subscription, not per session: AIND Dynamic Foraging's `RunTrial` gets one
+element from `Take(1)`, and the `Repeat` after it runs the next trial. The
+`Repeat` keeps it a loop, as it should. Aeon's `EphysAcquisition` (behind
+`Take(1)`, nothing re-subscribing) does run once; it holds no writer.
+Spot-checked by hand: iblrig's two chains, `RunTrial` and
+`EphysAcquisition`.
+
+Adding `Window` (Bonsai.Reactive's, with a nested closing workflow) to the
+loops changed nothing in the survey. The survey with packages was not re-run
+for 0.6.0. Its two in-loop errors are these same findings, so it should go
+from 39 errors (expected for 0.5.0) to 37.
 
 ## Caveats
 

@@ -35,15 +35,15 @@
         "exit": 0,
         "error": "",
         "files": [
-          "data2026-10-28T10_38_58.csv"
+          "data2026-10-28T17_25_56.csv"
         ]
       },
       {
         "exit": 0,
         "error": "",
         "files": [
-          "data2026-10-28T10_38_58.csv",
-          "data2026-10-28T10_39_00.csv"
+          "data2026-10-28T17_25_56.csv",
+          "data2026-10-28T17_25_59.csv"
         ]
       }
     ]
@@ -278,6 +278,40 @@
         "files": [
           "w1.csv",
           "w2.csv"
+        ]
+      }
+    ]
+  },
+  {
+    "case": "loop_runs_once",
+    "baghban": [],
+    "confirmed": true,
+    "observed": "exit 0; rows per file: [1]",
+    "note": "LastOrDefault before the loop: the writer opens once, no FAILS_ON_REPEAT (0.6.0)",
+    "runs": [
+      {
+        "exit": 0,
+        "error": "",
+        "files": [
+          "once.csv"
+        ]
+      }
+    ]
+  },
+  {
+    "case": "loop_run_again_by_repeat",
+    "baghban": [
+      "FAILS_ON_REPEAT"
+    ],
+    "confirmed": true,
+    "observed": "exit 1 (IOException: The file 'once.csv' already exists.)",
+    "note": "the same loop, re-subscribed by RepeatCount(2): the second run finds the file",
+    "runs": [
+      {
+        "exit": 1,
+        "error": "IOException: The file 'once.csv' already exists.",
+        "files": [
+          "once.csv"
         ]
       }
     ]
