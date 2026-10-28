@@ -42,9 +42,10 @@ reported by Bonsai before the data is gone.
 ## The thirty-second version
 
 ```
-$ baghban check rig/foraging.bonsai
+$ baghban check examples/rig_v1/foraging.bonsai
 
 [error] DUPLICATE_OUTPUT  Include 'modules/CameraRecorder.bonsai' #3 > VideoWriter 'camera.avi' #1
+   in .../examples/rig_v1/modules/CameraRecorder.bonsai
     Another writer also writes 'camera.avi' (Include 'modules/CameraRecorder.bonsai' #1 >
     VideoWriter 'camera.avi' #1). Two writers cannot hold the same file: one of them fails,
     or they overwrite each other. This is common when a module containing a writer is
@@ -53,9 +54,10 @@ $ baghban check rig/foraging.bonsai
     set it on each IncludeWorkflow.
 
 [error] SILENT_OVERWRITE  SelectMany 'Trial' #6 > CsvWriter 'trial.csv' #2
-    Overwrite=True with Suffix=None inside SelectMany 'Trial': the writer is opened again
-    for every element (e.g. every trial), and each time it replaces 'trial.csv'. Only the
-    last element's data survives the session.
+    Overwrite=True with Suffix=None: each run replaces 'trial.csv' from the previous
+    session. It sits inside SelectMany 'Trial', which opens it again for every element it
+    receives: if that is more than one (e.g. one per trial), each element also replaces the
+    previous one within the session.
     fix: Use Suffix=Timestamp or FileCount to keep one file per element, or move the writer
     after the SelectMany to collect all elements in one file.
 
@@ -69,6 +71,9 @@ $ baghban check rig/foraging.bonsai
     writer while debugging and forgetting to re-enable it loses whole sessions without an
     error.
     fix: Re-enable it, or delete it if the data is not needed.
+
+[info] UNUSED_SUBJECT  PublishSubject 'TrialEnd' #7
+    Subject 'TrialEnd' is declared but nothing subscribes to it.
 
 3 errors, 1 warning, 1 info in 22 nodes.
 ```
@@ -86,7 +91,7 @@ the two copies of the included module are told apart.
 
 | Finding | Severity | Question it answers |
 | --- | --- | --- |
-| `SILENT_OVERWRITE` | error | Will a writer replace data from an earlier run, or from an earlier trial in the same run, without an error? |
+| `SILENT_OVERWRITE` | error / warning | Will a writer replace data without an error? Inside a per-trial loop, from an earlier trial in the same run: error. Across runs: warning. |
 | `FAILS_ON_REPEAT` | error | Will a writer inside a per-trial loop raise "file already exists" on trial 2 and end the session? |
 | `DUPLICATE_OUTPUT` | error | Do two writers write to the same file? |
 | `DANGLING_SUBJECT` | error | Does a `SubscribeSubject` or `MulticastSubject` name a subject that is not declared where it can see it? |
@@ -100,9 +105,15 @@ the two copies of the included module are told apart.
 | `APPENDS_ACROSS_RUNS` | info | Does every run append to the same file, and repeat the CSV header mid-file? |
 | `UNUSED_SUBJECT` | info | Is a subject declared but never subscribed to? |
 
-`SILENT_OVERWRITE` drops to info when the file name is externalized:
-launchers commonly set a new name each session (the survey found this
-throughout IBL's rigs), and baghban cannot see the launcher.
+`SILENT_OVERWRITE` has three levels:
+- **Error** inside a loop: all but the last trial are lost within one
+  session, which is rarely anyone's intent.
+- **Warning** across runs. `Overwrite=True` is a setting someone has to
+  switch on, and replacing the last run's file is often the point, as in a
+  demo (see [When a finding is intended](#when-a-finding-is-intended)).
+- **Info** when the file name is externalized. Launchers commonly set a new
+  name each session (the survey found this throughout IBL's rigs), and
+  baghban cannot see the launcher.
 
 ### How it decides
 
@@ -150,6 +161,45 @@ enough to be sure, baghban says what it did not check instead of guessing:
   package contains.
 
 These appear as `not checked:` lines under the report.
+
+### When a finding is intended
+
+baghban reports what Bonsai will do. Whether that is a mistake can depend on
+what the workflow is for. vestibular-vr's `GNGTemplate.bonsai` is a demo that
+rewrites one `responses.csv` on every run, on purpose: its maintainers want
+neither a pile of files nor a new name for each test run
+([neurogears/vestibular-vr#137](https://github.com/neurogears/vestibular-vr/issues/137)).
+Mark such a finding as intended once, in a `baghban.toml` next to the
+workflows:
+
+```toml
+ignore = ["APPENDS_ACROSS_RUNS"]                     # everywhere below this folder
+
+[per-file-ignores]
+"src/Workflows/GNGTemplate.bonsai" = ["SILENT_OVERWRITE"]
+"docs/*" = ["DANGLING_SUBJECT"]
+```
+
+```
+$ baghban check src/Workflows/GNGTemplate.bonsai --strict
+No findings in 2 nodes.
+1 finding(s) marked as intended, not counted:
+  SILENT_OVERWRITE  CsvWriter 'responses.csv' #1  (ignored by baghban.toml)
+```
+
+- **Where the file lives.** `check` finds the nearest `baghban.toml` above
+  the workflow, or a `pyproject.toml` with a `[tool.baghban]` table holding
+  the same settings. It stops at the repository's root.
+- **Patterns** are relative to that folder, and `*` also matches `/`. A
+  pattern can name the checked workflow or the module that holds the node.
+- **Command line.** `--ignore CODE[:PATTERN]` does the same without a file;
+  `--no-config` skips the file.
+- **Nothing is hidden.** Marked findings are listed, but not counted and not
+  failing `check`.
+- **Typos are caught.** An unknown finding code is an error, so a misspelt
+  rule cannot silently stop working.
+- **Python 3.10.** Reading the file needs `tomllib`, which is built into
+  Python 3.11 and later. On 3.10, install `tomli`, or use `--ignore`.
 
 ### Modules
 
@@ -233,11 +283,15 @@ behaved as predicted (`confirm/`).
 Institute's foraging tasks, SWC's Aeon, IBL's rig, NeuroGears' vestibular VR
 and others): 453 entry workflows, 61,915 nodes (4 Oct 2026). Every error was read by
 hand, and every real fault against its repository's history. **None of the
-29 was a false alarm**: 5 point at real faults (4 distinct problems: a
+29 was a false alarm**: 4 point at real faults (3 distinct problems: a
 deleted module still used by documentation examples, a missing include in a
-rig, a template that overwrites its data, and a workflow that cannot
-build), 22 are correct about files never meant to work alone (documentation
-snippets and tutorial steps), and 2 are correct but likely harmless.
+rig, and a workflow that cannot build), 23 are correct about files never
+meant to work alone or that behave as their authors intend (documentation
+snippets, tutorial steps and a demo), and 2 are correct but likely harmless.
+The demo was first counted as a fault. Its maintainers explained that
+replacing the file each run is intended
+([#137](https://github.com/neurogears/vestibular-vr/issues/137)), which is
+why overwriting across runs is a warning since 0.5.0.
 Reading the first run's results is also where the module conventions above,
 two bugs and one wrong claim came from; see `survey/SURVEY.md`.
 
@@ -267,7 +321,10 @@ baghban fingerprint WORKFLOW         content hash, stable across re-saves
 baghban provenance WORKFLOW          fields recording which protocol a session ran (JSON)
 ```
 
-`check` accepts folders. A file that another checked file includes is checked
+`check` accepts folders. `--ignore CODE[:PATTERN]` marks a finding as
+intended, and `baghban.toml` is read unless `--no-config` (see
+[When a finding is intended](#when-a-finding-is-intended)). A file that
+another checked file includes is checked
 through its includer, where the subjects and file names it relies on are
 defined, rather than on its own. `--exclude GLOB` skips files, e.g.
 `--exclude 'docs/*'` for documentation snippets.
@@ -344,6 +401,9 @@ doc = baghban.load("rig/foraging.bonsai")
 report = baghban.check(doc)
 print(report.summary())
 report.errors               # [Finding(code, severity, message, location, file, node, hint)]
+baghban.check(doc, ignore=["SILENT_OVERWRITE:demos/*"]).ignored   # marked as intended
+config = baghban.find_config(doc.path)           # nearest baghban.toml, or None
+baghban.check(doc, ignore=baghban.read_config(config) if config else None)
 
 for node in doc.walk():     # every node, includes expanded
     if node.is_writer:
@@ -382,7 +442,7 @@ fields = baghban.provenance(command_line=launcher_args, cwd=rig_folder)
 $ baghban provenance examples/rig_v2/foraging.bonsai -p TrialInterval=PT15S
 {
   "bonsai.provenance": "1",
-  "bonsai.baghban": "0.4.1",
+  "bonsai.baghban": "0.5.0",
   "bonsai.workflow": "/path/to/examples/rig_v2/foraging.bonsai",
   "bonsai.version": "2.9.0",
   "bonsai.fingerprint": "fc07dd88c5331b2dfeb53671f5e05cd80b03f49e96060cb58a745b1682b600fd",
@@ -428,7 +488,10 @@ Shows, checks, fixes, diffs and fingerprints the example rig, and writes
 
 Research prototype, honestly labelled.
 
-- On 453 published workflows, no error was a false alarm (`survey/SURVEY.md`).
+- On 453 published workflows, no error was a false alarm about what Bonsai
+  will do (`survey/SURVEY.md`). One described behaviour its authors intend (a
+  demo that overwrites its file each run). That is why overwriting across
+  runs is a warning since 0.5.0, and findings can be marked as intended.
   Warnings were sampled, not read in full, and nothing measures what baghban
   misses.
 - **Confirmed on the real Bonsai runtime:** `confirm/` runs 15 cases (every
@@ -456,7 +519,7 @@ Research prototype, honestly labelled.
 
 ```
 pip install -e ".[dev]"
-pytest -q                         # 231 tests, no network, no .NET
+pytest -q                         # 250 tests, no network, no .NET
 python confirm/confirm.py         # needs .NET 8: confirm findings with real Bonsai
                                   #   (install and troubleshooting: confirm/README.md)
 python confirm/confirm_packages.py  # needs .NET 8 and nuget.org: the package reader

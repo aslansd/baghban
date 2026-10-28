@@ -10,7 +10,9 @@
     baghban provenance WORKFLOW       fields recording which protocol a session ran
 
 Commands that read one workflow take -p/--property NAME=VALUE, as Bonsai.exe
-does, to see the values a launcher passes instead of the saved ones.
+does, to see the values a launcher passes instead of the saved ones. check and
+render take --ignore CODE[:PATTERN] and read baghban.toml (see baghban.config)
+to mark findings as intended.
 """
 
 from __future__ import annotations
@@ -25,6 +27,7 @@ from .checks import check
 from .diff import diff
 from .info import (dependencies, fingerprint, format_dependencies, format_parameters,
                    parameters, provenance)
+from .config import ConfigError, find_config, parse_ignore, read_config
 from .launch import set_properties
 from .model import WorkflowLoadError, load
 from .render import dot, html, mermaid, outline
@@ -103,6 +106,23 @@ def _load(path, args):
     return doc
 
 
+def _ignore_rules(doc, args) -> list:
+    """--ignore rules, plus those of the baghban.toml (or pyproject.toml) above
+    the workflow unless --no-config."""
+    try:
+        rules = [parse_ignore(r) for r in getattr(args, "ignore", None) or []]
+        if doc.path is not None and not getattr(args, "no_config", False):
+            config = find_config(doc.path)
+            if config is not None:
+                cache = vars(args).setdefault("_config_cache", {})  # one read per run
+                if config not in cache:
+                    cache[config] = read_config(config)
+                rules += cache[config]
+    except ConfigError as exc:
+        raise SystemExit(f"baghban: {exc}")
+    return rules
+
+
 def _with_problems(args, code: int) -> int:
     return max(code, 1 if getattr(args, "property_problems", 0) else 0)
 
@@ -140,7 +160,7 @@ def cmd_check(args) -> int:
     roots = select_roots(docs)
     via_includer = len(docs) - len(roots)
 
-    reports = [check(d) for d in roots]
+    reports = [check(d, ignore=_ignore_rules(d, args)) for d in roots]
     code = _with_problems(args, max([r.exit_code(args.strict) for r in reports]
                                     + [1 if failures else 0]))
 
@@ -168,12 +188,13 @@ def cmd_show(args) -> int:
 def cmd_render(args) -> int:
     doc = _load(args.workflow, args)
     fmt = args.format
+    report = check(doc, ignore=_ignore_rules(doc, args))
     if fmt == "html":
-        text = html(doc, check(doc))
+        text = html(doc, report)
     elif fmt == "dot":
-        text = dot(doc, check(doc).findings)
+        text = dot(doc, report.findings)
     else:
-        text = mermaid(doc, check(doc).findings)
+        text = mermaid(doc, report.findings)
     out = args.output
     if out is None and fmt == "html":
         # next to the workflow: two rigs' foraging.bonsai no longer overwrite each other
@@ -250,13 +271,24 @@ def build_parser() -> argparse.ArgumentParser:
                              "(default: $BAGHBAN_CACHE or ~/.cache/baghban)")
         return sp
 
+    def with_ignores(sp):
+        sp.add_argument("--ignore", action="append", metavar="CODE[:PATTERN]",
+                        help="mark a finding as intended, everywhere or in files matching "
+                             "PATTERN, e.g. SILENT_OVERWRITE:demos/* (repeatable); ignored "
+                             "findings are listed but not counted")
+        sp.add_argument("--no-config", action="store_true",
+                        help="do not read ignore rules from baghban.toml or "
+                             "pyproject.toml [tool.baghban]")
+        return sp
+
     def with_properties(sp):
         sp.add_argument("-p", "--property", action="append", metavar="NAME=VALUE",
                         help="set an externalized property as Bonsai.exe --property does "
                              "(dotted names reach into nested workflows; repeatable)")
         return sp
 
-    c = with_properties(with_roots(sub.add_parser("check", help="find problems before the rig runs")))
+    c = with_ignores(with_properties(with_roots(sub.add_parser(
+        "check", help="find problems before the rig runs"))))
     c.add_argument("paths", nargs="+", help=".bonsai files or folders")
     c.add_argument("--json", action="store_true")
     c.add_argument("--strict", action="store_true", help="exit 1 on warnings too")
@@ -270,7 +302,7 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("workflow")
     s.set_defaults(func=cmd_show)
 
-    r = with_properties(with_roots(sub.add_parser("render", help="draw the workflow")))
+    r = with_ignores(with_properties(with_roots(sub.add_parser("render", help="draw the workflow"))))
     r.add_argument("workflow")
     r.add_argument("-f", "--format", choices=("html", "mermaid", "dot"), default="html")
     r.add_argument("-o", "--output", help="output file (html defaults to the workflow's name with .html, next to it)")

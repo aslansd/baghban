@@ -1,5 +1,46 @@
 # Changelog
 
+## 0.5.0 (unreleased)
+
+Intent. The vestibular-vr maintainers explained that their `GNGTemplate.bonsai`
+overwrites `responses.csv` on every run on purpose: it is a demo, and one
+rewritten file is what they want while testing
+([neurogears/vestibular-vr#137](https://github.com/neurogears/vestibular-vr/issues/137)).
+baghban was right about the behaviour and wrong to call it an error.
+
+- **`SILENT_OVERWRITE` across runs is now a warning, not an error.** The
+  writer is not in a loop and has `Overwrite=True`, `Suffix=None`.
+  `Overwrite=True` is a setting someone has to switch on (the default is
+  `False`), so it often means intent. The message says so ("Fine for a demo
+  or scratch output; not for session data"), and `check` exits 0 for it
+  unless `--strict`.
+- **Overwriting inside a per-element loop stays an error.** In a
+  `SelectMany`, `CreateObservable` or `WindowWorkflow`, all but the last
+  element are lost within one session. With an externalized file name it
+  stays info, as before.
+- **Findings can be marked as intended:**
+  - `baghban check --ignore CODE[:PATTERN]`, repeatable;
+  - a `baghban.toml` (`ignore = [...]`, `[per-file-ignores]`), or a
+    `[tool.baghban]` table in `pyproject.toml`, found above the workflow and
+    not past the repository's root; `--no-config` skips it;
+  - in Python, `check(doc, ignore=[...])`, with `read_config`, `find_config`,
+    `parse_ignore`, `IgnoreRule` and `ConfigError` in the API.
+  
+  Marked findings move to `Report.ignored`: they are listed in the summary
+  and in `--json` (with `ignored_by`), and are not counted. An unknown code
+  is an error, so a typo cannot silently disable a rule. `render` honours
+  the same rules. Reading the file uses `tomllib` (Python 3.11 and later),
+  or `tomli` on 3.10; `--ignore` works everywhere.
+- **Survey:** `GNGTemplate.bonsai` moves from "true fault" to "true, by
+  design". Real-fault findings go from 5 to 4 (3 distinct problems) in the
+  hand-read run, and from 6 to 5 with packages. Re-run without packages:
+  27 errors become 26, and the 3 `SILENT_OVERWRITE` errors become 2 errors
+  (iblrig, inside a `SelectMany`) and 1 warning. Nothing else changed.
+- The README's sample `check` output is regenerated from the real output (its
+  `SILENT_OVERWRITE` wording had drifted). TESTING said an externalized file
+  name makes `SILENT_OVERWRITE` a warning; it has been info since 0.2.1.
+- 250 tests (Python 3.11 and 3.13).
+
 ## 0.4.1 (2026-10-12)
 
 A fix found by the first run of `confirm/confirm_properties.py` on real

@@ -31,7 +31,7 @@ PIPE_PREFIX = "\\\\.\\pipe\\"
 
 # code -> (severity, one-line description); the README findings table mirrors this.
 FINDINGS = {
-    "SILENT_OVERWRITE": ("error", "a writer replaces data from an earlier run or trial without warning"),
+    "SILENT_OVERWRITE": ("error", "a writer replaces data from an earlier trial (error) or run (warning) without an error"),
     "FAILS_ON_REPEAT": ("error", "a writer inside a per-trial loop raises 'file already exists' on the second trial"),
     "DUPLICATE_OUTPUT": ("error", "two writers write to the same file"),
     "DANGLING_SUBJECT": ("error", "a SubscribeSubject/MulticastSubject names a subject that is not declared in scope"),
@@ -72,6 +72,7 @@ class Report:
     kind: str = "workflow"
     interface: list = field(default_factory=list)
     packages: list = field(default_factory=list)  # dicts: id, version, pinned, origin
+    ignored: list = field(default_factory=list)  # (Finding, IgnoreRule): marked as intended
 
     def by_severity(self, severity: str) -> list:
         return [f for f in self.findings if f.severity == severity]
@@ -116,6 +117,10 @@ class Report:
             lines.append(f"No findings in {self.n_nodes} nodes.")
         else:
             lines.append(", ".join(counts) + f" in {self.n_nodes} nodes.")
+        if self.ignored:
+            lines.append(f"{len(self.ignored)} finding(s) marked as intended, not counted:")
+            for f, rule in self.ignored:
+                lines.append(f"  {f.code}  {f.location}  (ignored by {rule.source})")
         for p in self.packages:
             how = "pinned" if p["pinned"] else "NOT pinned: newest found, findings assume it"
             lines.append(f"package: {p['id']} {p['version']} ({how}; from {p['origin']})")
@@ -128,6 +133,8 @@ class Report:
                 "interface": list(self.interface),
                 "packages": list(self.packages),
                 "findings": [f.to_dict() for f in self.findings],
+                "ignored": [dict(f.to_dict(), ignored_by=rule.describe())
+                            for f, rule in self.ignored],
                 "skipped": list(self.skipped)}
 
     def to_json(self) -> str:
@@ -420,17 +427,23 @@ def check_writers(doc: Document, report: Report) -> None:
                          "move the writer after the SelectMany to collect all elements in one "
                          "file."))
             elif overwrite:
-                # Launchers commonly set externalized file names per session (seen across
-                # IBL's rigs), which baghban cannot see: report, but do not alarm.
-                severity = "info" if externalized else "error"
+                # Overwrite=True is an explicit setting (the default is False), so replacing
+                # the last run's file is often what the author wants: a demo or scratch
+                # output (neurogears/vestibular-vr#137). Say what happens; do not call it a
+                # mistake. Launchers commonly set externalized file names per session (seen
+                # across IBL's rigs), which baghban cannot see: then only note it.
+                severity = "info" if externalized else "warning"
                 extra = (f" {prop} is externalized, so this is safe if the launcher sets a "
-                         "new value on every run." if externalized else "")
+                         "new value on every run." if externalized else
+                         " Fine for a demo or scratch output; not for session data.")
                 report.findings.append(_finding(
                     "SILENT_OVERWRITE", node,
                     f"Overwrite=True with Suffix=None: each run replaces '{fname}' from the "
                     f"previous session, without an error.{extra}",
-                    hint="Use Suffix=Timestamp (one file per run), or Overwrite=False so a "
-                         "second run stops instead of destroying data.",
+                    hint="If this is intended, mark it so (baghban check --ignore "
+                         "SILENT_OVERWRITE, or per file in baghban.toml). Otherwise use "
+                         "Suffix=Timestamp (one file per run), or Overwrite=False so a second "
+                         "run stops instead of replacing the data.",
                     severity=severity))
             elif loop is not None:
                 report.findings.append(_finding(
@@ -478,8 +491,14 @@ def packages_used(doc: Document) -> list:
     return [seen[k] for k in sorted(seen)]
 
 
-def check(doc: Document) -> Report:
-    """Run every check on a loaded document."""
+def check(doc: Document, ignore=None) -> Report:
+    """Run every check on a loaded document.
+
+    ``ignore`` marks findings as intended: rules such as ``"SILENT_OVERWRITE"``
+    or ``"SILENT_OVERWRITE:demos/*"``, or ``IgnoreRule``s (e.g. from
+    ``baghban.read_config``). They move to ``Report.ignored`` and do not
+    count; see :mod:`baghban.config`.
+    """
     report = Report(path=str(doc.path) if doc.path else None,
                     n_nodes=sum(1 for _ in doc.walk()), kind=doc.kind,
                     packages=packages_used(doc))
@@ -487,4 +506,7 @@ def check(doc: Document) -> Report:
         fn(doc, report)
     order = {s: i for i, s in enumerate(SEVERITIES)}
     report.findings.sort(key=lambda f: (order[f.severity], f.node))
+    if ignore:
+        from .config import apply_ignores
+        apply_ignores(report, ignore)
     return report

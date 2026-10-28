@@ -71,7 +71,7 @@ cd "/path/to/baghban"
 python -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
-pytest -q                          # 231 passed
+pytest -q                          # 250 passed
 ```
 
 **Order matters: .NET before the virtual environment.** A virtual
@@ -140,10 +140,10 @@ error message and file list. Send it along when reporting a `NO`.
 
 | Case | baghban says | Confirmed when |
 | --- | --- | --- |
-| `overwrite_across_runs` | `SILENT_OVERWRITE` | after two runs there is one file, holding only run 2's rows |
+| `overwrite_across_runs` | `SILENT_OVERWRITE` (warning since 0.5.0) | after two runs there is one file, holding only run 2's rows |
 | `overwrite_with_timestamp_suffix` | quiet | after two runs there are two files |
 | `no_overwrite_second_run_stops` | quiet | run 2 fails with "already exists" and run 1's data is intact |
-| `overwrite_per_element` | `SILENT_OVERWRITE` | three elements through a `SelectMany` leave one row |
+| `overwrite_per_element` | `SILENT_OVERWRITE` (error) | three elements through a `SelectMany` leave one row |
 | `writer_after_loop` | quiet | the same, with the writer after the loop, leaves three rows |
 | `fails_on_repeat` | `FAILS_ON_REPEAT` | the run fails on the second element |
 | `duplicate_output` | `DUPLICATE_OUTPUT` | the run fails, or fewer than all rows survive |

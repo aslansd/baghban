@@ -31,6 +31,16 @@ def test_overwrite_without_suffix_fires():
     assert codes(single(csv_writer(overwrite=True))) == ["SILENT_OVERWRITE"]
 
 
+def test_overwrite_across_runs_is_a_warning_not_an_error():
+    # Overwrite=True is an explicit setting and often intended: a demo that rewrites
+    # one scratch file per run (neurogears/vestibular-vr#137). Said, not alarmed.
+    report = baghban.check(baghban.loads(document(single(csv_writer(overwrite=True)))))
+    [f] = report.findings
+    assert (f.code, f.severity) == ("SILENT_OVERWRITE", "warning")
+    assert "demo" in f.message and "--ignore" in f.hint
+    assert report.exit_code() == 0 and report.exit_code(strict=True) == 1
+
+
 @pytest.mark.parametrize("suffix", ["Timestamp", "FileCount"])
 def test_overwrite_with_suffix_is_quiet(suffix):
     assert codes(single(csv_writer(overwrite=True, suffix=suffix))) == []
@@ -49,6 +59,8 @@ def test_overwrite_inside_selectmany_is_per_trial():
     report = baghban.check(baghban.loads(document(single(csv_writer(overwrite=True), in_loop=True))))
     assert report.codes() == ["SILENT_OVERWRITE"]
     assert "more than one" in report.findings[0].message  # cannot know the element count
+    # losing all but the last trial within one session is rarely intended: still an error
+    assert report.findings[0].severity == "error" and report.exit_code() == 1
 
 
 def test_overwrite_inside_group_is_not_a_loop():
@@ -320,7 +332,7 @@ def test_disabled_missing_include_is_quiet(tmp_path):
 
 
 def test_exit_code():
-    bad = baghban.check(baghban.loads(document(single(csv_writer(overwrite=True)))))
+    bad = baghban.check(baghban.loads(document(single(csv_writer(overwrite=True), in_loop=True))))
     good = baghban.check(baghban.loads(document(single(csv_writer(suffix="Timestamp")))))
     assert bad.exit_code() == 1 and good.exit_code() == 0
 

@@ -5,7 +5,7 @@ pip install -e ".[dev]"
 pytest -q
 ```
 
-Expected: `231 passed`, in about ten seconds. No network, no .NET, no
+Expected: `250 passed`, in about ten seconds. No network, no .NET, no
 Bonsai installation.
 
 ## What the suite checks
@@ -36,9 +36,10 @@ stay quiet. The quiet cases are the ones that matter for trust:
 | `MISSING_INCLUDE` | the file exists, including with backslashes, without the `.bonsai` extension, or as a nested include resolved from the top-level folder; the include is disabled |
 | `DISABLED_WRITER` | the writer is enabled |
 
-Severities and exit codes are pinned too: an externalized file name turns
-`SILENT_OVERWRITE` into a warning, info findings never fail `check`, and
-`--strict` fails on warnings.
+Severities and exit codes are pinned too. `SILENT_OVERWRITE` is an error
+inside a loop, a warning across runs (since 0.5.0, after
+neurogears/vestibular-vr#137), and info with an externalized file name.
+Info findings never fail `check`, and `--strict` fails on warnings.
 
 **`test_project.py`: module conventions**, added after the survey: Extensions
 and package modules report their undeclared subjects as their interface,
@@ -81,6 +82,16 @@ a group inside the included file (fixed in 0.4.0), `outputs`, the
 provenance fields (all strings, fingerprint of the file as saved, the
 caller's document unchanged), the CLI's `-p`, and that baghban does not
 depend on daftar.
+
+**`test_config.py`: marking findings as intended.** `--ignore` rules with
+and without a pattern; a rule matches only its own code and files, and
+marks a module's finding through the module's path. Ignoring never changes
+other findings. Marked findings are listed in the summary and in `--json`,
+not dropped. `baghban.toml` and `[tool.baghban]` are found above the
+workflow, but not outside the repository, and not in a `pyproject.toml`
+without the table. Bad files, unknown settings and unknown codes are
+errors. The CLI honours `--no-config`. On Python 3.10 without `tomli`, the
+error says what to install.
 
 **`test_confirm_properties.py`** tests `confirm/confirm_properties.py`
 without .NET: baghban's prediction for each of its 11 cases, and the

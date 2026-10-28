@@ -23,6 +23,7 @@ src/baghban/__init__.py
 src/baghban/__main__.py
 src/baghban/checks.py
 src/baghban/cli.py
+src/baghban/config.py
 src/baghban/diff.py
 src/baghban/dotnet.py
 src/baghban/info.py
@@ -43,6 +44,7 @@ survey/run_survey.py
 tests/conftest.py
 tests/dllkit.py
 tests/test_checks.py
+tests/test_config.py
 tests/test_confirm_harness.py
 tests/test_confirm_packages.py
 tests/test_confirm_properties.py

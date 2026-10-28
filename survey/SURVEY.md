@@ -89,24 +89,26 @@ either.
 ## Every error, read by hand
 
 Verdicts: **true fault** (the workflow is wrong), **true, by design** (the
-statement is correct but the file is not meant to work alone), **true,
-likely harmless**, or **false alarm**.
+statement is correct, but the file is not meant to work alone, or its authors
+want that behaviour), **true, likely harmless**, or **false alarm**.
 
 | Findings | Where | Verdict |
 | --- | --- | --- |
 | 2 | Bonsai.AllenNeuralDynamics docs: [AindManipulatorFromDefault](https://github.com/AllenNeuralDynamics/Bonsai.AllenNeuralDynamics/blob/717c551cc3ed7e1aafb556b2da2cd9920d31c2b1/docs/workflows/AindManipulatorFromDefault.bonsai#L50) and [AindManipulatorFromJson](https://github.com/AllenNeuralDynamics/Bonsai.AllenNeuralDynamics/blob/717c551cc3ed7e1aafb556b2da2cd9920d31c2b1/docs/workflows/AindManipulatorFromJson.bonsai#L28) include `AllenNeuralDynamics.AindManipulator:AindManipulator.bonsai`, which was deleted from the package on 2026-01-29 (commit `b0b68b8`, "Update AindManipulator to latest aind-behavior-services model specification"); both examples are embedded in `docs/articles/aind-manipulator.md` | **true fault** (in documentation) |
 | 1 | iblrig: [screen_sweep_harp_photodiode.bonsai](https://github.com/int-brain-lab/iblrig/blob/a0a031e2f9969c192767a255781920028034b7b0/devices/harp_photodiode/screen_sweep_harp_photodiode.bonsai#L34) includes `Extensions\range.bonsai`. `devices/harp_photodiode/` has never had an `Extensions` folder in the repository's history; the only `range.bonsai` lived in `devices/screen_calibration/wrkflws/Extensions/` and was removed with that folder's screen-sweep workflows in the 2024-08-12 dead-code cleanup (`2434fee3`). Nothing in the Python code refers to this workflow | **true fault**, possibly in dead code |
-| 1 | neurogears/vestibular-vr [GNGTemplate.bonsai](https://github.com/neurogears/vestibular-vr/blob/18bf7151e417310acc5d8881eb157df98f486943/src/Workflows/GNGTemplate.bonsai#L30-L36): `CsvWriter 'responses.csv'`, `Overwrite=True`, `Suffix=None`. Unchanged since March 2023, referenced nowhere | **true fault**, low impact: each run replaces the last run's responses, which matters only if the template is still used or copied |
+| 1 | neurogears/vestibular-vr [GNGTemplate.bonsai](https://github.com/neurogears/vestibular-vr/blob/18bf7151e417310acc5d8881eb157df98f486943/src/Workflows/GNGTemplate.bonsai#L30-L36): `CsvWriter 'responses.csv'`, `Overwrite=True`, `Suffix=None`. Unchanged since March 2023, referenced nowhere | **true, by design**: each run does replace the last run's responses (confirmed on real Bonsai), and that is what its maintainers want. It is a demo of the task structure, run to experiment with, where one file rewritten each time is the point ([neurogears/vestibular-vr#137](https://github.com/neurogears/vestibular-vr/issues/137)). Recorded as a true fault until 28 Oct 2026; since baghban 0.5.0 this finding is a warning |
 | 1 | restaurant-row-berkeley [5s-wait_80pct-rewarded_EXPERIMENTAL.bonsai](https://github.com/jtdbod/restaurant-row-berkeley/blob/358d356436f835192ae05b9727ab139773384b5e/5s-wait_80pct-rewarded_EXPERIMENTAL.bonsai): inside `Timestamp & Save Events`, an unnamed `SubscribeSubject` feeds the `PropertyMapping` that sets the event `CsvWriter`'s `FileName`; `PropertyMapping` needs exactly one input | **true fault**: the workflow cannot build. The mechanism was confirmed on real Bonsai (`confirm/`, case `unnamed_subscribe`); this exact workflow was not run. Repository inactive since February 2021 |
 | 8 | bonsai-rx/docs: five BonVision tutorial workflows include `Extensions\RandomOrientationGrating.bonsai`, which is not in the repository | **true, by design**: the tutorial (`tutorials/vision-psychophysics.md`, line 81) has the reader create this extension with *Save as Workflow*; the workflows are snapshots of the tutorial's steps. Recorded as a fault in the first version of this write-up, and corrected before reporting it, after reading the tutorial |
 | 13 | `docs/workflows` in bonsai-rx/docs (5), Bonsai.AllenNeuralDynamics (5) and bonsai-rx/machinelearning (3): diagram snippets that subscribe to subjects declared nowhere | **true, by design**: snippets for rendering documentation figures, never built alone. `--exclude 'docs/*'` skips them |
 | 1 | bonsai-rx/docs `language-subject-subscribe.bonsai`: unnamed `SubscribeSubject` feeding a `VideoWriter` | **true, by design**: a documentation snippet |
 | 2 | iblrig `ReceptiveFieldMappingStim.bonsai` (two task copies): `MatrixWriter 'NoiseLocations.bin'`, `Overwrite=True`, `Suffix=None` | **true, likely harmless**: the file is replaced every session, but IBL's launcher collects the stimulus data through a different, externalized file name and nothing in the repository reads `NoiseLocations.bin` |
 
-**No false alarms among the 29 errors.** 5 point at real faults (4
-distinct problems), 22 are correct about files that are not meant to work
-on their own (documentation snippets and tutorial steps), and 2 are correct
-but likely harmless.
+**No false alarms among the 29 errors.** 4 point at real faults (3
+distinct problems), 23 are correct about files that are not meant to work
+on their own or that behave as their authors intend (documentation
+snippets, tutorial steps and a demo), and 2 are correct but likely
+harmless. The demo was first counted as a fault; its maintainers' answer
+corrected that (see [Intent](#intent-what-050-changes-28-oct-2026)).
 
 Each real fault was checked against the repository's history before being
 reported; that check is what reclassified the BonVision tutorial workflows.
@@ -249,10 +251,12 @@ do not appear.
 | 8 | bonsai-rx/docs BonVision tutorial workflows (`Draw`, `AngleDistribution`) | **true, by design**, as in the preview |
 | 2 | bonsai-rx/machinelearning `docs/workflows/HMMImplementation.bonsai` (`Data`) and `KFModelImplementation.bonsai` (`BehaviorData`) | **true, by design**: the getting-started pages tell the reader to "connect your data source to a `Subject` named `Data`" (or `BehaviorData`); these are templates the reader completes. Hidden until the `Bonsai.ML` packages could be read |
 
-**No false alarms among the 40 errors.** 6 point at real faults (4 distinct
-problems), 32 are correct about files never meant to work alone
-(documentation snippets, tutorial steps and templates), and 2 are correct
-but likely harmless. No finding disappeared.
+**No false alarms among the 40 errors.** 5 point at real faults (3 distinct
+problems), 33 are correct about files never meant to work alone or that
+behave as their authors intend (documentation snippets, tutorial steps,
+templates and a demo), and 2 are correct but likely harmless. No finding
+disappeared. (Counted as 6 real faults until the vestibular-vr demo was
+reclassified on 28 Oct 2026.)
 
 Reading packages also confirmed the reader itself: on the 8 packages the
 survey most needed, it agrees with Microsoft's System.Reflection.Metadata on
@@ -298,6 +302,50 @@ resolve. The fingerprint changes in one workflow, where a value that came
 from a module's default is now written on the include element, as Bonsai
 also does. This is why provenance fingerprints the file as saved.
 
+## Intent: what 0.5.0 changes (28 Oct 2026)
+
+The vestibular-vr maintainers answered the report about `GNGTemplate.bonsai`
+([#137](https://github.com/neurogears/vestibular-vr/issues/137)).
+`Overwrite=True` there is intended: the workflow is a small demo for setting
+up the task structure. While testing they want neither many output files
+nor a new file name each time. They added that `Overwrite=True` with
+`Suffix=None` "is not necessarily a mistake, it very much depends on the
+intended use of the workflow".
+
+They are right, and baghban was half right. What it said would happen did
+happen (each run replaces the file, confirmed on real Bonsai). But reporting
+it as an **error** called it a mistake. `Overwrite=True` is a setting someone
+has to switch on (the default is `False`), so it often signals intent.
+baghban 0.5.0 therefore:
+
+- reports overwriting across runs (writer not in a loop) as a **warning**,
+  whose message says it is fine for a demo or scratch output;
+- keeps overwriting inside a per-element loop (`SelectMany`,
+  `CreateObservable`, `WindowWorkflow`) an **error**: there, all but the last
+  element are lost within one session, which is rarely anyone's intent
+  (confirmed on real Bonsai, case `overwrite_per_element`);
+- lets a project mark a finding as intended, once: `--ignore CODE[:PATTERN]`,
+  or a `baghban.toml` (or `[tool.baghban]` in `pyproject.toml`) next to the
+  workflows. Marked findings are listed, not hidden, and not counted.
+
+Re-running the survey without packages (`--no-clone`, the same clones):
+
+| | 0.4.1 | 0.5.0 |
+| --- | ---: | ---: |
+| Errors | 27 | 26 |
+| `SILENT_OVERWRITE` (error) | 3 | 2 |
+| `SILENT_OVERWRITE` (warning) | 0 | 1 |
+| Everything else | | identical |
+
+The one change is `GNGTemplate.bonsai`. The two `SILENT_OVERWRITE` errors
+left are iblrig's `ReceptiveFieldMappingStim.bonsai` (two task copies), whose
+writer sits inside a `SelectMany`. They were read as **likely harmless**,
+because the loop most likely receives one element per session. baghban
+cannot know how many elements a loop receives, so they stay errors, with a
+message that says "if". The survey with packages (`--fetch`) was not re-run
+for 0.5.0. Its three `SILENT_OVERWRITE` errors are these same three
+findings, so it should go from 40 errors to 39.
+
 ## Caveats
 
 - Public repositories over-represent documentation and packages: 187 of the
@@ -305,6 +353,10 @@ also does. This is why provenance fingerprints the file as saved.
   Extensions modules.
 - Precision is estimated on errors only. Warnings were sampled, not read in
   full.
+- "No false alarm" means baghban was right about what Bonsai will do.
+  Whether that behaviour is a mistake is for the workflow's authors to say:
+  vestibular-vr's demo is correct about the behaviour and intended by its
+  authors, and is now counted as by design.
 - The package preview read packages from source at HEAD; the real run read
   them at the pinned versions, and the tables above keep both. A version
   nuget.org does not have (a CI build) is not checked.
