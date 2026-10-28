@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.5.0 (unreleased)
+## 0.5.0 (2026-10-28)
 
 Intent. The vestibular-vr maintainers explained that their `GNGTemplate.bonsai`
 overwrites `responses.csv` on every run on purpose: it is a demo, and one

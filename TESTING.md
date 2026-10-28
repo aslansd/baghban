@@ -135,4 +135,6 @@ example rigs.
   11/11 (12 Oct 2026).
 - `python survey/run_survey.py DIR` re-runs the survey of published
   repositories; `survey/SURVEY.md` records the last run and its hand review,
-  and `survey/survey-results.json` holds that run's full output.
+  and `survey/survey-results.json` holds that run's full output. Later
+  runs are kept beside it: `survey-results-0.3.0.json` (with packages) and
+  `survey-results-0.5.0.json` (without, after the 0.5.0 severity change).

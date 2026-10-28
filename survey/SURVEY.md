@@ -328,7 +328,10 @@ baghban 0.5.0 therefore:
   or a `baghban.toml` (or `[tool.baghban]` in `pyproject.toml`) next to the
   workflows. Marked findings are listed, not hidden, and not counted.
 
-Re-running the survey without packages (`--no-clone`, the same clones):
+Re-running the survey without packages, on the same 32 commits (28 Oct
+2026). The 0.5.0 column is the released package, installed from PyPI; its
+full output is `survey-results-0.5.0.json`, with paths relative to the
+survey folder (`WORKDIR/`):
 
 | | 0.4.1 | 0.5.0 |
 | --- | ---: | ---: |
@@ -344,7 +347,10 @@ because the loop most likely receives one element per session. baghban
 cannot know how many elements a loop receives, so they stay errors, with a
 message that says "if". The survey with packages (`--fetch`) was not re-run
 for 0.5.0. Its three `SILENT_OVERWRITE` errors are these same three
-findings, so it should go from 40 errors to 39.
+findings, so it should go from 40 errors to 39. That run needs nuget.org,
+so it is done on a machine that can reach it, with
+`python survey/run_survey.py WORKDIR --no-clone --fetch` over existing
+clones.
 
 ## Caveats
 
