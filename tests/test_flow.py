@@ -206,3 +206,107 @@ def test_iblrig_shape(tmp_path):
     [f] = [f for f in r.findings if f.code == "SILENT_OVERWRITE"]
     assert f.severity == "warning"
     assert "ReceptiveFieldMappingStim" in f.message and "LastOrDefault" in f.message
+
+
+# ------------------------------------------------------------------ writers re-run by Repeat (0.7.0)
+
+def repeated_writer(writer, repeater, *, in_group=False):
+    """Timer(once) -> writer -> repeater, the writer optionally inside a group."""
+    if in_group:
+        inner = workflow(expr(workflow_input()), expr(writer), expr(workflow_output()),
+                         edges=[(0, 1), (1, 2)])
+        middle = group("Log", inner)
+    else:
+        middle = writer
+    return document(workflow(expr(once_timer()), expr(middle), expr(repeater),
+                             edges=[(0, 1), (1, 2)]))
+
+
+def found(xml):
+    return [(f.code, f.severity) for f in report(xml).findings]
+
+
+def test_writer_before_repeat_fails_on_the_second_repetition():
+    r = report(repeated_writer(csv_writer("t.csv"), op("RepeatCount", "<rx:Count>3</rx:Count>")))
+    [f] = r.findings
+    assert (f.code, f.severity) == ("FAILS_ON_REPEAT", "error")
+    assert "RepeatCount" in f.message and "subscribes again" in f.message
+    assert "after the RepeatCount" in f.hint
+
+
+def test_writer_before_repeat_with_overwrite_keeps_only_the_last_repetition():
+    [f] = report(repeated_writer(csv_writer("t.csv", overwrite=True), op("Repeat"))).findings
+    assert (f.code, f.severity) == ("SILENT_OVERWRITE", "error")
+    assert "only the last repetition's data survives" in f.message
+
+
+def test_repeat_inside_a_group_counts_too():
+    xml = repeated_writer(csv_writer("t.csv"), op("Repeat"), in_group=True)
+    assert found(xml) == [("FAILS_ON_REPEAT", "error")]
+
+
+def test_repeatcount_of_one_repeats_nothing():
+    xml = repeated_writer(csv_writer("t.csv"), op("RepeatCount", "<rx:Count>1</rx:Count>"))
+    assert found(xml) == []
+
+
+def test_retry_is_said_to_rerun_only_after_an_error():
+    [f] = report(repeated_writer(csv_writer("t.csv"), op("Retry"))).findings
+    assert f.code == "FAILS_ON_REPEAT" and "after an error" in f.message
+
+
+def test_repeat_on_another_branch_does_not_rerun_the_writer():
+    xml = document(workflow(expr(once_timer()), expr(csv_writer("t.csv")), expr(timer()),
+                            expr(op("Repeat")), edges=[(0, 1), (2, 3)]))
+    assert found(xml) == []
+
+
+# ------------------------------------------------------------------ writers on a branch that is off (0.7.0)
+
+def writer_report(*nodes, edges):
+    xml = [n if isinstance(n, str) else expr(n) for n in nodes]
+    return baghban.check(baghban.loads(document(workflow(*xml, edges=edges))))
+
+
+def dw(r):
+    return [(f.severity, f.message) for f in r.findings if f.code == "DISABLED_WRITER"]
+
+
+def test_disabled_writer_on_a_branch_that_is_off_is_info():
+    # everything from the source to the writer disabled: the branch is off
+    r = writer_report(disable(timer()), disable(op("Timestamp")), disable(csv_writer("a.csv")),
+                      edges=[(0, 1), (1, 2)])
+    [(sev, msg)] = dw(r)
+    assert sev == "info" and "the whole branch is off" in msg and "Timer #0" in msg
+    assert "would not build" in msg
+    assert r.exit_code(strict=True) == 0
+
+
+def test_disabled_writer_behind_an_enabled_source_stays_a_warning():
+    r = writer_report(timer(), op("Timestamp"), disable(csv_writer("a.csv")), edges=[(0, 1), (1, 2)])
+    assert [s for s, _ in dw(r)] == ["warning"]
+
+
+def test_a_disabled_operator_with_a_live_input_passes_data_through():
+    # DisableBuilder with one argument returns that argument
+    r = writer_report(timer(), disable(op("Timestamp")), disable(csv_writer("a.csv")),
+                      edges=[(0, 1), (1, 2)])
+    assert [s for s, _ in dw(r)] == ["warning"]
+
+
+def test_an_enabled_operator_between_does_not_make_the_branch_off():
+    # an enabled Timestamp after a disabled Timer gets no input and does not
+    # build (confirm kit, 16 Nov 2026): that is not a branch that is off
+    r = writer_report(disable(timer()), op("Timestamp"), disable(csv_writer("a.csv")),
+                      edges=[(0, 1), (1, 2)])
+    assert [s for s, _ in dw(r)] == ["warning"]
+
+
+def test_disabled_nodes_with_several_inputs():
+    # all inputs off: off; one input live: the warning stays
+    both = writer_report(disable(timer()), disable(timer()), disable(op("Zip")),
+                         disable(csv_writer("a.csv")), edges=[(0, 2), (1, 2, "Source2"), (2, 3)])
+    assert [s for s, _ in dw(both)] == ["info"]
+    one = writer_report(disable(timer()), timer(), disable(op("Zip")), disable(csv_writer("a.csv")),
+                        edges=[(0, 2), (1, 2, "Source2"), (2, 3)])
+    assert [s for s, _ in dw(one)] == ["warning"]

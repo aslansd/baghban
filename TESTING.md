@@ -5,7 +5,7 @@ pip install -e ".[dev]"
 pytest -q
 ```
 
-Expected: `281 passed`, in about ten seconds. No network, no .NET, no
+Expected: `305 passed`, in about ten seconds. No network, no .NET, no
 Bonsai installation.
 
 ## What the suite checks
@@ -105,7 +105,20 @@ behind `LastOrDefault` becomes the across-run warning and names its bound;
 behind a periodic timer it stays an error; `FAILS_ON_REPEAT` disappears
 when the loop runs once; `Repeat` after the loop, a repeating outer loop and
 `CreateObservable` keep the error; `Window` is a loop. And iblrig's
-sequential-stage shape in miniature.
+sequential-stage shape in miniature. Since 0.7.0: a writer before `Repeat`,
+`RepeatCount(3)` or `Retry` (also inside a group) gets `FAILS_ON_REPEAT` or
+`SILENT_OVERWRITE`, and `Retry` is said to re-run only after an error, while
+`RepeatCount(1)` and a `Repeat` on another branch stay quiet. A disabled
+writer is info when its whole branch is disabled back to the source,
+including through a disabled `Zip` whose inputs are all off. It stays a
+warning behind an enabled source, behind a disabled operator that passes a
+live input through, behind an enabled operator (which would not build), and
+behind a disabled `Zip` with one live input.
+
+**`test_seed_faults.py`: the recall kit.** On a small rig that checks clean
+and survives the kit's XML round trip, each of the 9 planted faults produces
+its expected finding at the planted node. Subjects with externalized names
+are not planted.
 
 **`test_confirm_properties.py`** tests `confirm/confirm_properties.py`
 without .NET: baghban's prediction for each of its 11 cases, and the
@@ -136,9 +149,9 @@ example rigs.
 
 ## Beyond the unit tests
 
-- `python confirm/confirm.py` runs 17 cases with the real Bonsai runtime
-  (needs .NET 8). Last run: 15/15 confirmed (28 Oct 2026, macOS, Bonsai 2.9
-  packages, baghban 0.5.0); the 2 cases added in 0.6.0 have not been run
+- `python confirm/confirm.py` runs 20 cases with the real Bonsai runtime
+  (needs .NET 8). Last run: 17/17 confirmed (28 Oct 2026, macOS, Bonsai 2.9
+  packages, baghban 0.6.0); the 3 cases added in 0.7.0 have not been run
   yet. `confirm/README.md` explains installing .NET on a Mac, running
   the kit, reading its output, and records every run's results.
 - `python confirm/confirm_packages.py` compares the package reader with
@@ -152,5 +165,8 @@ example rigs.
   repositories; `survey/SURVEY.md` records the last run and its hand review,
   and `survey/survey-results.json` holds that run's full output. Later
   runs are kept beside it: `survey-results-0.3.0.json` (with packages) and
-  `survey-results-0.5.0.json` and `survey-results-0.6.0.json` (without,
-  after the 0.5.0 and 0.6.0 changes).
+  `survey-results-0.5.0.json`, `survey-results-0.6.0.json` and
+  `survey-results-0.7.0.json` (without, after each release's changes).
+- `python survey/seed_faults.py DIR` measures recall on the same clones by
+  planting faults (needs `lxml`). With `--fetch`: 168/170 found (16 Nov
+  2026, macOS). Without packages: 156/170 (`survey/recall-0.7.0.json`).

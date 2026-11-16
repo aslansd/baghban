@@ -221,6 +221,50 @@ class FlowAnalysis:
         return MANY
 
 
+# -- branches that are off ------------------------------------------------------
+#
+# A disabled node with no input builds as EmptyExpression, and Bonsai does not
+# pass an empty expression on: the next node simply gets no input from it
+# (ExpressionBuilderGraphExtensions, "Do not generate output sequences if the
+# result expression is empty"). A disabled node whose inputs are all such
+# empties therefore has no arguments either, and builds as EmptyExpression in
+# turn (DisableBuilder.Build). An *enabled* operator in that position is built
+# without its input, and one that needs an input does not build at all; the
+# confirm kit showed this (writer_behind_disabled_source, 16 Nov 2026). So a
+# branch is off only through disabled nodes.
+
+
+def silent_source(node: Node, analysis: Optional["FlowAnalysis"] = None,
+                  _seen: Optional[set] = None) -> Optional[Node]:
+    """The disabled source of a branch that is off up to ``node``: every data
+    input of ``node`` is a disabled node with nothing live upstream. Else None."""
+    seen = _seen if _seen is not None else set()
+    if id(node) in seen:
+        return None
+    seen.add(id(node))
+    inputs = data_inputs(node)
+    if not inputs:
+        return None
+    found = []
+    for i in inputs:
+        src = _off(i, seen)
+        if src is None:
+            return None
+        found.append(src)
+    return found[0]
+
+
+def _off(node: Node, seen: set) -> Optional[Node]:
+    """``node`` is disabled and builds as EmptyExpression: the disabled source
+    responsible, else None."""
+    if not node.disabled:
+        return None
+    inputs = data_inputs(node)
+    if not inputs:
+        return node
+    return silent_source(node, None, seen)
+
+
 def _resubscribed_after(node: Node) -> Optional[Node]:
     """A Repeat/Retry downstream of ``node`` in its own workflow, if any."""
     seen, todo = set(), list(node.successors())
@@ -230,8 +274,20 @@ def _resubscribed_after(node: Node) -> Optional[Node]:
             continue
         seen.add(id(n))
         if _core(n, *RESUBSCRIBE) and not n.disabled:
-            return n
+            count = _int(n.properties.get("Count"))
+            if not (_core(n, "RepeatCount", "RetryCount") and count is not None and count <= 1):
+                return n  # RepeatCount(1) runs once: nothing again
         todo.extend(n.successors())
+    return None
+
+
+def resubscriber(node: Node) -> Optional[Node]:
+    """The Repeat, RepeatCount, Retry or RetryCount that subscribes ``node``
+    again: one downstream of it, or of anything that contains it."""
+    for n in [node] + node.containers():
+        found = _resubscribed_after(n)
+        if found is not None:
+            return found
     return None
 
 

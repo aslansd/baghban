@@ -376,7 +376,7 @@ def _loop_name(node: Node) -> str:
 
 
 def check_writers(doc: Document, report: Report) -> None:
-    from .flow import FlowAnalysis, runs_once
+    from .flow import FlowAnalysis, resubscriber, runs_once, silent_source
     analysis = FlowAnalysis()
     outputs: dict[str, list] = {}
     for node in doc.walk():
@@ -387,6 +387,20 @@ def check_writers(doc: Document, report: Report) -> None:
 
         if node.is_effectively_disabled():
             why = "is disabled" if node.disabled else "sits inside a disabled node"
+            source = silent_source(node) if node.disabled else None
+            if source is not None:
+                # the whole branch is off: re-enabling the writer alone would save
+                # nothing, so this loses nothing today (survey: 40 of 57 warnings)
+                report.findings.append(_finding(
+                    "DISABLED_WRITER", node,
+                    f"This {node.type.name} is disabled, and so is everything feeding it, back "
+                    f"to {source.location()}: the whole branch is off. Re-enabling the writer "
+                    "alone would not record anything: Bonsai does not pass a disabled source "
+                    "on, so the writer would have no input and the workflow would not build.",
+                    hint="If the branch is meant to run, re-enable it from the source to the "
+                         "writer.",
+                    severity="info"))
+                continue
             report.findings.append(_finding(
                 "DISABLED_WRITER", node,
                 f"This {node.type.name} {why}, so nothing will be written to "
@@ -423,6 +437,21 @@ def check_writers(doc: Document, report: Report) -> None:
                     once_note = (" Every loop around it receives at most one element per run "
                                  f"(bounded by {each}), so it is opened once per run.")
                 loop = None
+        # Repeat/Retry after the writer (or after anything that contains it)
+        # subscribes it again on every repetition: a loop by another name
+        again = resubscriber(node) if loop is None else None
+        if loop is not None:
+            where = f"inside {_loop_name(loop)}"
+            reopens = f"{_loop_name(loop)}, which opens it again for every element it receives"
+            fix = "move the writer after the SelectMany"
+        elif again is not None:
+            on_error = again.type.name in ("Retry", "RetryCount")
+            where = f"before {again.label()}"
+            reopens = (f"{again.label()}, which subscribes it again "
+                       + ("whenever an error ends a run (Retry re-subscribes its source)"
+                          if on_error else "on every repetition (Repeat re-subscribes its "
+                          "source)"))
+            fix = f"move the writer after the {again.type.name}"
 
         if suffix == "None":
             outputs.setdefault(_normalise(fname), []).append(node)
@@ -444,6 +473,14 @@ def check_writers(doc: Document, report: Report) -> None:
                     hint="Use Suffix=Timestamp or FileCount to keep one file per element, or "
                          "move the writer after the SelectMany to collect all elements in one "
                          "file."))
+            elif overwrite and again is not None:
+                report.findings.append(_finding(
+                    "SILENT_OVERWRITE", node,
+                    f"Overwrite=True with Suffix=None: the writer is followed by {reopens}. "
+                    f"Each repetition replaces '{fname}', so only the last repetition's data "
+                    "survives the session.",
+                    hint=f"Use Suffix=Timestamp or FileCount to keep one file per repetition, "
+                         f"or {fix} to collect every repetition in one file."))
             elif overwrite:
                 # Overwrite=True is an explicit setting (the default is False), so replacing
                 # the last run's file is often what the author wants: a demo or scratch
@@ -471,6 +508,16 @@ def check_writers(doc: Document, report: Report) -> None:
                     "raises an IOException, which terminates the workflow mid-session.",
                     hint="Use Suffix=Timestamp or FileCount, or move the writer after the "
                          "SelectMany."))
+            elif again is not None:
+                report.findings.append(_finding(
+                    "FAILS_ON_REPEAT", node,
+                    f"Suffix=None and Overwrite=False {where}: the first run of it creates "
+                    f"'{fname}', and when {again.type.name} subscribes again the writer finds "
+                    "it already exists and raises an IOException, which terminates the "
+                    "workflow mid-session"
+                    + (" (after an error, which Retry was meant to recover from)."
+                       if again.type.name in ("Retry", "RetryCount") else "."),
+                    hint=f"Use Suffix=Timestamp or FileCount, or {fix}."))
 
     for key, nodes in outputs.items():
         if len(nodes) < 2:

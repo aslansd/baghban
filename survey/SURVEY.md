@@ -407,13 +407,116 @@ loops changed nothing in the survey. The survey with packages was not re-run
 for 0.6.0. Its two in-loop errors are these same findings, so it should go
 from 39 errors (expected for 0.5.0) to 37.
 
+## Recall: planted faults (16 Nov 2026)
+
+Everything above measures precision: is what baghban reports true? Recall,
+what it misses, needs faults that are known to be there. So
+`seed_faults.py` plants them, one at a time, in the survey's own workflows
+at the recorded commits, and checks each planted file. A fault counts as
+found when baghban reports the expected finding at the planted node, and did
+not before. Every planted fault has a certain effect on Bonsai; the
+docstring lists them, with the finding each should produce. Faults inside
+loops are not planted, because whether a loop repeats can depend on more
+than the file. Only nodes defined in the checked file are planted, in entry
+workflows. Every file was first written back unchanged and had to give the
+same fingerprint (all did).
+
+baghban 0.7.0, without packages: 170 faults in 81 files of 11 repositories,
+at most 3 per kind and repository (`--seed 1`). Run twice: with packages
+read at the pinned versions (`--fetch`, macOS), and without
+(`recall-0.7.0.json`).
+
+| Planted fault | Expected | Found, with packages | Found, without |
+| --- | --- | ---: | ---: |
+| subscriber renamed to a name declared nowhere | `DANGLING_SUBJECT` | 29/31 | 17/31 |
+| subscriber with nodes after it loses its name | `UNNAMED_SUBJECT` | 31/31 | 31/31 |
+| subject declaration copied into its workflow | `DUPLICATE_SUBJECT` | 32/32 | 32/32 |
+| externalized property copied into its workflow | `DUPLICATE_PROPERTY` | 23/23 | 23/23 |
+| include pointed at a missing file | `MISSING_INCLUDE` | 15/15 | 15/15 |
+| writer disabled | `DISABLED_WRITER` | 10/10 | 10/10 |
+| `CsvWriter` set to append, no suffix | `APPENDS_ACROSS_RUNS` | 10/10 | 10/10 |
+| writer set to overwrite, no suffix | `SILENT_OVERWRITE` | 9/9 | 9/9 |
+| second writer given the first's file name | `DUPLICATE_OUTPUT` | 9/9 | 9/9 |
+| **all** | | **168/170** | **156/170** |
+
+**With packages, 2 misses, both explained.** Each is a renamed subscriber
+whose workflow includes a module that cannot be read even with packages. An
+unreadable module could declare the name, so baghban reported "not checked":
+- iblrig's `Gabor2D_clean.bonsai` includes BonVision modules that were
+  renamed before the 0.9.0 the rig pins. This is the real fault listed
+  above.
+- vestibular-vr's `TrialLogicTest.bonsai` uses Aeon.Acquisition
+  `0.5.0-build240227`, a CI build that nuget.org does not have.
+
+**Without packages, the 14 misses have one cause.** Each is a renamed subscriber in a workflow
+where an include from a package could not be
+read, because packages were not downloaded for this run. An include can
+declare subjects that its siblings use, so baghban cannot rule out that the
+unread one declares the new name. It says so: every miss produced the note
+"may be declared in an include that could not be read". None was missed
+silently. The misses are in AIND Dynamic Foraging (3), Telekinesis (3) and
+VR Foraging (1), iblrig (3), bonsai-rx/docs (2) and vestibular-vr (2).
+
+Two first drafts of the kit were wrong and are recorded here:
+- It planted overwrites on writers that already overwrote. That changes
+  nothing, so it proves nothing; such sites are now skipped.
+- It renamed subjects whose name is externalized, which a launcher sets, so
+  the saved name does not matter. Those are not planted any more.
+
+Reading packages found 12 of those 14, as the "not checked" notes said it
+would. Open: plant faults in loops, with the real runtime as ground truth.
+
+## `DISABLED_WRITER`, read in full (16 Nov 2026)
+
+The 57 warnings (3 repositories) were read one by one, following each
+writer's input back to the device that feeds it.
+
+| Verdict | Count | What |
+| --- | ---: | --- |
+| **true, harmless: the whole branch is off** | 40 | the device feeding the writer is disabled too (restaurant-row photometry `FP3001`, and `RR_FP_Test`'s cameras, keyboard and NI-DAQ input), and so is everything in between. Bonsai does not pass a disabled source on, so re-enabling the writer alone would not even build |
+| **true, by design: a test workflow** | 6 | `RR_FP_Test.bonsai` (photometry on, its writers off) and Harp's stepper-driver tester |
+| **true, by design** | 4 | IBL's `EphysRig_SaveVideo_TrainingTasks.bonsai`: the right and body cameras run, but only the left one is saved, as on the training rig (`TrainingRig_SaveVideo_TrainingTasks.bonsai` has only the left camera) |
+| **true, intent unknown** | 7 | restaurant-row's "4camera" workflows: four `VideoCaptureDevice`s on, their one `VideoWriter` off. The cameras may be for live view only; the repository does not say |
+| false alarm | 0 | |
+
+Every warning says truly that nothing will be written. What varies is
+whether that is a loss. 0.7.0 reports the first group as info, naming the
+disabled source, when it can follow the branch. 36 of the 40 follow; the
+other 4 pass through a disabled `Zip` with two inputs, which Bonsai hands
+on as nested arguments (`DisableExpression`) that baghban does not model,
+so they keep the warning.
+
+Survey without packages, 0.7.0 (`survey-results-0.7.0.json`):
+
+| | 0.6.0 | 0.7.0 |
+| --- | ---: | ---: |
+| `DISABLED_WRITER` (warning) | 57 | 21 |
+| `DISABLED_WRITER` (info) | 0 | 36 |
+| Errors | 24 | 24 |
+| Everything else | | identical |
+
+## Measured for the roadmap (16 Nov 2026)
+
+How often would the planned checks fire? Over the same 451 entry workflows:
+
+- **Writers that `Repeat` or `Retry` run again**: none. 0.7.0 handles them
+  anyway (it is cheap and confirmed by a kit case), but they are rare.
+- **`Zip` over timers with different stated periods**: none of 2,463 `Zip`
+  nodes. One joins two timers with the same period. Rates come from devices,
+  not from the XML, so roadmap item 7 as written would find nothing.
+- **`CombineLatest` feeding a writer**: 6, all in iblrig's Gabor `SaveData`
+  groups. Whether the duplicated rows are a fault has not been judged.
+- **Top-level externalized properties** in entry workflows: 156. Whether
+  their values are recorded is decided by launchers, outside the XML
+  (roadmap item 6).
+
 ## Caveats
 
 - Public repositories over-represent documentation and packages: 187 of the
   453 entry workflows come from bonsai-rx/docs alone, and 110 are package or
   Extensions modules.
-- Precision is estimated on errors only. Warnings were sampled, not read in
-  full.
+- Precision is estimated on errors, and on the 57 `DISABLED_WRITER`
+  warnings, read in full. The other warnings were sampled.
 - "No false alarm" means baghban was right about what Bonsai will do.
   Whether that behaviour is a mistake is for the workflow's authors to say:
   vestibular-vr's demo is correct about the behaviour and intended by its
@@ -421,6 +524,9 @@ from 39 errors (expected for 0.5.0) to 37.
 - The package preview read packages from source at HEAD; the real run read
   them at the pinned versions, and the tables above keep both. A version
   nuget.org does not have (a CI build) is not checked.
-- Recall is not measured: nothing here says which faults baghban misses.
+- Recall is measured by planted faults, so it covers the fault kinds that
+  were planted, and only nodes in the checked file, not in its includes. It
+  says nothing about faults no check looks for. Faults inside loops are not
+  planted.
   The confirmation kit (`confirm/`, 13/13 on real Bonsai) addresses whether
   what baghban reports actually happens, not what it misses.

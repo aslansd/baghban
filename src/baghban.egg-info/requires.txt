@@ -2,3 +2,4 @@
 [dev]
 pytest>=7
 dnfile
+lxml

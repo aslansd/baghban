@@ -35,15 +35,15 @@
         "exit": 0,
         "error": "",
         "files": [
-          "data2026-10-28T17_25_56.csv"
+          "data2026-11-16T16_20_28.csv"
         ]
       },
       {
         "exit": 0,
         "error": "",
         "files": [
-          "data2026-10-28T17_25_56.csv",
-          "data2026-10-28T17_25_59.csv"
+          "data2026-11-16T16_20_28.csv",
+          "data2026-11-16T16_20_31.csv"
         ]
       }
     ]
@@ -313,6 +313,56 @@
         "files": [
           "once.csv"
         ]
+      }
+    ]
+  },
+  {
+    "case": "writer_before_repeat",
+    "baghban": [
+      "FAILS_ON_REPEAT"
+    ],
+    "confirmed": true,
+    "observed": "exit 1 (IOException: The file 'data.csv' already exists.)",
+    "note": "no loop: RepeatCount(2) after the writer opens it twice in one session (0.7.0)",
+    "runs": [
+      {
+        "exit": 1,
+        "error": "IOException: The file 'data.csv' already exists.",
+        "files": [
+          "data.csv"
+        ]
+      }
+    ]
+  },
+  {
+    "case": "writer_before_repeat_once",
+    "baghban": [],
+    "confirmed": true,
+    "observed": "exit 0; rows written: [3]",
+    "note": "RepeatCount(1) runs the chain once: one file, three rows (0.7.0)",
+    "runs": [
+      {
+        "exit": 0,
+        "error": "",
+        "files": [
+          "data.csv"
+        ]
+      }
+    ]
+  },
+  {
+    "case": "branch_off",
+    "baghban": [
+      "DISABLED_WRITER"
+    ],
+    "confirmed": true,
+    "observed": "exit 0; files: none",
+    "note": "source to writer all disabled: builds, runs, writes nothing; why such a DISABLED_WRITER is info (0.7.0)",
+    "runs": [
+      {
+        "exit": 0,
+        "error": "",
+        "files": []
       }
     ]
   }

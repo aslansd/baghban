@@ -1,25 +1,39 @@
 # Roadmap
 
-Status as of 0.6.0. Evidence for the ordering is in `survey/SURVEY.md`.
+Status as of 0.7.0. Evidence for the ordering is in `survey/SURVEY.md`.
 
 1. **Confirm the findings by running them.** *Done on macOS.* Latest run
-   (12 Oct 2026, baghban 0.4.1, Bonsai 2.9 packages, .NET 8, Intel Mac):
-   15/15 cases confirmed. Earlier runs: 8/12 (a kit flaw and a wrong claim
+   (28 Oct 2026, baghban 0.6.0, Bonsai 2.9 packages, .NET 8, Intel Mac):
+   17/17 cases confirmed. 0.7.0 before release (16 Nov 2026): 19/20. The
+   NO corrected a wrong claim about disabled sources, and its replacement
+   (`branch_off`) has not been run yet.
+   Earlier runs: 8/12 (a kit flaw and a wrong claim
    about unnamed subjects, both fixed), then 13/13 on 4 Oct 2026. Open: run the same kit
    on Windows, where rigs actually run (file locking differs, which matters
    most for `DUPLICATE_OUTPUT`), and add a case whenever a finding is added
    or its message changes.
-2. **Measure on real rigs.** *Done for errors.* 32 repositories, 453 entry
+2. **Measure on real rigs.** *Done for errors, for `DISABLED_WRITER`, and
+   for recall (0.7.0).* 32 repositories, 453 entry
    workflows: no false alarms among 27 errors after the module conventions
    were added. Reporting faults upstream also tests a second question: are
    findings faults *to their authors*? vestibular-vr's maintainers answered
    that their demo overwrites its file on purpose (#137). Hence 0.5.0:
    overwriting across runs is a warning, and findings can be marked as
-   intended (`baghban.toml`). Open: re-run the survey with `--fetch` for
-   0.5.0 (expected 40 → 39 errors); read the 57 `DISABLED_WRITER` warnings in full; add
-   more rig repositories (the sample over-represents documentation);
-   estimate recall by seeding known faults into real rigs and checking that
-   baghban finds them.
+   intended (`baghban.toml`).
+   - **The 57 `DISABLED_WRITER` warnings, read in full:** all true. In 40
+     the source is disabled too, so the branch is off: 36 are info since
+     0.7.0.
+   - **Recall**, by planting faults with a certain effect into real rigs
+     (`survey/seed_faults.py`): 168 of 170 found with packages (156
+     without). Both misses were reported "not checked": a renamed BonVision
+     module and a CI build of Aeon.Acquisition that nuget.org lacks.
+
+   Open:
+   - run the survey with `--fetch` for 0.7.0 (expected 37 errors);
+   - read the remaining warnings;
+   - add more rig repositories (the sample over-represents documentation);
+   - measure recall for loop faults, which needs the real runtime to say
+     whether a loop repeats.
 3. **Follow includes into packages from other repositories.** *Done in
    0.3.0.* Embedded workflows are read out of package DLLs by a pure-Python
    ECMA-335 reader, at the version the environment pins. Confirmed against
@@ -70,17 +84,35 @@ Status as of 0.6.0. Evidence for the ordering is in `survey/SURVEY.md`.
    the loop a loop. iblrig's two "likely harmless" errors are now shown to
    be once per session, so 26 errors become 24. 124 of the survey's 849
    `SelectMany` loops are shown to run once per subscription; the
-   `Repeat` after AIND's `RunTrial` rightly keeps that one a loop. Open: run
-   the 2 new confirm cases; follow subjects (a loop fed by a
-   `SubscribeSubject` is "not known" today); a writer upstream of `Repeat`
-   at the top level is opened again on every repetition, which no check
-   reports yet.
+   `Repeat` after AIND's `RunTrial` rightly keeps that one a loop. The 2
+   confirm cases passed (28 Oct 2026). Since 0.7.0 a writer before `Repeat`
+   or `Retry` is treated as in a loop (none in the survey; 2 confirm cases,
+   not run yet). Open: follow subjects (a loop fed by a `SubscribeSubject`
+   is "not known" today), though no remaining survey error depends on it.
 6. **`UNRECORDED_PARAMETER`**: an externalized property whose value is never
    written to any output, so the data does not say what settings produced it.
+   *Re-planned (0.7.0).* Whether a value is recorded is mostly not in the
+   XML: launchers save their settings elsewhere (iblrig and AIND write them
+   to JSON), and `baghban.provenance` now records every top-level value for
+   daftar (item 4). A check on the XML alone would fire on nearly all of the
+   survey's 156 top-level externalized properties. Kept only in a narrow
+   form: a parameter that no launcher sets and no provenance records, which
+   needs the launcher's code, not the workflow.
 7. **Rate-dependent checks**, only where rates are stated in the XML (a
    `Timer` period, a configured frame rate): `Zip` over streams with
    different rates queues without bound; `CombineLatest` feeding a writer
    duplicates rows. Where rates are unknown, report not checked.
+   *Measured (0.7.0), and merged into item 8.* Of the survey's 2,463 `Zip`
+   nodes, none joins timers with different stated periods: rates come from
+   devices, not from the XML. So the static check would find nothing. Rates
+   are in the data a session writes, which is what item 8 reads. The 6
+   `CombineLatest` nodes feeding a writer (all in iblrig's Gabor `SaveData`)
+   are to be read before deciding whether duplicated rows there are a
+   fault: #137 showed that a behaviour baghban can see is not always a
+   mistake.
 8. **A session-timing companion** (working name *nabz*, pulse): read the
    timestamps a session actually wrote and report dropped frames, jitter and
-   clock drift; the empirical counterpart of the static checks.
+   clock drift; the empirical counterpart of the static checks. This now
+   includes item 7's question, answered from measured rates: does a `Zip`
+   pair streams whose rates differ, so that its queue grows during the
+   session?

@@ -1,6 +1,6 @@
 """Roadmap item 1: confirm baghban's findings by running the workflows.
 
-For each case (17) this script writes a small workflow, asks baghban what it
+For each case (20) this script writes a small workflow, asks baghban what it
 predicts, runs the workflow with the real Bonsai runtime (runner/, released
 NuGet packages, .NET 8), then inspects exit codes and the files on disk. A
 finding is *confirmed* when what happened matches what baghban said; each
@@ -223,6 +223,36 @@ def loop_after_last(writer: str, repeat: bool = False) -> str:
                + again, edges)
 
 
+def writer_then_repeat(count: int) -> str:
+    """Timer -> Take(3) -> Timestamp -> CsvWriter -> RepeatCount(count): the
+    repeater subscribes the whole chain, writer included, ``count`` times."""
+    again = ('<Expression xsi:type="Combinator"><Combinator xsi:type="rx:RepeatCount">'
+             f'<rx:Count>{count}</rx:Count></Combinator></Expression>')
+    return doc(SOURCE + csv("data.csv") + again, CHAIN + [(2, 3), (3, 4)])
+
+
+def disabled(expression: str) -> str:
+    """An <Expression> as Bonsai saves it when disabled."""
+    head, _, rest = expression.partition('<Expression xsi:type="')
+    xtype, _, body = rest.partition('"')
+    return (f'<Expression xsi:type="Disable"><Builder xsi:type="{xtype}"{body[:-len("</Expression>")]}'
+            '</Builder></Expression>') if body.endswith("</Expression>") else \
+        (f'<Expression xsi:type="Disable"><Builder xsi:type="{xtype}"{body[:-2]} /></Expression>')
+
+
+def branch_off() -> str:
+    """Timer -> Take -> Timestamp -> CsvWriter, every node disabled: the
+    whole branch is off, as on restaurant-row's photometry branches."""
+    parts = [p + "</Expression>" for p in SOURCE.split("</Expression>") if p.strip()]
+    return doc("".join(disabled(p.strip()) for p in parts) + disabled(csv("data.csv")),
+               CHAIN + [(2, 3)])
+
+
+def builds_and_writes_nothing(rs):
+    f = csvs(rs[0])
+    return rs[0].code == 0 and not f, f"exit {rs[0].code}; files: {sorted(f) or 'none'}"
+
+
 def one_row(rs):
     f = csvs(rs[0])
     n = [lines(t) for t in f.values()]
@@ -288,6 +318,14 @@ CASES = [
     Case("loop_run_again_by_repeat", loop_after_last(csv("once.csv"), repeat=True),
          ["FAILS_ON_REPEAT"], 1, fails_mid_session,
          note="the same loop, re-subscribed by RepeatCount(2): the second run finds the file"),
+    Case("writer_before_repeat", writer_then_repeat(2), ["FAILS_ON_REPEAT"], 1,
+         fails_mid_session,
+         note="no loop: RepeatCount(2) after the writer opens it twice in one session (0.7.0)"),
+    Case("writer_before_repeat_once", writer_then_repeat(1), [], 1, runs_normally,
+         note="RepeatCount(1) runs the chain once: one file, three rows (0.7.0)"),
+    Case("branch_off", branch_off(), ["DISABLED_WRITER"], 1, builds_and_writes_nothing,
+         note="source to writer all disabled: builds, runs, writes nothing; why such a "
+              "DISABLED_WRITER is info (0.7.0)"),
 ]
 
 

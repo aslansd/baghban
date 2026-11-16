@@ -1,7 +1,7 @@
 # Confirming findings with the real Bonsai runtime
 
 baghban's findings are grounded in Bonsai's *source*. This kit checks them
-against Bonsai's *behaviour*: for each of 17 small workflows it asks baghban
+against Bonsai's *behaviour*: for each of 20 small workflows it asks baghban
 for a prediction, runs the workflow with the released Bonsai packages on
 .NET 8, and inspects exit codes and the files left on disk. A row says `yes`
 when what Bonsai did matches what baghban said, `NO` when it does not.
@@ -71,7 +71,7 @@ cd "/path/to/baghban"
 python -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
-pytest -q                          # 250 passed
+pytest -q                          # 305 passed
 ```
 
 **Order matters: .NET before the virtual environment.** A virtual
@@ -123,7 +123,7 @@ case                               baghban                observed   what happen
 overwrite_across_runs              SILENT_OVERWRITE       yes        run 2 exit 0; 1 file(s) after 2 runs; rows per run [3] then [3]; content replaced: True
 overwrite_with_timestamp_suffix    (quiet)                yes        run 2 exit 0; 2 file(s) after 2 runs
 ...
-17/17 confirmed. Details: .../confirm/results.json
+20/20 confirmed. Details: .../confirm/results.json
 ```
 
 - **case**: the workflow (table below).
@@ -157,6 +157,9 @@ error message and file list. Send it along when reporting a `NO`.
 | `same_property_in_two_groups` | quiet | two files, three rows each: each group has its own names (added in 0.4.1) |
 | `loop_runs_once` | quiet | the three elements reduced to one by `LastOrDefault` before a `SelectMany` holding a writer (`Overwrite=False`): the run succeeds and writes one row (added in 0.6.0) |
 | `loop_run_again_by_repeat` | `FAILS_ON_REPEAT` | the same loop followed by `RepeatCount(2)`: the second run of the loop finds the file and fails (added in 0.6.0) |
+| `writer_before_repeat` | `FAILS_ON_REPEAT` | no loop: the writer, then `RepeatCount(2)`, which subscribes the whole chain again; the second subscription finds the file and fails (added in 0.7.0) |
+| `writer_before_repeat_once` | quiet | the same with `RepeatCount(1)`: one file, three rows (added in 0.7.0) |
+| `branch_off` | `DISABLED_WRITER` | `Timer`, `Take`, `Timestamp` and the writer all disabled: it builds, runs and writes no file, which is why that finding is info (added in 0.7.0) |
 
 Every workflow is three timer ticks, 100 ms apart, through `Take(3)` and
 `Timestamp`, so every case ends on its own and every run writes different
@@ -274,8 +277,41 @@ The other 13 rows are identical to the second run's.
 
 The same 15 cases, after `SILENT_OVERWRITE` across runs became a warning.
 The kit compares finding codes, not severities, so the predictions were
-unchanged, and so were Bonsai's outcomes. The 2 cases added in 0.6.0
-(`loop_runs_once`, `loop_run_again_by_repeat`) have not been run yet.
+unchanged, and so were Bonsai's outcomes.
+
+### Sixth run: 28 Oct 2026, baghban 0.6.0, 17/17 confirmed
+
+The 15 cases again, plus the two added in 0.6.0 for loops that run once:
+
+| Case | baghban | Confirmed | What Bonsai did |
+| --- | --- | --- | --- |
+| `loop_runs_once` | quiet | yes | exit 0; rows per file: [1] |
+| `loop_run_again_by_repeat` | `FAILS_ON_REPEAT` | yes | exit 1 (`IOException: The file 'once.csv' already exists.`) |
+
+### Seventh run: 16 Nov 2026, baghban 0.7.0 before release, 19/20 confirmed
+
+The 17 earlier cases again, all as before, plus the 3 added in 0.7.0:
+
+| Case | baghban | Confirmed | What Bonsai did |
+| --- | --- | --- | --- |
+| `writer_before_repeat` | `FAILS_ON_REPEAT` | yes | exit 1 (`IOException: The file 'data.csv' already exists.`) |
+| `writer_before_repeat_once` | quiet | yes | exit 0; rows written: [3] |
+| `writer_behind_disabled_source` | quiet | **NO** | exit 1; no file |
+
+The NO was a wrong claim. The case disabled the `Timer` and left `Take`,
+`Timestamp` and the writer enabled, claiming that the writer runs and
+receives nothing. In fact a disabled node with nothing upstream builds as
+empty, and Bonsai does not pass an empty node on
+(`ExpressionBuilderGraphExtensions`: "Do not generate output sequences if
+the result expression is empty"). So the enabled `Take` had no input and the
+workflow did not build. The conclusion baghban drew from the claim still
+holds, for a firmer reason. When a writer's whole branch is disabled back to
+its source, re-enabling the writer alone would not build, so the disabled
+writer loses nothing. But the rule now counts only disabled nodes on the
+way, since an enabled operator there means the workflow does not build. The
+case is replaced by `branch_off` (everything disabled), which has not been
+run yet. No survey workflow has an enabled node fed only by disabled
+sources, so no finding is added for it.
 
 ## If a case says NO
 

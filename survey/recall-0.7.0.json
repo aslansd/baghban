@@ -1,0 +1,2402 @@
+{
+  "baghban": "0.7.0",
+  "seed": 1,
+  "per_repo": 3,
+  "results": [
+    {
+      "kind": "appends",
+      "code": "APPENDS_ACROSS_RUNS",
+      "repo": "bonsai-rx_docs",
+      "file": "bonsai-rx_docs/workflows/reactive-timestamp-application-recordtimestamps.bonsai",
+      "node": [
+        3
+      ],
+      "location": "CsvWriter 'timestamps.csv' #3",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "appends",
+      "code": "APPENDS_ACROSS_RUNS",
+      "repo": "bonsai-rx_docs",
+      "file": "bonsai-rx_docs/workflows/synching-led.bonsai",
+      "node": [
+        6
+      ],
+      "location": "CsvWriter 'led.csv' #6",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "appends",
+      "code": "APPENDS_ACROSS_RUNS",
+      "repo": "bonsai-rx_docs",
+      "file": "bonsai-rx_docs/workflows/synching-ephys-video.bonsai",
+      "node": [
+        6
+      ],
+      "location": "CsvWriter 'led-brightness.csv' #6",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "appends",
+      "code": "APPENDS_ACROSS_RUNS",
+      "repo": "int-brain-lab_iblrig",
+      "file": "int-brain-lab_iblrig/visual_stim/GaborTestStimuli/Gabor2D_TTLTest.bonsai",
+      "node": [
+        0,
+        44,
+        15
+      ],
+      "location": "NestedWorkflow 'Stim' #0 > NestedWorkflow 'SaveData' #44 > CsvWriter 'C:\\iblrig_data\\Subjects\\_iblrig_test_mouse\\2000-01-01\\001\\raw_behavior_data\\_iblrig_encoderEvents.raw.ssv' #15",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "appends",
+      "code": "APPENDS_ACROSS_RUNS",
+      "repo": "int-brain-lab_iblrig",
+      "file": "int-brain-lab_iblrig/visual_stim/GaborIBLTask/Gabor2D.bonsai",
+      "node": [
+        0,
+        21,
+        12
+      ],
+      "location": "NestedWorkflow 'Stim' #0 > NestedWorkflow 'SaveData' #21 > CsvWriter 'C:\\iblrig_data\\Subjects\\_iblrig_test_mouse\\2019-07-01\\008\\raw_behavior_data\\_iblrig_encoderTrialInfo.raw.ssv' #12",
+      "found": true,
+      "not_checked_notes": 7,
+      "other": null
+    },
+    {
+      "kind": "appends",
+      "code": "APPENDS_ACROSS_RUNS",
+      "repo": "int-brain-lab_iblrig",
+      "file": "int-brain-lab_iblrig/visual_stim/GaborIBLTask/Gabor2D_clean.bonsai",
+      "node": [
+        0,
+        18,
+        28
+      ],
+      "location": "NestedWorkflow 'Stim' #0 > NestedWorkflow 'SaveData' #18 > CsvWriter 'C:\\iblrig_data\\Subjects\\_iblrig_test_mouse\\2019-07-01\\008\\raw_behavior_data\\_iblrig_stimSquareUpdate.csv' #28",
+      "found": true,
+      "not_checked_notes": 7,
+      "other": null
+    },
+    {
+      "kind": "appends",
+      "code": "APPENDS_ACROSS_RUNS",
+      "repo": "jtdbod_restaurant-row-berkeley",
+      "file": "jtdbod_restaurant-row-berkeley/5s-wait_80pct-rewarded.bonsai",
+      "node": [
+        299,
+        7
+      ],
+      "location": "NestedWorkflow 'Timestamp & Save Events' #299 > CsvWriter 'rr_data\\RR_Day009_epoch-4_RRM001_.csv' #7",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "appends",
+      "code": "APPENDS_ACROSS_RUNS",
+      "repo": "jtdbod_restaurant-row-berkeley",
+      "file": "jtdbod_restaurant-row-berkeley/1s-wait_80pct-rewarded_newTones.bonsai",
+      "node": [
+        299,
+        7
+      ],
+      "location": "NestedWorkflow 'Timestamp & Save Events' #299 > CsvWriter 'rr_data\\RR_Day3_epoch-2_ID-RRM003_TEST_.csv' #7",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "appends",
+      "code": "APPENDS_ACROSS_RUNS",
+      "repo": "jtdbod_restaurant-row-berkeley",
+      "file": "jtdbod_restaurant-row-berkeley/FP_5sec_Full_Restaurant_4camera(Dim).bonsai",
+      "node": [
+        268,
+        8
+      ],
+      "location": "NestedWorkflow 'Fiber Photometry' #268 > CsvWriter 'rr_data_FP\\RRD002_FP_5sec_Full_p147_LH_GREEN_.csv' #8",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "appends",
+      "code": "APPENDS_ACROSS_RUNS",
+      "repo": "neurogears_vestibular-vr",
+      "file": "neurogears_vestibular-vr/src/Workflows/GNGTemplate.bonsai",
+      "node": [
+        4
+      ],
+      "location": "CsvWriter 'responses.csv' #4",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "dangling_subject",
+      "code": "DANGLING_SUBJECT",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.DynamicForaging",
+      "file": "AllenNeuralDynamics_Aind.Behavior.DynamicForaging/src/test_visualizer.bonsai",
+      "node": [
+        2,
+        13,
+        2,
+        10
+      ],
+      "location": "Group 'Visualizer' #2 > Group 'CameraPreviewVisualizer' #13 > CreateObservable 'CameraPreview' #2 > SubscribeSubject 'Table' #10",
+      "found": false,
+      "not_checked_notes": 10,
+      "other": [
+        "subject 'BaghbanSeededNoSuchSubject' used at Group 'Visualizer' #2 > Group 'CameraPreviewVisualizer' #13 > CreateObservable 'CameraPreview' #2 > SubscribeSubject 'BaghbanSeededNoSuchSubject' #10 may be declared in an include that could not be read"
+      ]
+    },
+    {
+      "kind": "dangling_subject",
+      "code": "DANGLING_SUBJECT",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.DynamicForaging",
+      "file": "AllenNeuralDynamics_Aind.Behavior.DynamicForaging/src/test_visualizer.bonsai",
+      "node": [
+        2,
+        15
+      ],
+      "location": "Group 'Visualizer' #2 > SubscribeSubject 'SessionInfo' #15",
+      "found": false,
+      "not_checked_notes": 10,
+      "other": [
+        "subject 'BaghbanSeededNoSuchSubject' used at Group 'Visualizer' #2 > SubscribeSubject 'BaghbanSeededNoSuchSubject' #15 may be declared in an include that could not be read"
+      ]
+    },
+    {
+      "kind": "dangling_subject",
+      "code": "DANGLING_SUBJECT",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.DynamicForaging",
+      "file": "AllenNeuralDynamics_Aind.Behavior.DynamicForaging/src/main.bonsai",
+      "node": [
+        3,
+        19
+      ],
+      "location": "Group 'Init' #3 > SubscribeSubject 'TaskLogicParameters' #19",
+      "found": false,
+      "not_checked_notes": 107,
+      "other": [
+        "subject 'BaghbanSeededNoSuchSubject' used at Group 'Init' #3 > SubscribeSubject 'BaghbanSeededNoSuchSubject' #19 may be declared in an include that could not be read"
+      ]
+    },
+    {
+      "kind": "dangling_subject",
+      "code": "DANGLING_SUBJECT",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.Telekinesis",
+      "file": "AllenNeuralDynamics_Aind.Behavior.Telekinesis/src/main.bonsai",
+      "node": [
+        7,
+        0,
+        0,
+        11,
+        12
+      ],
+      "location": "Defer 'HardwareChecks' #7 > Defer 'ProtocolValidation' #0 > Group 'CameraChecks' #0 > CreateObservable 'CheckCameraSettings' #11 > SubscribeSubject 'ThisCamera' #12",
+      "found": false,
+      "not_checked_notes": 95,
+      "other": [
+        "subject 'BaghbanSeededNoSuchSubject' used at Defer 'HardwareChecks' #7 > Defer 'ProtocolValidation' #0 > Group 'CameraChecks' #0 > CreateObservable 'CheckCameraSettings' #11 > SubscribeSubject 'BaghbanSeededNoSuchSubject' #12 may be declared in an include that could not be read"
+      ]
+    },
+    {
+      "kind": "dangling_subject",
+      "code": "DANGLING_SUBJECT",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.Telekinesis",
+      "file": "AllenNeuralDynamics_Aind.Behavior.Telekinesis/src/main.bonsai",
+      "node": [
+        9,
+        0
+      ],
+      "location": "Defer 'TaskLogic' #9 > SubscribeSubject 'TaskLogicParameters' #0",
+      "found": false,
+      "not_checked_notes": 95,
+      "other": [
+        "subject 'BaghbanSeededNoSuchSubject' used at Defer 'TaskLogic' #9 > SubscribeSubject 'BaghbanSeededNoSuchSubject' #0 may be declared in an include that could not be read"
+      ]
+    },
+    {
+      "kind": "dangling_subject",
+      "code": "DANGLING_SUBJECT",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.Telekinesis",
+      "file": "AllenNeuralDynamics_Aind.Behavior.Telekinesis/src/main.bonsai",
+      "node": [
+        7,
+        0,
+        0,
+        11,
+        5
+      ],
+      "location": "Defer 'HardwareChecks' #7 > Defer 'ProtocolValidation' #0 > Group 'CameraChecks' #0 > CreateObservable 'CheckCameraSettings' #11 > SubscribeSubject 'TriggeredCameraController' #5",
+      "found": false,
+      "not_checked_notes": 95,
+      "other": [
+        "subject 'BaghbanSeededNoSuchSubject' used at Defer 'HardwareChecks' #7 > Defer 'ProtocolValidation' #0 > Group 'CameraChecks' #0 > CreateObservable 'CheckCameraSettings' #11 > SubscribeSubject 'BaghbanSeededNoSuchSubject' #5 may be declared in an include that could not be read"
+      ]
+    },
+    {
+      "kind": "dangling_subject",
+      "code": "DANGLING_SUBJECT",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.VrForaging",
+      "file": "AllenNeuralDynamics_Aind.Behavior.VrForaging/src/test_ctcm.bonsai",
+      "node": [
+        52,
+        17
+      ],
+      "location": "CreateObservable 'OnTime' #52 > SubscribeSubject 'RewardFunction' #17",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "dangling_subject",
+      "code": "DANGLING_SUBJECT",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.VrForaging",
+      "file": "AllenNeuralDynamics_Aind.Behavior.VrForaging/src/test_ctcm.bonsai",
+      "node": [
+        52,
+        4
+      ],
+      "location": "CreateObservable 'OnTime' #52 > SubscribeSubject 'RewardFunction' #4",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "dangling_subject",
+      "code": "DANGLING_SUBJECT",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.VrForaging",
+      "file": "AllenNeuralDynamics_Aind.Behavior.VrForaging/src/main.bonsai",
+      "node": [
+        25,
+        14
+      ],
+      "location": "Defer 'ExperimentCommandLogic' #25 > SubscribeSubject 'ExperimentUiButtonCommands' #14",
+      "found": false,
+      "not_checked_notes": 132,
+      "other": [
+        "subject 'BaghbanSeededNoSuchSubject' used at Defer 'ExperimentCommandLogic' #25 > SubscribeSubject 'BaghbanSeededNoSuchSubject' #14 may be declared in an include that could not be read"
+      ]
+    },
+    {
+      "kind": "dangling_subject",
+      "code": "DANGLING_SUBJECT",
+      "repo": "AllenNeuralDynamics_Bonsai.AllenNeuralDynamics",
+      "file": "AllenNeuralDynamics_Bonsai.AllenNeuralDynamics/docs/workflows/SoftwareEventLogging.bonsai",
+      "node": [
+        11
+      ],
+      "location": "SubscribeSubject 'DeviceEvents' #11",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "dangling_subject",
+      "code": "DANGLING_SUBJECT",
+      "repo": "AllenNeuralDynamics_Bonsai.AllenNeuralDynamics",
+      "file": "AllenNeuralDynamics_Bonsai.AllenNeuralDynamics/docs/workflows/LiketySplitLickDetection.bonsai",
+      "node": [
+        3
+      ],
+      "location": "SubscribeSubject 'Events' #3",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "dangling_subject",
+      "code": "DANGLING_SUBJECT",
+      "repo": "AllenNeuralDynamics_Bonsai.AllenNeuralDynamics",
+      "file": "AllenNeuralDynamics_Bonsai.AllenNeuralDynamics/docs/workflows/SaveHarpDataWithMetadata.bonsai",
+      "node": [
+        5
+      ],
+      "location": "SubscribeSubject 'LicketySplitEvents' #5",
+      "found": true,
+      "not_checked_notes": 2,
+      "other": null
+    },
+    {
+      "kind": "dangling_subject",
+      "code": "DANGLING_SUBJECT",
+      "repo": "bonsai-rx_docs",
+      "file": "bonsai-rx_docs/workflows/language-subjects.bonsai",
+      "node": [
+        3
+      ],
+      "location": "SubscribeSubject 'Images' #3",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "dangling_subject",
+      "code": "DANGLING_SUBJECT",
+      "repo": "bonsai-rx_docs",
+      "file": "bonsai-rx_docs/workflows/bonvision-response-feedback.bonsai",
+      "node": [
+        3
+      ],
+      "location": "SubscribeSubject 'Result' #3",
+      "found": false,
+      "not_checked_notes": 3,
+      "other": [
+        "subject 'BaghbanSeededNoSuchSubject' used at SubscribeSubject 'BaghbanSeededNoSuchSubject' #3 may be declared in an include that could not be read"
+      ]
+    },
+    {
+      "kind": "dangling_subject",
+      "code": "DANGLING_SUBJECT",
+      "repo": "bonsai-rx_docs",
+      "file": "bonsai-rx_docs/workflows/bonvision-render-randomgrating.bonsai",
+      "node": [
+        3
+      ],
+      "location": "SubscribeSubject 'Draw' #3",
+      "found": false,
+      "not_checked_notes": 3,
+      "other": [
+        "subject 'BaghbanSeededNoSuchSubject' used at SubscribeSubject 'BaghbanSeededNoSuchSubject' #3 may be declared in an include that could not be read"
+      ]
+    },
+    {
+      "kind": "dangling_subject",
+      "code": "DANGLING_SUBJECT",
+      "repo": "bonsai-rx_machinelearning",
+      "file": "bonsai-rx_machinelearning/tests/Bonsai.ML.Lds.Torch.Tests/NeuralLatentsTest.bonsai",
+      "node": [
+        3,
+        8
+      ],
+      "location": "Group 'Smoother' #3 > SubscribeSubject 'KalmanFilterModel' #8",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "dangling_subject",
+      "code": "DANGLING_SUBJECT",
+      "repo": "bonsai-rx_machinelearning",
+      "file": "bonsai-rx_machinelearning/tests/Bonsai.ML.Lds.Torch.Tests/NeuralLatentsTest.bonsai",
+      "node": [
+        2,
+        0
+      ],
+      "location": "Group 'LearnParameters' #2 > SubscribeSubject 'ObservationT' #0",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "dangling_subject",
+      "code": "DANGLING_SUBJECT",
+      "repo": "bonsai-rx_machinelearning",
+      "file": "bonsai-rx_machinelearning/tests/Bonsai.ML.Lds.Torch.Tests/NeuralLatentsTest.bonsai",
+      "node": [
+        2,
+        10
+      ],
+      "location": "Group 'LearnParameters' #2 > SubscribeSubject 'KalmanFilterModel' #10",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "dangling_subject",
+      "code": "DANGLING_SUBJECT",
+      "repo": "bonsai-rx_mixer",
+      "file": "bonsai-rx_mixer/docs/workflows/playback-control-pause-resume.bonsai",
+      "node": [
+        13
+      ],
+      "location": "SubscribeSubject 'Source' #13",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "dangling_subject",
+      "code": "DANGLING_SUBJECT",
+      "repo": "bonsai-rx_mixer",
+      "file": "bonsai-rx_mixer/docs/workflows/gain-modulation.bonsai",
+      "node": [
+        11
+      ],
+      "location": "SubscribeSubject 'Source' #11",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "dangling_subject",
+      "code": "DANGLING_SUBJECT",
+      "repo": "bonsai-rx_mixer",
+      "file": "bonsai-rx_mixer/docs/workflows/getting-started.bonsai",
+      "node": [
+        8
+      ],
+      "location": "SubscribeSubject 'Mixer' #8",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "dangling_subject",
+      "code": "DANGLING_SUBJECT",
+      "repo": "harp-tech_device.stepperdriver",
+      "file": "harp-tech_device.stepperdriver/Assets/stepper driver tester - inputs tests.bonsai",
+      "node": [
+        1,
+        0
+      ],
+      "location": "Group 'DigitalInputs' #1 > SubscribeSubject 'Events' #0",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "dangling_subject",
+      "code": "DANGLING_SUBJECT",
+      "repo": "int-brain-lab_iblrig",
+      "file": "int-brain-lab_iblrig/visual_stim/GaborIBLTask/Gabor2D.bonsai",
+      "node": [
+        0,
+        13,
+        1
+      ],
+      "location": "NestedWorkflow 'Stim' #0 > CreateObservable 'ClosedLoopStimulus' #13 > SubscribeSubject 'Encoder' #1",
+      "found": false,
+      "not_checked_notes": 8,
+      "other": [
+        "subject 'BaghbanSeededNoSuchSubject' used at NestedWorkflow 'Stim' #0 > CreateObservable 'ClosedLoopStimulus' #13 > SubscribeSubject 'BaghbanSeededNoSuchSubject' #1 may be declared in an include that could not be read"
+      ]
+    },
+    {
+      "kind": "dangling_subject",
+      "code": "DANGLING_SUBJECT",
+      "repo": "int-brain-lab_iblrig",
+      "file": "int-brain-lab_iblrig/visual_stim/GaborTestStimuli/ScreenCameraStimTest/Gabor2D_SQUARE_new.bonsai",
+      "node": [
+        0,
+        5,
+        56
+      ],
+      "location": "NestedWorkflow 'Stim' #0 > Group 'Screen' #5 > SubscribeSubject 'TrialStimPhase' #56",
+      "found": false,
+      "not_checked_notes": 8,
+      "other": [
+        "subject 'BaghbanSeededNoSuchSubject' used at NestedWorkflow 'Stim' #0 > Group 'Screen' #5 > SubscribeSubject 'BaghbanSeededNoSuchSubject' #56 may be declared in an include that could not be read"
+      ]
+    },
+    {
+      "kind": "dangling_subject",
+      "code": "DANGLING_SUBJECT",
+      "repo": "int-brain-lab_iblrig",
+      "file": "int-brain-lab_iblrig/visual_stim/GaborIBLTask/Gabor2D.bonsai",
+      "node": [
+        0,
+        3,
+        40
+      ],
+      "location": "NestedWorkflow 'Stim' #0 > Group 'EnvironmentDefinition' #3 > SubscribeSubject 'StimSize' #40",
+      "found": false,
+      "not_checked_notes": 8,
+      "other": [
+        "subject 'BaghbanSeededNoSuchSubject' used at NestedWorkflow 'Stim' #0 > Group 'EnvironmentDefinition' #3 > SubscribeSubject 'BaghbanSeededNoSuchSubject' #40 may be declared in an include that could not be read"
+      ]
+    },
+    {
+      "kind": "dangling_subject",
+      "code": "DANGLING_SUBJECT",
+      "repo": "jtdbod_restaurant-row-berkeley",
+      "file": "jtdbod_restaurant-row-berkeley/5sec_Prob_Restaurant(Dim)_4camera.bonsai",
+      "node": [
+        242,
+        1,
+        11
+      ],
+      "location": "NestedWorkflow 'Track and Cue Decision 3' #242 > SelectMany 'WaitForDecision' #1 > SubscribeSubject 'RejectOffer3' #11",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "dangling_subject",
+      "code": "DANGLING_SUBJECT",
+      "repo": "jtdbod_restaurant-row-berkeley",
+      "file": "jtdbod_restaurant-row-berkeley/1sec_Restaurant(Dim)_4camera_Deterministic80Rwd20noRwd.bonsai",
+      "node": [
+        275
+      ],
+      "location": "SubscribeSubject 'Pellet Retrieval Timestamp' #275",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "dangling_subject",
+      "code": "DANGLING_SUBJECT",
+      "repo": "jtdbod_restaurant-row-berkeley",
+      "file": "jtdbod_restaurant-row-berkeley/3sec_Restaurant(Dim)_4camera_Deterministic80Rwd20noRwd.bonsai",
+      "node": [
+        299,
+        3,
+        2,
+        0
+      ],
+      "location": "NestedWorkflow 'Timestamp & Save Events' #299 > NestedWorkflow 'Restaurant 3 Timestamps' #3 > NestedWorkflow 'Quit Restaurant 3 Timestamp' #2 > SubscribeSubject 'QuitOffer3' #0",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "dangling_subject",
+      "code": "DANGLING_SUBJECT",
+      "repo": "neurogears_vestibular-vr",
+      "file": "neurogears_vestibular-vr/src/Workflows/InsertionWorkflow/InsertionWorkflow.bonsai",
+      "node": [
+        2,
+        6
+      ],
+      "location": "Group 'ONIX Control' #2 > SubscribeSubject 'CurrentPosition' #6",
+      "found": false,
+      "not_checked_notes": 10,
+      "other": [
+        "subject 'BaghbanSeededNoSuchSubject' used at Group 'ONIX Control' #2 > SubscribeSubject 'BaghbanSeededNoSuchSubject' #6 may be declared in an include that could not be read"
+      ]
+    },
+    {
+      "kind": "dangling_subject",
+      "code": "DANGLING_SUBJECT",
+      "repo": "neurogears_vestibular-vr",
+      "file": "neurogears_vestibular-vr/src/Workflows/MainExperiment/Main.bonsai",
+      "node": [
+        33,
+        64
+      ],
+      "location": "Group 'Logging' #33 > SubscribeSubject 'StartLoggingKey' #64",
+      "found": false,
+      "not_checked_notes": 40,
+      "other": [
+        "subject 'BaghbanSeededNoSuchSubject' used at Group 'Logging' #33 > SubscribeSubject 'BaghbanSeededNoSuchSubject' #64 may be declared in an include that could not be read"
+      ]
+    },
+    {
+      "kind": "dangling_subject",
+      "code": "DANGLING_SUBJECT",
+      "repo": "neurogears_vestibular-vr",
+      "file": "neurogears_vestibular-vr/src/Workflows/TrialLogicTest/LoadTemplateTest.bonsai",
+      "node": [
+        4
+      ],
+      "location": "SubscribeSubject 'SessionSettings' #4",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "disabled_writer",
+      "code": "DISABLED_WRITER",
+      "repo": "bonsai-rx_docs",
+      "file": "bonsai-rx_docs/workflows/reactiontime-triggervideo.bonsai",
+      "node": [
+        8,
+        1
+      ],
+      "location": "SelectMany #8 > VideoWriter 'response-trigger.avi' #1",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "disabled_writer",
+      "code": "DISABLED_WRITER",
+      "repo": "bonsai-rx_docs",
+      "file": "bonsai-rx_docs/workflows/synching-ephys-behavior.bonsai",
+      "node": [
+        7
+      ],
+      "location": "MatrixWriter 'test.bin' #7",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "disabled_writer",
+      "code": "DISABLED_WRITER",
+      "repo": "bonsai-rx_docs",
+      "file": "bonsai-rx_docs/workflows/acquisition-video.bonsai",
+      "node": [
+        1
+      ],
+      "location": "VideoWriter 'video.avi' #1",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "disabled_writer",
+      "code": "DISABLED_WRITER",
+      "repo": "int-brain-lab_iblrig",
+      "file": "int-brain-lab_iblrig/devices/neurophotometrics/FP3002_digital_inputs.bonsai",
+      "node": [
+        7
+      ],
+      "location": "CsvWriter 'D:\\iblrigv8_data\\neurophotometrics\\2024-10-10\\T142948\\digital_inputs.csv' #7",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "disabled_writer",
+      "code": "DISABLED_WRITER",
+      "repo": "int-brain-lab_iblrig",
+      "file": "int-brain-lab_iblrig/visual_stim/f2ttl_calibration/screen_60Hz_w_harp_sensor.bonsai",
+      "node": [
+        1,
+        10
+      ],
+      "location": "NestedWorkflow #1 > CsvWriter 'C:\\iblrig_data\\Subjects\\_iblrig_test_mouse\\harp_data.csv' #10",
+      "found": true,
+      "not_checked_notes": 3,
+      "other": null
+    },
+    {
+      "kind": "disabled_writer",
+      "code": "DISABLED_WRITER",
+      "repo": "int-brain-lab_iblrig",
+      "file": "int-brain-lab_iblrig/visual_stim/GaborIBLTask_6.5.2/Gabor2D.bonsai",
+      "node": [
+        0,
+        22,
+        12
+      ],
+      "location": "NestedWorkflow 'Stim' #0 > NestedWorkflow 'SaveData' #22 > CsvWriter 'C:\\iblrig_data\\Subjects\\_iblrig_test_mouse\\2019-07-01\\008\\raw_behavior_data\\_iblrig_encoderTrialInfo.raw.ssv' #12",
+      "found": true,
+      "not_checked_notes": 7,
+      "other": null
+    },
+    {
+      "kind": "disabled_writer",
+      "code": "DISABLED_WRITER",
+      "repo": "jtdbod_restaurant-row-berkeley",
+      "file": "jtdbod_restaurant-row-berkeley/10s-wait_0-20-80-100_prob-rewarded_test_recordToneOnset.bonsai",
+      "node": [
+        38
+      ],
+      "location": "VideoWriter 'rr_video\\R2_cam_.avi' #38",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "disabled_writer",
+      "code": "DISABLED_WRITER",
+      "repo": "jtdbod_restaurant-row-berkeley",
+      "file": "jtdbod_restaurant-row-berkeley/onechannel_keys_TTL_400core_DualChannel.bonsai",
+      "node": [
+        30
+      ],
+      "location": "CsvWriter 'rr_testdata\\test_FP_NIDAQ_Ai0_timestamp.csv' #30",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "disabled_writer",
+      "code": "DISABLED_WRITER",
+      "repo": "jtdbod_restaurant-row-berkeley",
+      "file": "jtdbod_restaurant-row-berkeley/5s-wait_0-20-80-100_prob-rewarded.bonsai",
+      "node": [
+        309
+      ],
+      "location": "CsvWriter 'rr_data_FP\\FPTS_Dayp280_epoch-7_ID-A2A18DRV_.csv' #309",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "disabled_writer",
+      "code": "DISABLED_WRITER",
+      "repo": "neurogears_vestibular-vr",
+      "file": "neurogears_vestibular-vr/src/Workflows/GNGTemplate.bonsai",
+      "node": [
+        4
+      ],
+      "location": "CsvWriter 'responses.csv' #4",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "duplicate_output",
+      "code": "DUPLICATE_OUTPUT",
+      "repo": "bonsai-rx_docs",
+      "file": "bonsai-rx_docs/workflows/synching-led.bonsai",
+      "node": [
+        6
+      ],
+      "location": "CsvWriter 'led.csv' #6",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "duplicate_output",
+      "code": "DUPLICATE_OUTPUT",
+      "repo": "bonsai-rx_docs",
+      "file": "bonsai-rx_docs/workflows/synching-ephys-video.bonsai",
+      "node": [
+        6
+      ],
+      "location": "CsvWriter 'led-brightness.csv' #6",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "duplicate_output",
+      "code": "DUPLICATE_OUTPUT",
+      "repo": "bonsai-rx_docs",
+      "file": "bonsai-rx_docs/workflows/reactiontime-triggervideo.bonsai",
+      "node": [
+        8,
+        1
+      ],
+      "location": "SelectMany #8 > VideoWriter 'response-trigger.avi' #1",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "duplicate_output",
+      "code": "DUPLICATE_OUTPUT",
+      "repo": "int-brain-lab_iblrig",
+      "file": "int-brain-lab_iblrig/visual_stim/GaborIBLTask/Gabor2D.bonsai",
+      "node": [
+        0,
+        21,
+        24
+      ],
+      "location": "NestedWorkflow 'Stim' #0 > NestedWorkflow 'SaveData' #21 > CsvWriter 'C:\\iblrig_data\\Subjects\\_iblrig_test_mouse\\2019-07-01\\008\\raw_behavior_data\\_iblrig_stimPositionScreen.raw.csv' #24",
+      "found": true,
+      "not_checked_notes": 7,
+      "other": null
+    },
+    {
+      "kind": "duplicate_output",
+      "code": "DUPLICATE_OUTPUT",
+      "repo": "int-brain-lab_iblrig",
+      "file": "int-brain-lab_iblrig/visual_stim/GaborIBLTask/Gabor2D.bonsai",
+      "node": [
+        0,
+        21,
+        15
+      ],
+      "location": "NestedWorkflow 'Stim' #0 > NestedWorkflow 'SaveData' #21 > CsvWriter 'C:\\iblrig_data\\Subjects\\_iblrig_test_mouse\\2019-07-01\\008\\raw_behavior_data\\_iblrig_encoderEvents.raw.ssv' #15",
+      "found": true,
+      "not_checked_notes": 7,
+      "other": null
+    },
+    {
+      "kind": "duplicate_output",
+      "code": "DUPLICATE_OUTPUT",
+      "repo": "int-brain-lab_iblrig",
+      "file": "int-brain-lab_iblrig/visual_stim/GaborIBLTask/Gabor2D_clean2.5.bonsai",
+      "node": [
+        0,
+        18,
+        18
+      ],
+      "location": "NestedWorkflow 'Stim' #0 > NestedWorkflow 'SaveData' #18 > CsvWriter 'C:\\iblrig_data\\Subjects\\_iblrig_test_mouse\\2019-07-01\\008\\raw_behavior_data\\_iblrig_encoderPositions.raw.ssv' #18",
+      "found": true,
+      "not_checked_notes": 7,
+      "other": null
+    },
+    {
+      "kind": "duplicate_output",
+      "code": "DUPLICATE_OUTPUT",
+      "repo": "jtdbod_restaurant-row-berkeley",
+      "file": "jtdbod_restaurant-row-berkeley/5s-wait_0-20-80-100_prob-rewarded.bonsai",
+      "node": [
+        101
+      ],
+      "location": "VideoWriter 'rr_video\\R1_cam_.avi' #101",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "duplicate_output",
+      "code": "DUPLICATE_OUTPUT",
+      "repo": "jtdbod_restaurant-row-berkeley",
+      "file": "jtdbod_restaurant-row-berkeley/1s-wait_all-rewarded.bonsai",
+      "node": [
+        63
+      ],
+      "location": "VideoWriter 'rr_video\\R3_cam_.avi' #63",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "duplicate_output",
+      "code": "DUPLICATE_OUTPUT",
+      "repo": "jtdbod_restaurant-row-berkeley",
+      "file": "jtdbod_restaurant-row-berkeley/5s-wait_0-20-80-100_prob-rewarded.bonsai",
+      "node": [
+        63
+      ],
+      "location": "VideoWriter 'rr_video\\R3_cam_.avi' #63",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "duplicate_property",
+      "code": "DUPLICATE_PROPERTY",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.DynamicForaging",
+      "file": "AllenNeuralDynamics_Aind.Behavior.DynamicForaging/src/test_visualizer.bonsai",
+      "node": [
+        2,
+        14,
+        2,
+        6
+      ],
+      "location": "Group 'Visualizer' #2 > Group 'CameraPreviewVisualizer' #14 > CreateObservable 'CameraPreview' #2 > ExternalizedMapping #6",
+      "found": true,
+      "not_checked_notes": 9,
+      "other": null
+    },
+    {
+      "kind": "duplicate_property",
+      "code": "DUPLICATE_PROPERTY",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.DynamicForaging",
+      "file": "AllenNeuralDynamics_Aind.Behavior.DynamicForaging/src/test_visualizer.bonsai",
+      "node": [
+        2,
+        14,
+        2,
+        0
+      ],
+      "location": "Group 'Visualizer' #2 > Group 'CameraPreviewVisualizer' #14 > CreateObservable 'CameraPreview' #2 > ExternalizedMapping #0",
+      "found": true,
+      "not_checked_notes": 9,
+      "other": null
+    },
+    {
+      "kind": "duplicate_property",
+      "code": "DUPLICATE_PROPERTY",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.DynamicForaging",
+      "file": "AllenNeuralDynamics_Aind.Behavior.DynamicForaging/src/test_visualizer.bonsai",
+      "node": [
+        2,
+        14,
+        2,
+        4
+      ],
+      "location": "Group 'Visualizer' #2 > Group 'CameraPreviewVisualizer' #14 > CreateObservable 'CameraPreview' #2 > ExternalizedMapping #4",
+      "found": true,
+      "not_checked_notes": 9,
+      "other": null
+    },
+    {
+      "kind": "duplicate_property",
+      "code": "DUPLICATE_PROPERTY",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.Telekinesis",
+      "file": "AllenNeuralDynamics_Aind.Behavior.Telekinesis/src/main.bonsai",
+      "node": [
+        22,
+        6
+      ],
+      "location": "Group 'StartCondition' #22 > ExternalizedMapping #6",
+      "found": true,
+      "not_checked_notes": 94,
+      "other": null
+    },
+    {
+      "kind": "duplicate_property",
+      "code": "DUPLICATE_PROPERTY",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.Telekinesis",
+      "file": "AllenNeuralDynamics_Aind.Behavior.Telekinesis/src/main.bonsai",
+      "node": [
+        7,
+        0,
+        0,
+        22,
+        18
+      ],
+      "location": "Defer 'HardwareChecks' #7 > Defer 'ProtocolValidation' #0 > Group 'CameraChecks' #0 > CreateObservable 'OnlineQC' #22 > ExternalizedMapping #18",
+      "found": true,
+      "not_checked_notes": 94,
+      "other": null
+    },
+    {
+      "kind": "duplicate_property",
+      "code": "DUPLICATE_PROPERTY",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.Telekinesis",
+      "file": "AllenNeuralDynamics_Aind.Behavior.Telekinesis/src/main.bonsai",
+      "node": [
+        0
+      ],
+      "location": "ExternalizedMapping #0",
+      "found": true,
+      "not_checked_notes": 94,
+      "other": null
+    },
+    {
+      "kind": "duplicate_property",
+      "code": "DUPLICATE_PROPERTY",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.VrForaging",
+      "file": "AllenNeuralDynamics_Aind.Behavior.VrForaging/src/main.bonsai",
+      "node": [
+        5,
+        29
+      ],
+      "location": "Group 'SessionSettings' #5 > ExternalizedMapping #29",
+      "found": true,
+      "not_checked_notes": 131,
+      "other": null
+    },
+    {
+      "kind": "duplicate_property",
+      "code": "DUPLICATE_PROPERTY",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.VrForaging",
+      "file": "AllenNeuralDynamics_Aind.Behavior.VrForaging/src/main.bonsai",
+      "node": [
+        5,
+        24
+      ],
+      "location": "Group 'SessionSettings' #5 > ExternalizedMapping #24",
+      "found": true,
+      "not_checked_notes": 131,
+      "other": null
+    },
+    {
+      "kind": "duplicate_property",
+      "code": "DUPLICATE_PROPERTY",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.VrForaging",
+      "file": "AllenNeuralDynamics_Aind.Behavior.VrForaging/src/test_deserialization.bonsai",
+      "node": [
+        0
+      ],
+      "location": "ExternalizedMapping #0",
+      "found": true,
+      "not_checked_notes": 4,
+      "other": null
+    },
+    {
+      "kind": "duplicate_property",
+      "code": "DUPLICATE_PROPERTY",
+      "repo": "bonsai-rx_docs",
+      "file": "bonsai-rx_docs/workflows/reactive-condition-asynchronous-example.bonsai",
+      "node": [
+        1,
+        0
+      ],
+      "location": "Condition #1 > ExternalizedMapping #0",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "duplicate_property",
+      "code": "DUPLICATE_PROPERTY",
+      "repo": "bonsai-rx_docs",
+      "file": "bonsai-rx_docs/workflows/closed-loop-generator.bonsai",
+      "node": [
+        0
+      ],
+      "location": "ExternalizedMapping #0",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "duplicate_property",
+      "code": "DUPLICATE_PROPERTY",
+      "repo": "bonsai-rx_machinelearning",
+      "file": "bonsai-rx_machinelearning/tests/Bonsai.ML.Lds.Python.Tests/receptive_field.bonsai",
+      "node": [
+        0
+      ],
+      "location": "ExternalizedMapping #0",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "duplicate_property",
+      "code": "DUPLICATE_PROPERTY",
+      "repo": "bonsai-rx_machinelearning",
+      "file": "bonsai-rx_machinelearning/tests/Bonsai.ML.Lds.Python.Tests/receptive_field.bonsai",
+      "node": [
+        4
+      ],
+      "location": "ExternalizedMapping #4",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "duplicate_property",
+      "code": "DUPLICATE_PROPERTY",
+      "repo": "bonsai-rx_machinelearning",
+      "file": "bonsai-rx_machinelearning/tests/Bonsai.ML.Lds.Python.Tests/receptive_field.bonsai",
+      "node": [
+        5,
+        2
+      ],
+      "location": "Group 'LoadData' #5 > ExternalizedMapping #2",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "duplicate_property",
+      "code": "DUPLICATE_PROPERTY",
+      "repo": "harp-tech_device.stepperdriver",
+      "file": "harp-tech_device.stepperdriver/Assets/stepper driver tester - relative movement.bonsai",
+      "node": [
+        7,
+        7
+      ],
+      "location": "SelectMany 'Configure inputs' #7 > ExternalizedMapping #7",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "duplicate_property",
+      "code": "DUPLICATE_PROPERTY",
+      "repo": "harp-tech_device.stepperdriver",
+      "file": "harp-tech_device.stepperdriver/Assets/stepper driver tester - quick movement tests.bonsai",
+      "node": [
+        7,
+        12
+      ],
+      "location": "Group 'QuickRetractConfiguration' #7 > ExternalizedMapping #12",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "duplicate_property",
+      "code": "DUPLICATE_PROPERTY",
+      "repo": "harp-tech_device.stepperdriver",
+      "file": "harp-tech_device.stepperdriver/Assets/stepper driver tester - relative movement.bonsai",
+      "node": [
+        3,
+        3
+      ],
+      "location": "SelectMany 'SetupM1' #3 > ExternalizedMapping #3",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "duplicate_property",
+      "code": "DUPLICATE_PROPERTY",
+      "repo": "int-brain-lab_iblrig",
+      "file": "int-brain-lab_iblrig/visual_stim/GaborIBLTask/Gabor2D_clean2.5.bonsai",
+      "node": [
+        0,
+        12,
+        2,
+        1,
+        8,
+        3
+      ],
+      "location": "NestedWorkflow 'Stim' #0 > CreateObservable 'ClosedLoopStimulus' #12 > Group 'GainConverter' #2 > Group 'GainFactor' #1 > NestedWorkflow 'deg/mm' #8 > ExternalizedMapping #3",
+      "found": true,
+      "not_checked_notes": 7,
+      "other": null
+    },
+    {
+      "kind": "duplicate_property",
+      "code": "DUPLICATE_PROPERTY",
+      "repo": "int-brain-lab_iblrig",
+      "file": "int-brain-lab_iblrig/visual_stim/GaborTestStimuli/ScreenCameraStimTest/Gabor2D_SQUARE_new.bonsai",
+      "node": [
+        0,
+        14,
+        7,
+        1,
+        1,
+        3
+      ],
+      "location": "NestedWorkflow 'Stim' #0 > CreateObservable 'ClosedLoopStimulus' #14 > Group 'GainConverter' #7 > Group 'GainFactor' #1 > Group 'mm/deg' #1 > ExternalizedMapping #3",
+      "found": true,
+      "not_checked_notes": 7,
+      "other": null
+    },
+    {
+      "kind": "duplicate_property",
+      "code": "DUPLICATE_PROPERTY",
+      "repo": "int-brain-lab_iblrig",
+      "file": "int-brain-lab_iblrig/visual_stim/GaborTestStimuli/ScreenCameraStimTest/Gabor2D_SQUARE.bonsai",
+      "node": [
+        0,
+        1
+      ],
+      "location": "NestedWorkflow 'Stim' #0 > ExternalizedMapping #1",
+      "found": true,
+      "not_checked_notes": 7,
+      "other": null
+    },
+    {
+      "kind": "duplicate_property",
+      "code": "DUPLICATE_PROPERTY",
+      "repo": "neurogears_vestibular-vr",
+      "file": "neurogears_vestibular-vr/src/Workflows/h1-h2-control-test.bonsai",
+      "node": [
+        15
+      ],
+      "location": "ExternalizedMapping #15",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "duplicate_property",
+      "code": "DUPLICATE_PROPERTY",
+      "repo": "neurogears_vestibular-vr",
+      "file": "neurogears_vestibular-vr/src/Workflows/InsertionWorkflow/InsertionWorkflow.bonsai",
+      "node": [
+        4,
+        40
+      ],
+      "location": "Group 'Logging' #4 > ExternalizedMapping #40",
+      "found": true,
+      "not_checked_notes": 9,
+      "other": null
+    },
+    {
+      "kind": "duplicate_property",
+      "code": "DUPLICATE_PROPERTY",
+      "repo": "neurogears_vestibular-vr",
+      "file": "neurogears_vestibular-vr/src/Workflows/h1-h2-open-loop-2.bonsai",
+      "node": [
+        13
+      ],
+      "location": "ExternalizedMapping #13",
+      "found": true,
+      "not_checked_notes": 2,
+      "other": null
+    },
+    {
+      "kind": "duplicate_subject",
+      "code": "DUPLICATE_SUBJECT",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.DynamicForaging",
+      "file": "AllenNeuralDynamics_Aind.Behavior.DynamicForaging/src/test_visualizer.bonsai",
+      "node": [
+        2,
+        7,
+        28
+      ],
+      "location": "Group 'Visualizer' #2 > Group 'OutputControl' #7 > PublishSubject 'DrainRightComplete' #28",
+      "found": true,
+      "not_checked_notes": 9,
+      "other": null
+    },
+    {
+      "kind": "duplicate_subject",
+      "code": "DUPLICATE_SUBJECT",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.DynamicForaging",
+      "file": "AllenNeuralDynamics_Aind.Behavior.DynamicForaging/src/test_visualizer.bonsai",
+      "node": [
+        2,
+        7,
+        22
+      ],
+      "location": "Group 'Visualizer' #2 > Group 'OutputControl' #7 > PublishSubject 'UiCueGiveRight' #22",
+      "found": true,
+      "not_checked_notes": 9,
+      "other": null
+    },
+    {
+      "kind": "duplicate_subject",
+      "code": "DUPLICATE_SUBJECT",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.DynamicForaging",
+      "file": "AllenNeuralDynamics_Aind.Behavior.DynamicForaging/src/test_visualizer.bonsai",
+      "node": [
+        2,
+        4,
+        18
+      ],
+      "location": "Group 'Visualizer' #2 > Group 'VisualizerStructure' #4 > PublishSubject 'Metadata' #18",
+      "found": true,
+      "not_checked_notes": 9,
+      "other": null
+    },
+    {
+      "kind": "duplicate_subject",
+      "code": "DUPLICATE_SUBJECT",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.Telekinesis",
+      "file": "AllenNeuralDynamics_Aind.Behavior.Telekinesis/src/main.bonsai",
+      "node": [
+        6,
+        10
+      ],
+      "location": "Group 'Initialization' #6 > BehaviorSubject 'Annotations' #10",
+      "found": true,
+      "not_checked_notes": 94,
+      "other": null
+    },
+    {
+      "kind": "duplicate_subject",
+      "code": "DUPLICATE_SUBJECT",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.Telekinesis",
+      "file": "AllenNeuralDynamics_Aind.Behavior.Telekinesis/src/main.bonsai",
+      "node": [
+        5,
+        8
+      ],
+      "location": "Group 'SessionSettings' #5 > AsyncSubject 'RngSeedValue' #8",
+      "found": true,
+      "not_checked_notes": 94,
+      "other": null
+    },
+    {
+      "kind": "duplicate_subject",
+      "code": "DUPLICATE_SUBJECT",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.Telekinesis",
+      "file": "AllenNeuralDynamics_Aind.Behavior.Telekinesis/src/test_deserialization.bonsai",
+      "node": [
+        2,
+        7
+      ],
+      "location": "Group 'LoadSchemas' #2 > AsyncSubject 'RigSchema' #7",
+      "found": true,
+      "not_checked_notes": 4,
+      "other": null
+    },
+    {
+      "kind": "duplicate_subject",
+      "code": "DUPLICATE_SUBJECT",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.VrForaging",
+      "file": "AllenNeuralDynamics_Aind.Behavior.VrForaging/src/main.bonsai",
+      "node": [
+        5,
+        27
+      ],
+      "location": "Group 'SessionSettings' #5 > AsyncSubject 'DisposingTreshold' #27",
+      "found": true,
+      "not_checked_notes": 131,
+      "other": null
+    },
+    {
+      "kind": "duplicate_subject",
+      "code": "DUPLICATE_SUBJECT",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.VrForaging",
+      "file": "AllenNeuralDynamics_Aind.Behavior.VrForaging/src/main.bonsai",
+      "node": [
+        5,
+        18
+      ],
+      "location": "Group 'SessionSettings' #5 > AsyncSubject 'SigmaZ' #18",
+      "found": true,
+      "not_checked_notes": 131,
+      "other": null
+    },
+    {
+      "kind": "duplicate_subject",
+      "code": "DUPLICATE_SUBJECT",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.VrForaging",
+      "file": "AllenNeuralDynamics_Aind.Behavior.VrForaging/src/main.bonsai",
+      "node": [
+        6,
+        6
+      ],
+      "location": "Group 'Initialization' #6 > BehaviorSubject 'GlobalPatchState' #6",
+      "found": true,
+      "not_checked_notes": 131,
+      "other": null
+    },
+    {
+      "kind": "duplicate_subject",
+      "code": "DUPLICATE_SUBJECT",
+      "repo": "AllenNeuralDynamics_Bonsai.AllenNeuralDynamics",
+      "file": "AllenNeuralDynamics_Bonsai.AllenNeuralDynamics/docs/workflows/SniffDetectorParsing.bonsai",
+      "node": [
+        2
+      ],
+      "location": "PublishSubject 'Events' #2",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "duplicate_subject",
+      "code": "DUPLICATE_SUBJECT",
+      "repo": "AllenNeuralDynamics_Bonsai.AllenNeuralDynamics",
+      "file": "AllenNeuralDynamics_Bonsai.AllenNeuralDynamics/docs/workflows/AindManipulatorFromDefault.bonsai",
+      "node": [
+        1
+      ],
+      "location": "AsyncSubject 'ManipulatorSettings' #1",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "duplicate_subject",
+      "code": "DUPLICATE_SUBJECT",
+      "repo": "AllenNeuralDynamics_Bonsai.AllenNeuralDynamics",
+      "file": "AllenNeuralDynamics_Bonsai.AllenNeuralDynamics/docs/workflows/SaveHarpDataWithMetadata.bonsai",
+      "node": [
+        2
+      ],
+      "location": "PublishSubject 'LicketySplitEvents' #2",
+      "found": true,
+      "not_checked_notes": 2,
+      "other": null
+    },
+    {
+      "kind": "duplicate_subject",
+      "code": "DUPLICATE_SUBJECT",
+      "repo": "bonsai-rx_docs",
+      "file": "bonsai-rx_docs/workflows/reactive-asyncsubject-example.bonsai",
+      "node": [
+        2
+      ],
+      "location": "AsyncSubject 'TimerSubject' #2",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "duplicate_subject",
+      "code": "DUPLICATE_SUBJECT",
+      "repo": "bonsai-rx_docs",
+      "file": "bonsai-rx_docs/workflows/bonvision-render.bonsai",
+      "node": [
+        6
+      ],
+      "location": "PublishSubject 'Draw' #6",
+      "found": true,
+      "not_checked_notes": 2,
+      "other": null
+    },
+    {
+      "kind": "duplicate_subject",
+      "code": "DUPLICATE_SUBJECT",
+      "repo": "bonsai-rx_docs",
+      "file": "bonsai-rx_docs/workflows/statemachine-stimulus-response.bonsai",
+      "node": [
+        1,
+        2
+      ],
+      "location": "Sink 'StimOn' #1 > BehaviorSubject 'Led' #2",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "duplicate_subject",
+      "code": "DUPLICATE_SUBJECT",
+      "repo": "bonsai-rx_machinelearning",
+      "file": "bonsai-rx_machinelearning/tests/Bonsai.ML.Lds.Torch.Tests/NeuralLatentsTest.bonsai",
+      "node": [
+        0,
+        3
+      ],
+      "location": "Group 'LoadData' #0 > ReplaySubject 'ObservationT' #3",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "duplicate_subject",
+      "code": "DUPLICATE_SUBJECT",
+      "repo": "bonsai-rx_machinelearning",
+      "file": "bonsai-rx_machinelearning/docs/workflows/HMMImplementation.bonsai",
+      "node": [
+        7
+      ],
+      "location": "BehaviorSubject 'Observation' #7",
+      "found": true,
+      "not_checked_notes": 4,
+      "other": null
+    },
+    {
+      "kind": "duplicate_subject",
+      "code": "DUPLICATE_SUBJECT",
+      "repo": "bonsai-rx_machinelearning",
+      "file": "bonsai-rx_machinelearning/tests/Bonsai.ML.Lds.Torch.Tests/NeuralLatentsTest.bonsai",
+      "node": [
+        0,
+        18
+      ],
+      "location": "Group 'LoadData' #0 > ReplaySubject 'TransitionMatrix' #18",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "duplicate_subject",
+      "code": "DUPLICATE_SUBJECT",
+      "repo": "bonsai-rx_mixer",
+      "file": "bonsai-rx_mixer/docs/workflows/gain-modulation.bonsai",
+      "node": [
+        2
+      ],
+      "location": "BehaviorSubject 'Mixer' #2",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "duplicate_subject",
+      "code": "DUPLICATE_SUBJECT",
+      "repo": "bonsai-rx_mixer",
+      "file": "bonsai-rx_mixer/docs/workflows/getting-started.bonsai",
+      "node": [
+        2
+      ],
+      "location": "BehaviorSubject 'Mixer' #2",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "duplicate_subject",
+      "code": "DUPLICATE_SUBJECT",
+      "repo": "bonsai-rx_mixer",
+      "file": "bonsai-rx_mixer/docs/workflows/playback-control-pause-resume.bonsai",
+      "node": [
+        5
+      ],
+      "location": "BehaviorSubject 'Source' #5",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "duplicate_subject",
+      "code": "DUPLICATE_SUBJECT",
+      "repo": "harp-tech_device.stepperdriver",
+      "file": "harp-tech_device.stepperdriver/Assets/stepper driver tester - inputs tests.bonsai",
+      "node": [
+        0,
+        0
+      ],
+      "location": "Group 'Hardware' #0 > BehaviorSubject 'Commands' #0",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "duplicate_subject",
+      "code": "DUPLICATE_SUBJECT",
+      "repo": "harp-tech_device.stepperdriver",
+      "file": "harp-tech_device.stepperdriver/Assets/stepper driver tester - inputs tests.bonsai",
+      "node": [
+        2
+      ],
+      "location": "BehaviorSubject 'Events' #2",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "duplicate_subject",
+      "code": "DUPLICATE_SUBJECT",
+      "repo": "int-brain-lab_iblrig",
+      "file": "int-brain-lab_iblrig/visual_stim/GaborIBLTask_6.5.2/Gabor2D.bonsai",
+      "node": [
+        0,
+        1,
+        5
+      ],
+      "location": "NestedWorkflow 'Stim' #0 > Group 'InitializeVars' #1 > BehaviorSubject 'StimContrast' #5",
+      "found": true,
+      "not_checked_notes": 7,
+      "other": null
+    },
+    {
+      "kind": "duplicate_subject",
+      "code": "DUPLICATE_SUBJECT",
+      "repo": "int-brain-lab_iblrig",
+      "file": "int-brain-lab_iblrig/visual_stim/GaborIBLTask/Gabor2D_clean2.5.bonsai",
+      "node": [
+        0,
+        2,
+        1,
+        21
+      ],
+      "location": "NestedWorkflow 'Stim' #0 > Group 'EnvironmentDefinition' #2 > Group 'CalibrationVariables' #1 > BehaviorSubject 'UpdateSyncSquare' #21",
+      "found": true,
+      "not_checked_notes": 7,
+      "other": null
+    },
+    {
+      "kind": "duplicate_subject",
+      "code": "DUPLICATE_SUBJECT",
+      "repo": "int-brain-lab_iblrig",
+      "file": "int-brain-lab_iblrig/visual_stim/GaborIBLTask/Gabor2D.bonsai",
+      "node": [
+        0,
+        5,
+        11
+      ],
+      "location": "NestedWorkflow 'Stim' #0 > Group 'RotaryEncoder' #5 > BehaviorSubject 'RawEncoderPositions' #11",
+      "found": true,
+      "not_checked_notes": 7,
+      "other": null
+    },
+    {
+      "kind": "duplicate_subject",
+      "code": "DUPLICATE_SUBJECT",
+      "repo": "jtdbod_restaurant-row-berkeley",
+      "file": "jtdbod_restaurant-row-berkeley/5s-wait_0-20-80-100_prob-rewarded.bonsai",
+      "node": [
+        230
+      ],
+      "location": "PublishSubject 'Decision1' #230",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "duplicate_subject",
+      "code": "DUPLICATE_SUBJECT",
+      "repo": "jtdbod_restaurant-row-berkeley",
+      "file": "jtdbod_restaurant-row-berkeley/1s-wait_80pct-rewarded.bonsai",
+      "node": [
+        213
+      ],
+      "location": "PublishSubject 'RejectOffer3' #213",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "duplicate_subject",
+      "code": "DUPLICATE_SUBJECT",
+      "repo": "jtdbod_restaurant-row-berkeley",
+      "file": "jtdbod_restaurant-row-berkeley/5s-wait_80pct-rewarded_EXPERIMENTAL.bonsai",
+      "node": [
+        240
+      ],
+      "location": "PublishSubject 'Decision2' #240",
+      "found": true,
+      "not_checked_notes": 1,
+      "other": null
+    },
+    {
+      "kind": "duplicate_subject",
+      "code": "DUPLICATE_SUBJECT",
+      "repo": "neurogears_vestibular-vr",
+      "file": "neurogears_vestibular-vr/src/Workflows/InsertionWorkflow/InsertionWorkflow.bonsai",
+      "node": [
+        2,
+        3
+      ],
+      "location": "Group 'ONIX Control' #2 > PublishSubject 'SpikeData' #3",
+      "found": true,
+      "not_checked_notes": 9,
+      "other": null
+    },
+    {
+      "kind": "duplicate_subject",
+      "code": "DUPLICATE_SUBJECT",
+      "repo": "neurogears_vestibular-vr",
+      "file": "neurogears_vestibular-vr/src/Workflows/TrialLogicTest/TrialLogicTest.bonsai",
+      "node": [
+        12,
+        2,
+        18,
+        3
+      ],
+      "location": "Group 'Trial Logic' #12 > CreateObservable 'DoBlock' #2 > Group 'MotionClouds' #18 > PublishSubject 'MotionCloudIndexPositionLeft' #3",
+      "found": true,
+      "not_checked_notes": 21,
+      "other": null
+    },
+    {
+      "kind": "duplicate_subject",
+      "code": "DUPLICATE_SUBJECT",
+      "repo": "neurogears_vestibular-vr",
+      "file": "neurogears_vestibular-vr/src/Workflows/h1-h2-open-loop.bonsai",
+      "node": [
+        0,
+        0
+      ],
+      "location": "Group 'H1Hardware' #0 > BehaviorSubject 'H1Commands' #0",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "missing_include",
+      "code": "MISSING_INCLUDE",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.DynamicForaging",
+      "file": "AllenNeuralDynamics_Aind.Behavior.DynamicForaging/src/test_saturation_visualizer.bonsai",
+      "node": [
+        20
+      ],
+      "location": "Include 'Extensions\\CameraPreviewVisualizer.bonsai' #20",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "missing_include",
+      "code": "MISSING_INCLUDE",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.DynamicForaging",
+      "file": "AllenNeuralDynamics_Aind.Behavior.DynamicForaging/src/test_visualizer.bonsai",
+      "node": [
+        2,
+        5
+      ],
+      "location": "Group 'Visualizer' #2 > Include 'Extensions\\BehaviorVisualizer.bonsai' #5",
+      "found": true,
+      "not_checked_notes": 9,
+      "other": null
+    },
+    {
+      "kind": "missing_include",
+      "code": "MISSING_INCLUDE",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.DynamicForaging",
+      "file": "AllenNeuralDynamics_Aind.Behavior.DynamicForaging/src/main.bonsai",
+      "node": [
+        17
+      ],
+      "location": "Include 'Extensions\\Logging.bonsai' #17",
+      "found": true,
+      "not_checked_notes": 61,
+      "other": null
+    },
+    {
+      "kind": "missing_include",
+      "code": "MISSING_INCLUDE",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.Telekinesis",
+      "file": "AllenNeuralDynamics_Aind.Behavior.Telekinesis/src/main.bonsai",
+      "node": [
+        14
+      ],
+      "location": "Include 'Extensions\\Visualizers.bonsai' #14",
+      "found": true,
+      "not_checked_notes": 75,
+      "other": null
+    },
+    {
+      "kind": "missing_include",
+      "code": "MISSING_INCLUDE",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.Telekinesis",
+      "file": "AllenNeuralDynamics_Aind.Behavior.Telekinesis/src/main.bonsai",
+      "node": [
+        7,
+        0,
+        10
+      ],
+      "location": "Defer 'HardwareChecks' #7 > Defer 'ProtocolValidation' #0 > Include 'Extensions\\ValidateHarpClkOutput.bonsai' #10",
+      "found": true,
+      "not_checked_notes": 93,
+      "other": null
+    },
+    {
+      "kind": "missing_include",
+      "code": "MISSING_INCLUDE",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.Telekinesis",
+      "file": "AllenNeuralDynamics_Aind.Behavior.Telekinesis/src/main.bonsai",
+      "node": [
+        9,
+        13
+      ],
+      "location": "Defer 'TaskLogic' #9 > Include 'Extensions\\BlockLogic.bonsai' #13",
+      "found": true,
+      "not_checked_notes": 86,
+      "other": null
+    },
+    {
+      "kind": "missing_include",
+      "code": "MISSING_INCLUDE",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.VrForaging",
+      "file": "AllenNeuralDynamics_Aind.Behavior.VrForaging/src/main.bonsai",
+      "node": [
+        17
+      ],
+      "location": "Include 'Extensions\\TaskLogic.bonsai' #17",
+      "found": true,
+      "not_checked_notes": 115,
+      "other": null
+    },
+    {
+      "kind": "missing_include",
+      "code": "MISSING_INCLUDE",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.VrForaging",
+      "file": "AllenNeuralDynamics_Aind.Behavior.VrForaging/src/main.bonsai",
+      "node": [
+        8
+      ],
+      "location": "Include 'Extensions\\Logging.bonsai' #8",
+      "found": true,
+      "not_checked_notes": 72,
+      "other": null
+    },
+    {
+      "kind": "missing_include",
+      "code": "MISSING_INCLUDE",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.VrForaging",
+      "file": "AllenNeuralDynamics_Aind.Behavior.VrForaging/src/main.bonsai",
+      "node": [
+        4
+      ],
+      "location": "Include 'Extensions\\Hardware.bonsai' #4",
+      "found": true,
+      "not_checked_notes": 150,
+      "other": null
+    },
+    {
+      "kind": "missing_include",
+      "code": "MISSING_INCLUDE",
+      "repo": "int-brain-lab_iblrig",
+      "file": "int-brain-lab_iblrig/devices/camera_recordings/EphysRig_SaveVideo_EphysTasks.bonsai",
+      "node": [
+        1,
+        6
+      ],
+      "location": "NestedWorkflow #1 > Include 'Extensions\\GetFrameData.bonsai' #6",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "missing_include",
+      "code": "MISSING_INCLUDE",
+      "repo": "int-brain-lab_iblrig",
+      "file": "int-brain-lab_iblrig/visual_stim/ephys_certification/ephys_certification.bonsai",
+      "node": [
+        29,
+        1
+      ],
+      "location": "SelectMany 'OrientationDirectionSelectivityStim0' #29 > Include 'Extensions\\OrientationDirectionSelectivityStim.bonsai' #1",
+      "found": true,
+      "not_checked_notes": 11,
+      "other": null
+    },
+    {
+      "kind": "missing_include",
+      "code": "MISSING_INCLUDE",
+      "repo": "int-brain-lab_iblrig",
+      "file": "int-brain-lab_iblrig/visual_stim/ephys_certification/ephys_certification.bonsai",
+      "node": [
+        39,
+        1
+      ],
+      "location": "SelectMany 'OrientationDirectionSelectivityStim1' #39 > Include 'Extensions\\OrientationDirectionSelectivityStim.bonsai' #1",
+      "found": true,
+      "not_checked_notes": 11,
+      "other": null
+    },
+    {
+      "kind": "missing_include",
+      "code": "MISSING_INCLUDE",
+      "repo": "neurogears_vestibular-vr",
+      "file": "neurogears_vestibular-vr/src/Workflows/MainExperiment/Main.bonsai",
+      "node": [
+        33,
+        43
+      ],
+      "location": "Group 'Logging' #33 > Include 'Extensions\\LogBinaryData.bonsai' #43",
+      "found": true,
+      "not_checked_notes": 37,
+      "other": null
+    },
+    {
+      "kind": "missing_include",
+      "code": "MISSING_INCLUDE",
+      "repo": "neurogears_vestibular-vr",
+      "file": "neurogears_vestibular-vr/src/Workflows/MainExperiment/Main.bonsai",
+      "node": [
+        33,
+        45
+      ],
+      "location": "Group 'Logging' #33 > Include 'Extensions\\LogBinaryData.bonsai' #45",
+      "found": true,
+      "not_checked_notes": 37,
+      "other": null
+    },
+    {
+      "kind": "missing_include",
+      "code": "MISSING_INCLUDE",
+      "repo": "neurogears_vestibular-vr",
+      "file": "neurogears_vestibular-vr/src/Workflows/MainExperiment/Main.bonsai",
+      "node": [
+        33,
+        41
+      ],
+      "location": "Group 'Logging' #33 > Include 'Extensions\\LogBinaryData.bonsai' #41",
+      "found": true,
+      "not_checked_notes": 37,
+      "other": null
+    },
+    {
+      "kind": "overwrites",
+      "code": "SILENT_OVERWRITE",
+      "repo": "bonsai-rx_docs",
+      "file": "bonsai-rx_docs/workflows/synching-ephys-video.bonsai",
+      "node": [
+        1
+      ],
+      "location": "VideoWriter 'test.avi' #1",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "overwrites",
+      "code": "SILENT_OVERWRITE",
+      "repo": "bonsai-rx_docs",
+      "file": "bonsai-rx_docs/workflows/synching-led.bonsai",
+      "node": [
+        6
+      ],
+      "location": "CsvWriter 'led.csv' #6",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "overwrites",
+      "code": "SILENT_OVERWRITE",
+      "repo": "bonsai-rx_docs",
+      "file": "bonsai-rx_docs/workflows/reactive-takeuntil-application-videostop.bonsai",
+      "node": [
+        3
+      ],
+      "location": "VideoWriter 'test.avi' #3",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "overwrites",
+      "code": "SILENT_OVERWRITE",
+      "repo": "int-brain-lab_iblrig",
+      "file": "int-brain-lab_iblrig/devices/harp_photodiode/screen_sweep_harp_photodiode.bonsai",
+      "node": [
+        28,
+        2
+      ],
+      "location": "Group 'Photodiode' #28 > MatrixWriter 'C:\\iblrig\\devices\\harp_photodiode\\harp_test.bin' #2",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "overwrites",
+      "code": "SILENT_OVERWRITE",
+      "repo": "int-brain-lab_iblrig",
+      "file": "int-brain-lab_iblrig/visual_stim/f2ttl_calibration/screen_60Hz.bonsai",
+      "node": [
+        8,
+        11
+      ],
+      "location": "SelectMany #8 > CsvWriter 'C:\\iblrig_data\\Subjects\\_iblrig_test_mouse\\bonsai_ts_data.csv' #11",
+      "found": true,
+      "not_checked_notes": 3,
+      "other": null
+    },
+    {
+      "kind": "overwrites",
+      "code": "SILENT_OVERWRITE",
+      "repo": "int-brain-lab_iblrig",
+      "file": "int-brain-lab_iblrig/visual_stim/f2ttl_calibration/screen_60Hz.bonsai",
+      "node": [
+        8,
+        15
+      ],
+      "location": "SelectMany #8 > CsvWriter 'C:\\iblrig_data\\Subjects\\_iblrig_test_mouse\\bonsai_ts_data_length.csv' #15",
+      "found": true,
+      "not_checked_notes": 3,
+      "other": null
+    },
+    {
+      "kind": "overwrites",
+      "code": "SILENT_OVERWRITE",
+      "repo": "jtdbod_restaurant-row-berkeley",
+      "file": "jtdbod_restaurant-row-berkeley/3sec_Restaurant(Dim)_4camera.bonsai",
+      "node": [
+        235,
+        7
+      ],
+      "location": "NestedWorkflow 'Timestamp & Save Events' #235 > CsvWriter 'rr_data\\RRD003_3sec_A2A-16B-2-LV_.csv' #7",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "overwrites",
+      "code": "SILENT_OVERWRITE",
+      "repo": "jtdbod_restaurant-row-berkeley",
+      "file": "jtdbod_restaurant-row-berkeley/10s-wait_0-20-80-100_prob-rewarded.bonsai",
+      "node": [
+        63
+      ],
+      "location": "VideoWriter 'rr_video\\R3_cam_.avi' #63",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "overwrites",
+      "code": "SILENT_OVERWRITE",
+      "repo": "jtdbod_restaurant-row-berkeley",
+      "file": "jtdbod_restaurant-row-berkeley/1s-wait_all-rewarded.bonsai",
+      "node": [
+        299,
+        7
+      ],
+      "location": "NestedWorkflow 'Timestamp & Save Events' #299 > CsvWriter 'rr_data\\RR_Day1_epoch-1_ID-RRM003_.csv' #7",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "unnamed_subject",
+      "code": "UNNAMED_SUBJECT",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.DynamicForaging",
+      "file": "AllenNeuralDynamics_Aind.Behavior.DynamicForaging/src/test_visualizer.bonsai",
+      "node": [
+        2,
+        6,
+        1,
+        22
+      ],
+      "location": "Group 'Visualizer' #2 > Group 'BiasVisualizer' #6 > Defer 'BiasVisualizer' #1 > SubscribeSubject 'TrialIndexedBias' #22",
+      "found": true,
+      "not_checked_notes": 9,
+      "other": null
+    },
+    {
+      "kind": "unnamed_subject",
+      "code": "UNNAMED_SUBJECT",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.DynamicForaging",
+      "file": "AllenNeuralDynamics_Aind.Behavior.DynamicForaging/src/test_deserialization.bonsai",
+      "node": [
+        5
+      ],
+      "location": "SubscribeSubject 'TaskLogicSchema' #5",
+      "found": true,
+      "not_checked_notes": 4,
+      "other": null
+    },
+    {
+      "kind": "unnamed_subject",
+      "code": "UNNAMED_SUBJECT",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.DynamicForaging",
+      "file": "AllenNeuralDynamics_Aind.Behavior.DynamicForaging/src/test_python.bonsai",
+      "node": [
+        3
+      ],
+      "location": "SubscribeSubject 'PythonRuntime' #3",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "unnamed_subject",
+      "code": "UNNAMED_SUBJECT",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.Telekinesis",
+      "file": "AllenNeuralDynamics_Aind.Behavior.Telekinesis/src/main.bonsai",
+      "node": [
+        9,
+        17,
+        2
+      ],
+      "location": "Defer 'TaskLogic' #9 > TakeWhile #17 > SubscribeSubject 'BlockStatistics' #2",
+      "found": true,
+      "not_checked_notes": 94,
+      "other": null
+    },
+    {
+      "kind": "unnamed_subject",
+      "code": "UNNAMED_SUBJECT",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.Telekinesis",
+      "file": "AllenNeuralDynamics_Aind.Behavior.Telekinesis/src/main.bonsai",
+      "node": [
+        9,
+        7
+      ],
+      "location": "Defer 'TaskLogic' #9 > SubscribeSubject 'BlockIndex' #7",
+      "found": true,
+      "not_checked_notes": 94,
+      "other": null
+    },
+    {
+      "kind": "unnamed_subject",
+      "code": "UNNAMED_SUBJECT",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.Telekinesis",
+      "file": "AllenNeuralDynamics_Aind.Behavior.Telekinesis/src/main.bonsai",
+      "node": [
+        9,
+        0
+      ],
+      "location": "Defer 'TaskLogic' #9 > SubscribeSubject 'TaskLogicParameters' #0",
+      "found": true,
+      "not_checked_notes": 94,
+      "other": null
+    },
+    {
+      "kind": "unnamed_subject",
+      "code": "UNNAMED_SUBJECT",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.VrForaging",
+      "file": "AllenNeuralDynamics_Aind.Behavior.VrForaging/src/test_deserialization.bonsai",
+      "node": [
+        7
+      ],
+      "location": "SubscribeSubject 'RigSchema' #7",
+      "found": true,
+      "not_checked_notes": 4,
+      "other": null
+    },
+    {
+      "kind": "unnamed_subject",
+      "code": "UNNAMED_SUBJECT",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.VrForaging",
+      "file": "AllenNeuralDynamics_Aind.Behavior.VrForaging/src/main.bonsai",
+      "node": [
+        25,
+        28
+      ],
+      "location": "Defer 'ExperimentCommandLogic' #25 > SubscribeSubject 'ExperimentUiButtonCommands' #28",
+      "found": true,
+      "not_checked_notes": 131,
+      "other": null
+    },
+    {
+      "kind": "unnamed_subject",
+      "code": "UNNAMED_SUBJECT",
+      "repo": "AllenNeuralDynamics_Aind.Behavior.VrForaging",
+      "file": "AllenNeuralDynamics_Aind.Behavior.VrForaging/src/main.bonsai",
+      "node": [
+        5,
+        35
+      ],
+      "location": "Group 'SessionSettings' #5 > SubscribeSubject 'RigSchema' #35",
+      "found": true,
+      "not_checked_notes": 131,
+      "other": null
+    },
+    {
+      "kind": "unnamed_subject",
+      "code": "UNNAMED_SUBJECT",
+      "repo": "AllenNeuralDynamics_Bonsai.AllenNeuralDynamics",
+      "file": "AllenNeuralDynamics_Bonsai.AllenNeuralDynamics/docs/workflows/TreadmillParsing.bonsai",
+      "node": [
+        3
+      ],
+      "location": "SubscribeSubject 'Events' #3",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "unnamed_subject",
+      "code": "UNNAMED_SUBJECT",
+      "repo": "AllenNeuralDynamics_Bonsai.AllenNeuralDynamics",
+      "file": "AllenNeuralDynamics_Bonsai.AllenNeuralDynamics/docs/workflows/SaveHarpDataWithMetadata.bonsai",
+      "node": [
+        5
+      ],
+      "location": "SubscribeSubject 'LicketySplitEvents' #5",
+      "found": true,
+      "not_checked_notes": 2,
+      "other": null
+    },
+    {
+      "kind": "unnamed_subject",
+      "code": "UNNAMED_SUBJECT",
+      "repo": "AllenNeuralDynamics_Bonsai.AllenNeuralDynamics",
+      "file": "AllenNeuralDynamics_Bonsai.AllenNeuralDynamics/docs/workflows/SaveHarpData.bonsai",
+      "node": [
+        5
+      ],
+      "location": "SubscribeSubject 'DeviceEvents' #5",
+      "found": true,
+      "not_checked_notes": 2,
+      "other": null
+    },
+    {
+      "kind": "unnamed_subject",
+      "code": "UNNAMED_SUBJECT",
+      "repo": "bonsai-rx_docs",
+      "file": "bonsai-rx_docs/workflows/statemachine-stimulus-response-outcomes.bonsai",
+      "node": [
+        2,
+        0
+      ],
+      "location": "SelectMany 'Response' #2 > SubscribeSubject 'Response' #0",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "unnamed_subject",
+      "code": "UNNAMED_SUBJECT",
+      "repo": "bonsai-rx_docs",
+      "file": "bonsai-rx_docs/workflows/bonvision-response-feedback.bonsai",
+      "node": [
+        3
+      ],
+      "location": "SubscribeSubject 'Result' #3",
+      "found": true,
+      "not_checked_notes": 2,
+      "other": null
+    },
+    {
+      "kind": "unnamed_subject",
+      "code": "UNNAMED_SUBJECT",
+      "repo": "bonsai-rx_docs",
+      "file": "bonsai-rx_docs/workflows/bonvision-orientation-discrimination-feedback.bonsai",
+      "node": [
+        5,
+        2
+      ],
+      "location": "SelectMany 'Feedback' #5 > SubscribeSubject 'Draw' #2",
+      "found": true,
+      "not_checked_notes": 3,
+      "other": null
+    },
+    {
+      "kind": "unnamed_subject",
+      "code": "UNNAMED_SUBJECT",
+      "repo": "bonsai-rx_machinelearning",
+      "file": "bonsai-rx_machinelearning/tests/Bonsai.ML.Lds.Torch.Tests/NeuralLatentsTest.bonsai",
+      "node": [
+        1,
+        2
+      ],
+      "location": "Group 'LoadModel' #1 > SubscribeSubject 'ProcessNoiseCovariance' #2",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "unnamed_subject",
+      "code": "UNNAMED_SUBJECT",
+      "repo": "bonsai-rx_machinelearning",
+      "file": "bonsai-rx_machinelearning/docs/workflows/HMMImplementation.bonsai",
+      "node": [
+        8
+      ],
+      "location": "SubscribeSubject 'Observation' #8",
+      "found": true,
+      "not_checked_notes": 4,
+      "other": null
+    },
+    {
+      "kind": "unnamed_subject",
+      "code": "UNNAMED_SUBJECT",
+      "repo": "bonsai-rx_machinelearning",
+      "file": "bonsai-rx_machinelearning/tests/Bonsai.ML.Lds.Torch.Tests/NeuralLatentsTest.bonsai",
+      "node": [
+        3,
+        13
+      ],
+      "location": "Group 'Smoother' #3 > SubscribeSubject 'KalmanFilterModel' #13",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "unnamed_subject",
+      "code": "UNNAMED_SUBJECT",
+      "repo": "bonsai-rx_mixer",
+      "file": "bonsai-rx_mixer/docs/workflows/gain-modulation.bonsai",
+      "node": [
+        15
+      ],
+      "location": "SubscribeSubject 'Source' #15",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "unnamed_subject",
+      "code": "UNNAMED_SUBJECT",
+      "repo": "bonsai-rx_mixer",
+      "file": "bonsai-rx_mixer/docs/workflows/gain-modulation.bonsai",
+      "node": [
+        3
+      ],
+      "location": "SubscribeSubject 'Mixer' #3",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "unnamed_subject",
+      "code": "UNNAMED_SUBJECT",
+      "repo": "bonsai-rx_mixer",
+      "file": "bonsai-rx_mixer/docs/workflows/sources-looping.bonsai",
+      "node": [
+        11
+      ],
+      "location": "SubscribeSubject 'Source' #11",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "unnamed_subject",
+      "code": "UNNAMED_SUBJECT",
+      "repo": "harp-tech_device.stepperdriver",
+      "file": "harp-tech_device.stepperdriver/Assets/stepper driver tester - inputs tests.bonsai",
+      "node": [
+        1,
+        0
+      ],
+      "location": "Group 'DigitalInputs' #1 > SubscribeSubject 'Events' #0",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "unnamed_subject",
+      "code": "UNNAMED_SUBJECT",
+      "repo": "int-brain-lab_iblrig",
+      "file": "int-brain-lab_iblrig/visual_stim/GaborTestStimuli/Gabor2D_TTLTest.bonsai",
+      "node": [
+        0,
+        44,
+        6
+      ],
+      "location": "NestedWorkflow 'Stim' #0 > NestedWorkflow 'SaveData' #44 > SubscribeSubject 'GaborSize' #6",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "unnamed_subject",
+      "code": "UNNAMED_SUBJECT",
+      "repo": "int-brain-lab_iblrig",
+      "file": "int-brain-lab_iblrig/visual_stim/GaborTestStimuli/ScreenCameraStimTest/Gabor2D_SQUARE_new.bonsai",
+      "node": [
+        0,
+        22,
+        21
+      ],
+      "location": "NestedWorkflow 'Stim' #0 > NestedWorkflow 'SaveData' #22 > SubscribeSubject 'StimContrast' #21",
+      "found": true,
+      "not_checked_notes": 7,
+      "other": null
+    },
+    {
+      "kind": "unnamed_subject",
+      "code": "UNNAMED_SUBJECT",
+      "repo": "int-brain-lab_iblrig",
+      "file": "int-brain-lab_iblrig/visual_stim/GaborIBLTask_6.5.2/Gabor2D.bonsai",
+      "node": [
+        0,
+        22,
+        26
+      ],
+      "location": "NestedWorkflow 'Stim' #0 > NestedWorkflow 'SaveData' #22 > SubscribeSubject 'UpdateSyncSquare' #26",
+      "found": true,
+      "not_checked_notes": 7,
+      "other": null
+    },
+    {
+      "kind": "unnamed_subject",
+      "code": "UNNAMED_SUBJECT",
+      "repo": "jtdbod_restaurant-row-berkeley",
+      "file": "jtdbod_restaurant-row-berkeley/5s-wait_60pct-rewarded_EXPERIMENTAL.bonsai",
+      "node": [
+        185
+      ],
+      "location": "SubscribeSubject 'RestaurantSeq2' #185",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "unnamed_subject",
+      "code": "UNNAMED_SUBJECT",
+      "repo": "jtdbod_restaurant-row-berkeley",
+      "file": "jtdbod_restaurant-row-berkeley/10s-wait_0-20-80-100_prob-rewarded.bonsai",
+      "node": [
+        231
+      ],
+      "location": "SubscribeSubject 'Probability2' #231",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "unnamed_subject",
+      "code": "UNNAMED_SUBJECT",
+      "repo": "jtdbod_restaurant-row-berkeley",
+      "file": "jtdbod_restaurant-row-berkeley/10s-wait_0-20-80-100_prob-rewarded.bonsai",
+      "node": [
+        244,
+        3,
+        9
+      ],
+      "location": "NestedWorkflow 'Track and Cue Decision 3' #244 > SelectMany 'Offer' #3 > SubscribeSubject 'QuitOffer3' #9",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "unnamed_subject",
+      "code": "UNNAMED_SUBJECT",
+      "repo": "neurogears_vestibular-vr",
+      "file": "neurogears_vestibular-vr/src/Workflows/h1-h2-closed-loop.bonsai",
+      "node": [
+        9
+      ],
+      "location": "SubscribeSubject 'Encoder' #9",
+      "found": true,
+      "not_checked_notes": 0,
+      "other": null
+    },
+    {
+      "kind": "unnamed_subject",
+      "code": "UNNAMED_SUBJECT",
+      "repo": "neurogears_vestibular-vr",
+      "file": "neurogears_vestibular-vr/src/Workflows/h1-h2-open-loop-2.bonsai",
+      "node": [
+        1,
+        12,
+        0
+      ],
+      "location": "Group 'H1Hardware' #1 > Condition 'AcquisitonStopped' #12 > SubscribeSubject 'CameraAcquiring' #0",
+      "found": true,
+      "not_checked_notes": 2,
+      "other": null
+    },
+    {
+      "kind": "unnamed_subject",
+      "code": "UNNAMED_SUBJECT",
+      "repo": "neurogears_vestibular-vr",
+      "file": "neurogears_vestibular-vr/src/Workflows/h1-h2-open-loop-2.bonsai",
+      "node": [
+        22,
+        17,
+        14
+      ],
+      "location": "Group 'Logging' #22 > SelectMany 'LogHarpStreams' #17 > SubscribeSubject 'LogName' #14",
+      "found": true,
+      "not_checked_notes": 2,
+      "other": null
+    }
+  ],
+  "not_round_tripped": []
+}

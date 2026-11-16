@@ -1,6 +1,77 @@
 # Changelog
 
-## 0.6.0 (unreleased)
+## 0.7.0 (unreleased)
+
+Measuring what baghban misses, reading the warnings, and the open parts of
+roadmap item 5.
+
+- **Recall, measured.** New `survey/seed_faults.py` plants known faults in
+  real rigs (the survey's clones), one at a time, and checks that baghban
+  reports each one at the planted node. Each fault has a certain effect on
+  Bonsai: a subscriber renamed to a name declared nowhere, an unnamed
+  subscriber, a duplicated subject or externalized property, a missing
+  include, a disabled writer, `Append` or `Overwrite` without a suffix, and
+  two writers given one file. Loop faults are not planted, because whether a
+  loop repeats can depend on more than the file.
+  - With packages (`--fetch`, macOS, 16 Nov 2026): **168 of 170 found**.
+    The 2 misses are renamed subscribers in workflows that include a module
+    that cannot be read even with packages: BonVision modules renamed before
+    the version iblrig pins (a known real fault), and an Aeon.Acquisition CI
+    build missing from nuget.org. Both were reported "not checked".
+  - Without packages: 156 of 170 (`survey/recall-0.7.0.json`). All 14
+    misses were reported "not checked", for an unread package include.
+  - None was missed silently.
+  - Needs `lxml`, now in the `dev` extra.
+- **`DISABLED_WRITER` is info when the branch is off.** A disabled node with
+  nothing live upstream builds as empty, and Bonsai does not pass an empty
+  node on: the next node gets no input. A disabled node with a live input
+  passes it through (`DisableBuilder`). So when everything feeding a disabled
+  writer is disabled too, back to the source, re-enabling the writer alone
+  would leave it without input, and the workflow would not build. Disabling
+  it loses nothing today. The message names the source. Only disabled nodes
+  count: an enabled operator in between, or one live input, keeps the
+  warning.
+- **All 57 `DISABLED_WRITER` warnings read.** Each says truly that nothing
+  is written.
+  - 40 are on branches whose source is disabled too: 36 are now info, and 4
+    keep the warning (the case above).
+  - 6 are in test workflows.
+  - 4 are IBL's ephys-rig video for training tasks, which saves only the
+    left camera, as the training rig does.
+  - 7 (four cameras running, their only video writer off) cannot be judged
+    from the repository.
+  - Survey without packages: `DISABLED_WRITER` warnings go from 57 to 21,
+    with 36 now info; nothing else changes (`survey-results-0.7.0.json`).
+- **A writer before `Repeat`/`Retry` is treated as in a loop.** `Repeat` and
+  `RepeatCount` subscribe their whole source again, so a writer before one,
+  or inside anything before one, is opened again on each repetition:
+  - `FAILS_ON_REPEAT` with `Overwrite=False`;
+  - `SILENT_OVERWRITE` (error) with `Overwrite=True`: only the last
+    repetition's data survives.
+  
+  `Retry` re-runs only after an error, and the message says so.
+  `RepeatCount(1)` and `RetryCount(1)` repeat nothing. No survey workflow
+  has such a writer.
+- **Measured for the roadmap.** Of the survey's 2,463 `Zip` nodes, none
+  joins timers with different stated periods. 6 `CombineLatest` nodes feed a
+  writer, all in iblrig's Gabor `SaveData`. So item 7 as written would find
+  nothing; see `ROADMAP.md`.
+- `confirm/confirm.py`: 20 cases, adding:
+  - `writer_before_repeat`: `RepeatCount(2)` reopens the file, which
+    fails;
+  - `writer_before_repeat_once`: `RepeatCount(1)` runs normally;
+  - `branch_off`: `Timer` to writer all disabled; it builds, runs, and
+    writes no file.
+  
+  The 0.6.0 kit was run on 28 Oct 2026: 17/17. Before release, 0.7.0's run
+  (16 Nov 2026) gave 19/20. The NO was `writer_behind_disabled_source`,
+  which claimed that an enabled writer after a disabled `Timer` runs and
+  writes nothing. It does not build: the enabled `Take` after the disabled
+  `Timer` gets no input. The rule above was written from that, and the case
+  replaced by `branch_off`, which has not been run yet.
+- 305 tests (Python 3.11 and 3.13).
+
+## 0.6.0 (2026-10-28)
 
 Roadmap item 5: loops that run once.
 

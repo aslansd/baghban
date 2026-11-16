@@ -100,7 +100,7 @@ the two copies of the included module are told apart.
 | `MISSING_INCLUDE` | error | Does an `IncludeWorkflow` point at a file that does not exist? |
 | `RECURSIVE_INCLUDE` | error | Do workflows include each other in a cycle? |
 | `INVALID_INCLUDE` | error | Is an included file not a readable workflow? |
-| `DISABLED_WRITER` | warning | Is a writer (or a group holding one) disabled, so nothing is recorded? |
+| `DISABLED_WRITER` | warning / info | Is a writer (or a group holding one) disabled, so nothing is recorded? Info when everything feeding it is disabled too, back to the source: the whole branch is off. |
 | `UNNAMED_SUBJECT` | error | Does a `SubscribeSubject` without a name feed other nodes? It builds to nothing, so they get no input and Bonsai refuses to build them. (With nothing after it, or for an unnamed `MulticastSubject`: info.) |
 | `APPENDS_ACROSS_RUNS` | info | Does every run append to the same file, and repeat the CSV header mid-file? |
 | `UNUSED_SUBJECT` | info | Is a subject declared but never subscribed to? |
@@ -142,6 +142,10 @@ the Bonsai source implements them (Bonsai.Core, Bonsai.System):
   Anything else, such as a subject, `Merge` or a third-party operator, leaves
   the loop a loop. So this can only remove an error baghban can justify; it
   never hides one it cannot.
+- **Repeat and Retry.** `Repeat` and `RepeatCount` subscribe their whole
+  source again, and `Retry` does so after an error. So a writer before one of
+  them is opened again on each repetition, as in a loop, and gets the same
+  findings. `RepeatCount(1)` repeats nothing.
 - **Writers.** `CsvWriter` and the `FileSink`/`StreamSink` families
   (`VideoWriter`, `TextWriter`, `AudioWriter`, `MatrixWriter`, `ImageWriter`)
   open their file on subscription, check `File.Exists(path) && !Overwrite`,
@@ -155,7 +159,14 @@ the Bonsai source implements them (Bonsai.Core, Bonsai.System):
   included file's externalized properties, and baghban applies them, through
   nested includes too, so checks see the effective file names.
 - **Disabled nodes** are not built: a disabled subject declares nothing, and
-  a disabled include is not opened.
+  a disabled include is not opened. A disabled node with a live input passes
+  it through (`DisableBuilder`). A disabled node with nothing live upstream
+  builds as empty, and Bonsai does not pass an empty node on: the next node
+  gets no input from it. So an enabled operator right after a disabled source
+  does not build (the confirm kit showed this). In a workflow that builds,
+  then, a disabled writer whose whole branch is disabled back to its source
+  loses nothing, because re-enabling the writer alone would not build. That
+  `DISABLED_WRITER` is info.
 
 ### Staying quiet when it cannot know
 
@@ -287,8 +298,8 @@ must agree with Bonsai on every one:
 On the file-writer findings, where Bonsai has no test fixtures, each finding
 is tested in both directions on paired workflows: it must fire where the fault
 exists and stay quiet on the nearest workflow without it (see `TESTING.md`).
-And the findings have been run on the real Bonsai runtime: 15 of 15 cases
-behaved as predicted (`confirm/`). The 2 cases added in 0.6.0 have not been
+And the findings have been run on the real Bonsai runtime: 17 of 17 cases
+behaved as predicted (`confirm/`). The 3 cases added in 0.7.0 have not been
 run yet.
 
 ### On published rigs
@@ -325,6 +336,29 @@ Since then, two changes made errors more precise without losing any fault.
 stimulus loop runs once per session, so its two "likely harmless" errors
 became info. Without packages, the same workflows now have 24 errors
 (`survey/SURVEY.md`).
+
+All 57 `DISABLED_WRITER` warnings have now been read too. Every one says
+truly that nothing is written. In 40, the device feeding the writer is
+disabled as well, so the whole branch is off. 0.7.0 reports 36 of those as
+info; the other 4 pass through a disabled node with two inputs, which
+baghban does not follow. Of the other 17, 6 are in test workflows, 4 are
+IBL's training-task video, which like the training rig saves only the left
+camera, and 7 (four cameras running, their only video writer off) cannot be
+judged from the repository.
+
+**Recall.** Precision says nothing about what baghban misses, so
+`survey/seed_faults.py` plants known faults in real rigs, one at a time,
+and checks that baghban reports each one at the planted node. On the
+survey's workflows with packages read at their pinned versions (`--fetch`),
+it found **168 of 170**: every planted missing include, duplicate subject
+or property, unnamed subscriber, disabled writer, append, overwrite and
+duplicate output, and 29 of 31 renamed subscribers. The 2 it did not find
+were reported as "not checked". Each workflow includes a module that cannot
+be read even with packages: a BonVision module renamed before the version
+iblrig pins (a real fault the survey had already found), and an
+Aeon.Acquisition CI build that nuget.org does not have. Either could declare
+the name. Without packages it finds 156 of 170, and every miss is again
+"not checked". None was missed silently.
 
 ---
 
@@ -462,7 +496,7 @@ fields = baghban.provenance(command_line=launcher_args, cwd=rig_folder)
 $ baghban provenance examples/rig_v2/foraging.bonsai -p TrialInterval=PT15S
 {
   "bonsai.provenance": "1",
-  "bonsai.baghban": "0.6.0",
+  "bonsai.baghban": "0.7.0",
   "bonsai.workflow": "/path/to/examples/rig_v2/foraging.bonsai",
   "bonsai.version": "2.9.0",
   "bonsai.fingerprint": "fc07dd88c5331b2dfeb53671f5e05cd80b03f49e96060cb58a745b1682b600fd",
@@ -512,13 +546,18 @@ Research prototype, honestly labelled.
   will do (`survey/SURVEY.md`). One described behaviour its authors intend (a
   demo that overwrites its file each run). That is why overwriting across
   runs is a warning since 0.5.0, and findings can be marked as intended.
-  Warnings were sampled, not read in full, and nothing measures what baghban
-  misses.
-- **Confirmed on the real Bonsai runtime:** `confirm/` runs 17 cases (every
+  The 57 `DISABLED_WRITER` warnings were read in full (0.7.0); the other
+  warnings were sampled. **Recall** is measured by planting faults in real
+  rigs: 168 of 170 found with packages, and both misses were reported as
+  "not checked" because of a module that cannot be read (`survey/SURVEY.md`).
+- **Confirmed on the real Bonsai runtime:** `confirm/` runs 20 cases (every
   finding baghban reports about writers and subjects, with a quiet control
-  for each) on Bonsai 2.9.1 packages under .NET 8. On macOS 15 of 15
-  behaved as baghban predicts (28 Oct 2026, 0.5.0). The 2 cases added in
-  0.6.0 for loops that run once have not been run yet. The first run (8/12) exposed a flaw in the kit and a
+  for each) on Bonsai 2.9.1 packages under .NET 8. On macOS 19 of 20
+  behaved as baghban predicts (16 Nov 2026, 0.7.0 before release). The NO
+  was a wrong claim of mine, that an enabled writer after a disabled source
+  just receives nothing: it does not build. The claim and its case were
+  corrected (`branch_off`), and the corrected case has not been run yet.
+  The first run (8/12) exposed a flaw in the kit and a
   wrong claim about unnamed subjects, both fixed in 0.2.1
   (`confirm/README.md`). Not yet run on Windows, where rigs run.
 - **Packages are read** (0.3.0), and the reader is **confirmed against
@@ -535,12 +574,14 @@ Research prototype, honestly labelled.
   (12 Oct 2026).
 - Timing problems (unbounded `Zip` queues, timestamps taken after heavy
   processing) need stream rates the XML rarely states, and are not checked.
+  Measured: none of the survey's 2,463 `Zip` nodes joins timers with
+  different stated periods.
 
 ## Development
 
 ```
 pip install -e ".[dev]"
-pytest -q                         # 281 tests, no network, no .NET
+pytest -q                         # 305 tests, no network, no .NET
 python confirm/confirm.py         # needs .NET 8: confirm findings with real Bonsai
                                   #   (install and troubleshooting: confirm/README.md)
 python confirm/confirm_packages.py  # needs .NET 8 and nuget.org: the package reader
@@ -548,6 +589,7 @@ python confirm/confirm_packages.py  # needs .NET 8 and nuget.org: the package re
 python confirm/confirm_properties.py  # needs .NET 8: launcher --property values
                                       #   against Bonsai's SetWorkflowProperty
 python survey/run_survey.py DIR [--fetch]   # clone and check the published repositories
+python survey/seed_faults.py DIR [--fetch]  # recall: plant faults in those rigs, count found
 ```
 
 ## Licence

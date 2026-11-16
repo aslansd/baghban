@@ -77,3 +77,22 @@ def test_loop_runs_once_judgement():
     assert judge("loop_run_again_by_repeat",
                  [Run(1, "IOException: The file 'once.csv' already exists.", {})])
     assert not judge("loop_run_again_by_repeat", [Run(0, "", {"once.csv": T1})])
+
+
+def test_writer_before_repeat_judgement():
+    # 0.7.0: a writer before RepeatCount(2) is opened twice in one session
+    assert judge("writer_before_repeat",
+                 [Run(1, "IOException: The file 'data.csv' already exists.", {})])
+    assert not judge("writer_before_repeat", [Run(0, "", {"data.csv": T1})])
+    assert judge("writer_before_repeat_once", [Run(0, "", {"data.csv": T1})])
+    assert not judge("writer_before_repeat_once",
+                     [Run(1, "IOException: The file 'data.csv' already exists.", {})])
+
+
+def test_branch_off_judgement():
+    # 0.7.0: a branch disabled from source to writer builds and writes nothing.
+    # (An enabled writer behind a disabled source does not build: the first
+    # run of the earlier case, 16 Nov 2026.)
+    assert judge("branch_off", [Run(0, "", {})])
+    assert not judge("branch_off", [Run(0, "", {"data.csv": ""})])
+    assert not judge("branch_off", [Run(1, "WorkflowBuildException: x", {})])
