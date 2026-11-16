@@ -298,9 +298,8 @@ must agree with Bonsai on every one:
 On the file-writer findings, where Bonsai has no test fixtures, each finding
 is tested in both directions on paired workflows: it must fire where the fault
 exists and stay quiet on the nearest workflow without it (see `TESTING.md`).
-And the findings have been run on the real Bonsai runtime: 17 of 17 cases
-behaved as predicted (`confirm/`). The 3 cases added in 0.7.0 have not been
-run yet.
+And the findings have been run on the real Bonsai runtime: 20 of 20 cases
+behaved as predicted (`confirm/`, 16 Nov 2026).
 
 ### On published rigs
 
@@ -552,11 +551,11 @@ Research prototype, honestly labelled.
   "not checked" because of a module that cannot be read (`survey/SURVEY.md`).
 - **Confirmed on the real Bonsai runtime:** `confirm/` runs 20 cases (every
   finding baghban reports about writers and subjects, with a quiet control
-  for each) on Bonsai 2.9.1 packages under .NET 8. On macOS 19 of 20
-  behaved as baghban predicts (16 Nov 2026, 0.7.0 before release). The NO
-  was a wrong claim of mine, that an enabled writer after a disabled source
-  just receives nothing: it does not build. The claim and its case were
-  corrected (`branch_off`), and the corrected case has not been run yet.
+  for each) on Bonsai 2.9.1 packages under .NET 8. On macOS all 20 behave
+  as baghban predicts (16 Nov 2026, 0.7.0). The run before release gave
+  19/20. The NO was a wrong claim, that an enabled writer after a disabled
+  source just receives nothing: it does not build. The claim and its case
+  were corrected (`branch_off`), and the corrected case passed.
   The first run (8/12) exposed a flaw in the kit and a
   wrong claim about unnamed subjects, both fixed in 0.2.1
   (`confirm/README.md`). Not yet run on Windows, where rigs run.

@@ -423,8 +423,8 @@ same fingerprint (all did).
 
 baghban 0.7.0, without packages: 170 faults in 81 files of 11 repositories,
 at most 3 per kind and repository (`--seed 1`). Run twice: with packages
-read at the pinned versions (`--fetch`, macOS), and without
-(`recall-0.7.0.json`).
+read at the pinned versions (`--fetch`, macOS, `recall-0.7.0-fetch.json`),
+and without (`recall-0.7.0.json`).
 
 | Planted fault | Expected | Found, with packages | Found, without |
 | --- | --- | ---: | ---: |

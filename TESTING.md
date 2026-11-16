@@ -150,9 +150,8 @@ example rigs.
 ## Beyond the unit tests
 
 - `python confirm/confirm.py` runs 20 cases with the real Bonsai runtime
-  (needs .NET 8). Last run: 17/17 confirmed (28 Oct 2026, macOS, Bonsai 2.9
-  packages, baghban 0.6.0); the 3 cases added in 0.7.0 have not been run
-  yet. `confirm/README.md` explains installing .NET on a Mac, running
+  (needs .NET 8). Last run: 20/20 confirmed (16 Nov 2026, macOS, Bonsai 2.9
+  packages, baghban 0.7.0). `confirm/README.md` explains installing .NET on a Mac, running
   the kit, reading its output, and records every run's results.
 - `python confirm/confirm_packages.py` compares the package reader with
   Microsoft's metadata reader on real Bonsai packages (needs .NET 8 and
@@ -169,4 +168,5 @@ example rigs.
   `survey-results-0.7.0.json` (without, after each release's changes).
 - `python survey/seed_faults.py DIR` measures recall on the same clones by
   planting faults (needs `lxml`). With `--fetch`: 168/170 found (16 Nov
-  2026, macOS). Without packages: 156/170 (`survey/recall-0.7.0.json`).
+  2026, macOS, `survey/recall-0.7.0-fetch.json`). Without packages: 156/170
+  (`survey/recall-0.7.0.json`).

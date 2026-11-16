@@ -3,15 +3,18 @@
 Status as of 0.7.0. Evidence for the ordering is in `survey/SURVEY.md`.
 
 1. **Confirm the findings by running them.** *Done on macOS.* Latest run
-   (28 Oct 2026, baghban 0.6.0, Bonsai 2.9 packages, .NET 8, Intel Mac):
-   17/17 cases confirmed. 0.7.0 before release (16 Nov 2026): 19/20. The
-   NO corrected a wrong claim about disabled sources, and its replacement
-   (`branch_off`) has not been run yet.
-   Earlier runs: 8/12 (a kit flaw and a wrong claim
-   about unnamed subjects, both fixed), then 13/13 on 4 Oct 2026. Open: run the same kit
-   on Windows, where rigs actually run (file locking differs, which matters
-   most for `DUPLICATE_OUTPUT`), and add a case whenever a finding is added
-   or its message changes.
+   (16 Nov 2026, baghban 0.7.0, Bonsai 2.9 packages, .NET 8, Intel Mac):
+   20/20 cases confirmed. Earlier runs:
+   - 8/12, which exposed a kit flaw and a wrong claim about unnamed
+     subjects, both fixed;
+   - 13/13 on 4 Oct 2026;
+   - 17/17 on 28 Oct 2026;
+   - 19/20 just before 0.7.0, whose NO corrected a wrong claim about
+     disabled sources.
+
+   Open: run the same kit on Windows, where rigs actually run (file locking
+   differs, which matters most for `DUPLICATE_OUTPUT`), and add a case
+   whenever a finding is added or its message changes.
 2. **Measure on real rigs.** *Done for errors, for `DISABLED_WRITER`, and
    for recall (0.7.0).* 32 repositories, 453 entry
    workflows: no false alarms among 27 errors after the module conventions
@@ -25,7 +28,7 @@ Status as of 0.7.0. Evidence for the ordering is in `survey/SURVEY.md`.
      0.7.0.
    - **Recall**, by planting faults with a certain effect into real rigs
      (`survey/seed_faults.py`): 168 of 170 found with packages (156
-     without). Both misses were reported "not checked": a renamed BonVision
+     without; `survey/recall-0.7.0-fetch.json`, `recall-0.7.0.json`). Both misses were reported "not checked": a renamed BonVision
      module and a CI build of Aeon.Acquisition that nuget.org lacks.
 
    Open:
@@ -87,7 +90,7 @@ Status as of 0.7.0. Evidence for the ordering is in `survey/SURVEY.md`.
    `Repeat` after AIND's `RunTrial` rightly keeps that one a loop. The 2
    confirm cases passed (28 Oct 2026). Since 0.7.0 a writer before `Repeat`
    or `Retry` is treated as in a loop (none in the survey; 2 confirm cases,
-   not run yet). Open: follow subjects (a loop fed by a `SubscribeSubject`
+   passed on 16 Nov 2026). Open: follow subjects (a loop fed by a `SubscribeSubject`
    is "not known" today), though no remaining survey error depends on it.
 6. **`UNRECORDED_PARAMETER`**: an externalized property whose value is never
    written to any output, so the data does not say what settings produced it.

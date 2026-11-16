@@ -309,9 +309,21 @@ holds, for a firmer reason. When a writer's whole branch is disabled back to
 its source, re-enabling the writer alone would not build, so the disabled
 writer loses nothing. But the rule now counts only disabled nodes on the
 way, since an enabled operator there means the workflow does not build. The
-case is replaced by `branch_off` (everything disabled), which has not been
-run yet. No survey workflow has an enabled node fed only by disabled
-sources, so no finding is added for it.
+case is replaced by `branch_off` (everything disabled). No survey workflow
+has an enabled node fed only by disabled sources, so no finding is added
+for it.
+
+### Eighth run: 16 Nov 2026, baghban 0.7.0, 20/20 confirmed
+
+The release run: the 19 cases that passed before, unchanged, and the
+replacement case:
+
+| Case | baghban | Confirmed | What Bonsai did |
+| --- | --- | --- | --- |
+| `branch_off` | `DISABLED_WRITER` | yes | exit 0; files: none |
+
+So a branch disabled from source to writer builds and runs, and writes
+nothing.
 
 ## If a case says NO
 

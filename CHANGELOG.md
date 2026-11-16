@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.7.0 (unreleased)
+## 0.7.0 (2026-11-16)
 
 Measuring what baghban misses, reading the warnings, and the open parts of
 roadmap item 5.
@@ -13,7 +13,8 @@ roadmap item 5.
   include, a disabled writer, `Append` or `Overwrite` without a suffix, and
   two writers given one file. Loop faults are not planted, because whether a
   loop repeats can depend on more than the file.
-  - With packages (`--fetch`, macOS, 16 Nov 2026): **168 of 170 found**.
+  - With packages (`--fetch`, macOS, 16 Nov 2026): **168 of 170 found**
+    (`survey/recall-0.7.0-fetch.json`).
     The 2 misses are renamed subscribers in workflows that include a module
     that cannot be read even with packages: BonVision modules renamed before
     the version iblrig pins (a known real fault), and an Aeon.Acquisition CI
@@ -68,7 +69,7 @@ roadmap item 5.
   which claimed that an enabled writer after a disabled `Timer` runs and
   writes nothing. It does not build: the enabled `Take` after the disabled
   `Timer` gets no input. The rule above was written from that, and the case
-  replaced by `branch_off`, which has not been run yet.
+  replaced by `branch_off`. The release run (16 Nov 2026): 20/20.
 - 305 tests (Python 3.11 and 3.13).
 
 ## 0.6.0 (2026-10-28)
